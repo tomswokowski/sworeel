@@ -49,6 +49,15 @@ Or just ask: "show me the cors one", "pause that", "export it for TikTok". A ban
 
 Requirements: Node.js 22.18 or newer, and `ffmpeg` for video. The first run of the `sworeel` command installs its npm dependencies. Developed and tested on Linux only so far.
 
+## Install the desktop app (optional)
+
+The app is a window onto your reels: browse, play, organise and export them. Download the installer for your system from the [Releases page](https://github.com/tomswokowski/sworeel/releases).
+
+It needs the plugin above, because it runs the plugin's `sworeel` command for every change and export. Without the plugin the app opens but tells you it can't find the command.
+
+- **Linux:** `.deb`, `.rpm` or `.AppImage`. This is the only system the app has been run on so far.
+- **macOS and Windows:** installers are built for both but have not been tested yet. The Windows installer is not signed, so Windows warns about an unknown publisher.
+
 ## Where files live
 
 Reels are SwoReel's working files, so they live with the app's data. Exports are what you publish, so they go in Documents.
@@ -152,7 +161,11 @@ npx tauri dev                        # run the app with live reload
 npx tauri build --no-bundle          # build it to src-tauri/target/release/sworeel-app
 ```
 
-The desktop app is not packaged for distribution yet. Until it is, put the built `sworeel-app` on your PATH (or tell the command where it is with `sworeel config app <path>`) so that `sworeel app` can start it.
+When you build the app yourself, put the built `sworeel-app` on your PATH (or tell the command where it is with `sworeel config app <path>`) so that `sworeel app` can start it. An installed package does this for you.
+
+### Releasing
+
+Pushing a version tag (`git tag v0.1.0 && git push --tags`) runs `.github/workflows/release.yml`, which builds the installers for Linux, macOS and Windows and attaches them to a draft release for you to review and publish. The same workflow can be run by hand from the Actions tab. The macOS build is signed and notarized once the Apple secrets named at the top of that file are set in the repository; without them it is unsigned.
 
 The app reads the library itself, and runs the `sworeel` command (found on PATH, or at the path in `SWOREEL_CLI`) for every change and export, so the app and Claude follow the same rules. Deleting a reel or folder moves it to the system trash.
 
