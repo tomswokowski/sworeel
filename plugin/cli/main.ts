@@ -284,6 +284,17 @@ async function bringLibrary(target: string) {
   console.log(`Copied ${names.length === 1 ? '1 reel' : `${names.length} reels`} and their pictures to the new folder. The originals are still in ${LIBRARY}.`)
 }
 
+/** Whether a process with this id exists. Asking to signal it with 0 checks without touching it. */
+function isRunning(pid: number) {
+  try {
+    process.kill(pid, 0)
+    return true
+  } catch (error) {
+    // Not allowed to signal it still means it is there.
+    return (error as NodeJS.ErrnoException).code === 'EPERM'
+  }
+}
+
 function paths(json: boolean) {
   const all = { reels: LIBRARY, pictures: assetsFolder(), exports: exportsFolder(), config: configFile, style: styleFile }
   if (json) console.log(JSON.stringify(all, null, 2))
@@ -543,9 +554,10 @@ try {
       break
     case 'showing': {
       // A note that is missing, or caught half-written, means nothing is known to be showing.
-      let note = await readFile(showingFile, 'utf8').then(JSON.parse).catch(() => null) as { reel: string; step: number; at: number } | null
-      // A note left by an app that was closed without tidying up says nothing about now.
-      if (note && Date.now() - note.at > 12 * 60 * 60 * 1000) note = null
+      let note = await readFile(showingFile, 'utf8').then(JSON.parse).catch(() => null) as { reel: string; step: number; at: number; pid?: number } | null
+      // A note left by an app that is no longer running says nothing about now. The app names
+      // its process; a note without one (from an older app) is believed for half a day.
+      if (note && (note.pid !== undefined ? !isRunning(note.pid) : Date.now() - note.at > 12 * 60 * 60 * 1000)) note = null
       if (values.json) console.log(JSON.stringify(note))
       else if (!note) console.log('The SwoReel app is not showing a reel. It may be closed, or on its library.')
       else {

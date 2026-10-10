@@ -145,7 +145,9 @@ fn set_showing(reel: Option<String>, step: u32) {
             let at = std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .map_or(0, |since| since.as_millis() as u64);
-            let note = serde_json::json!({ "reel": name, "step": step, "at": at });
+            // The process id lets the command tell a note from a running app from one left by an
+            // app that was killed before it could tidy up.
+            let note = serde_json::json!({ "reel": name, "step": step, "at": at, "pid": std::process::id() });
             let _ = std::fs::write(file, note.to_string());
         }
         None => {
@@ -304,6 +306,12 @@ async fn open_path(path: String) -> Result<()> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        // Once the window is gone the app is showing nothing, however it was closed.
+        .on_window_event(|_window, event| {
+            if let tauri::WindowEvent::Destroyed = event {
+                let _ = std::fs::remove_file(paths::showing_file());
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             get_paths,
             get_settings,
