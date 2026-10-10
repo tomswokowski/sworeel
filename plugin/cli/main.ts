@@ -249,12 +249,16 @@ async function openInApp(name: string | undefined) {
     await new Promise((done) => setTimeout(done, 150))
   }
 
+  // Where the app might be: where the settings say, on PATH, then where each system's
+  // installer puts it.
   const binary = process.platform === 'win32' ? 'sworeel-app.exe' : 'sworeel-app'
-  const candidates = [
-    CONFIG.app,
-    ...(process.env.PATH ?? '').split(delimiter).map((folder) => join(folder, binary)),
-    join(homedir(), '.local', 'bin', binary),
-  ]
+  const installed =
+    process.platform === 'darwin'
+      ? ['/Applications/SwoReel.app/Contents/MacOS/sworeel-app', join(homedir(), 'Applications', 'SwoReel.app', 'Contents', 'MacOS', 'sworeel-app')]
+      : process.platform === 'win32'
+        ? [join(process.env.LOCALAPPDATA ?? join(homedir(), 'AppData', 'Local'), 'SwoReel', binary), join(process.env.ProgramFiles ?? 'C:\\Program Files', 'SwoReel', binary)]
+        : [join(homedir(), '.local', 'bin', binary), '/usr/bin/sworeel-app']
+  const candidates = [CONFIG.app, ...(process.env.PATH ?? '').split(delimiter).map((folder) => join(folder, binary)), ...installed]
   for (const candidate of candidates) {
     if (!candidate || !(await stat(candidate).then((info) => info.isFile(), () => false))) continue
     const started = await new Promise<boolean>((done) => {
