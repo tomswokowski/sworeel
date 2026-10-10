@@ -102,3 +102,17 @@ test('moving the reels folder brings the library along and leaves the originals'
   assert.ok(existsSync(join(reels, 'one.json')))
   assert.match(await at('list'), /^one /)
 })
+
+test('a note about what the app is showing is believed only while that app is running', async () => {
+  const note = (pid: number) => writeFile(join(home, 'showing.json'), JSON.stringify({ reel: 'front-door', step: 1, at: Date.now(), pid }))
+  await note(process.pid)
+  assert.match((await sworeel('showing')).out, /is showing front-door, titled "Front door", at step 1 of 1/)
+
+  // A process that has already ended: its id is free again.
+  const { pid } = await new Promise<{ pid: number }>((done) => {
+    const child = execFile(process.execPath, ['-e', ''], () => done({ pid: child.pid! }))
+  })
+  await note(pid)
+  assert.match((await sworeel('showing')).out, /is not showing a reel/)
+  assert.equal((await sworeel('showing', '--json')).out, 'null')
+})
