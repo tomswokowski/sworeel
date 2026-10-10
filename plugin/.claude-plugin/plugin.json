@@ -1,6 +1,6 @@
 {
   "name": "sworeel",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Ask Claude to explain anything as a short animated reel: system diagrams, charts, code walkthroughs, maths, maps, annotated screenshots and more. Watch it play in the chat, refine it by talking, and export video or stills sized for X, TikTok, Instagram and YouTube.",
   "author": {
     "name": "Thomas Swokowski"
