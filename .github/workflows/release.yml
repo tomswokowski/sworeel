@@ -1,5 +1,17 @@
-# Builds the desktop app's installers for Linux, macOS and Windows and attaches them to a draft
-# release. Runs when a version tag is pushed (v0.1.0), or by hand from the Actions tab.
+# Releases SwoReel.
+#
+# Every push to main updates one open "release" pull request with the next version number and a
+# changelog of what has been merged since the last release. Merging that pull request is how a
+# release is made: it bumps the version everywhere it is written, tags it, publishes the release
+# notes, and then this workflow builds the desktop app's installers for Linux, macOS and Windows
+# and attaches them to the release.
+#
+# The next version and the changelog come from commit messages on main, which start with what
+# kind of change they are: `fix:` for a bug fix (0.1.0 -> 0.1.1), `feat:` for something new
+# (0.1.0 -> 0.2.0), and `docs:`, `ci:`, `chore:`, `test:` or `refactor:` for what users don't see.
+#
+# Running this by hand from the Actions tab builds the installers without releasing anything,
+# for trying a build; they are kept with the run as downloads.
 #
 # The macOS build is signed and notarized when these repository secrets are set, and unsigned
 # otherwise: APPLE_CERTIFICATE (the Developer ID certificate as base64), APPLE_CERTIFICATE_PASSWORD,
@@ -9,36 +21,30 @@ name: Release
 
 on:
   push:
-    tags: ['v*']
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
-  # Publishing a draft made by a run by hand creates its tag, which would start this again
-  # and rebuild installers that are already published. That second run stops here.
-  guard:
-    name: Check this version is not already published
+  release:
+    name: Release pull request
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     outputs:
-      build: ${{ steps.check.outputs.build }}
+      created: ${{ steps.release.outputs.release_created }}
+      tag: ${{ steps.release.outputs.tag_name }}
     steps:
-      - id: check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          published="$(gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --json isDraft --jq '.isDraft == false' 2>/dev/null || echo false)"
-          if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "$published" = "true" ]; then
-            echo "build=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "build=true" >> "$GITHUB_OUTPUT"
-          fi
+      - id: release
+        uses: googleapis/release-please-action@v4
 
   installers:
     name: Installers (${{ matrix.name }})
-    needs: guard
-    if: needs.guard.outputs.build == 'true'
+    needs: release
+    # After a release was just made, or when run by hand (the release job is skipped then).
+    if: always() && (github.event_name == 'workflow_dispatch' || needs.release.outputs.created == 'true')
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -104,17 +110,19 @@ jobs:
             echo "APPLE_TEAM_ID=$APPLE_TEAM_ID"
           } >> "$GITHUB_ENV"
 
-      - uses: tauri-apps/tauri-action@v0
+      # With a tag, the installers are attached to that release; without one they are only built.
+      - id: build
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # The version comes from the app's own config, so a run by hand makes the same draft a tag would.
-          tagName: v__VERSION__
-          releaseName: SwoReel __VERSION__
-          releaseBody: |
-            The SwoReel desktop app. It works with the SwoReel plugin for Claude Code, which provides the `sworeel` command the app runs; install the plugin first (see the README).
-
-            The Windows installer is not signed yet, so Windows will warn about an unknown publisher.
-          releaseDraft: true
-          prerelease: false
+          tagName: ${{ needs.release.outputs.tag }}
           args: ${{ matrix.args }}
+
+      - name: Keep the installers from a run by hand
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: installers-${{ matrix.name }}
+          path: ${{ join(fromJSON(steps.build.outputs.artifactPaths), fromJSON('"\n"')) }}
+          if-no-files-found: error

@@ -179,7 +179,19 @@ When you build the app yourself, put the built `sworeel-app` on your PATH (or te
 
 ### Releasing
 
-Pushing a version tag (`git tag v0.1.0 && git push --tags`) runs `.github/workflows/release.yml`, which builds the installers for Linux, macOS and Windows and attaches them to a draft release for you to review and publish. The same workflow can be run by hand from the Actions tab. The macOS build is signed and notarized once the Apple secrets named at the top of that file are set in the repository; without them it is unsigned.
+Releases are made by merging one pull request. Every push to `main` updates an open pull request titled "chore(main): release …", kept by [release-please](https://github.com/googleapis/release-please), with the next version number and a changelog of what has been merged since the last release. Merging it bumps the version everywhere it is written, tags it, publishes the release notes, and builds the installers for Linux, macOS and Windows onto the release (about ten minutes).
+
+The version and the changelog come from commit messages on `main`, so each starts with the kind of change:
+
+| Prefix | For | Version |
+|---|---|---|
+| `fix:` | A bug fix | 0.1.0 → 0.1.1 |
+| `feat:` | Something new | 0.1.0 → 0.2.0 |
+| `docs:`, `ci:`, `chore:`, `test:`, `refactor:` | What users don't see | No release on its own |
+
+Pull requests are squashed, so it is the pull request's title that needs the prefix.
+
+The macOS build is signed and notarized once the Apple secrets named at the top of `.github/workflows/release.yml` are set in the repository; without them it is unsigned. Running that workflow by hand from the Actions tab builds the installers without releasing, for trying a build.
 
 The app reads the library itself, and runs the `sworeel` command (found on PATH, or at the path in `SWOREEL_CLI`) for every change and export, so the app and Claude follow the same rules. Deleting a reel or folder moves it to the system trash.
 
