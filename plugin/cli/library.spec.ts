@@ -76,7 +76,7 @@ test('says so when the reel does not exist', async () => {
 })
 
 test('adds pictures to the store once, and keeps different ones apart', async () => {
-  const store = join(root, '..', `${root.split('/').pop()}-assets`)
+  const store = `${root}-assets`
   const png = (text: string) => Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.from(text)])
   await writeFile(join(root, 'shot.png'), png('first image'))
   assert.equal(await addAsset(store, join(root, 'shot.png')), 'shot.png')

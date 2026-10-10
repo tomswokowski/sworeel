@@ -1,0 +1,99 @@
+# Builds the desktop app's installers for Linux, macOS and Windows and attaches them to a draft
+# release. Runs when a version tag is pushed (v0.1.0), or by hand from the Actions tab.
+#
+# The macOS build is signed and notarized when these repository secrets are set, and unsigned
+# otherwise: APPLE_CERTIFICATE (the Developer ID certificate as base64), APPLE_CERTIFICATE_PASSWORD,
+# APPLE_SIGNING_IDENTITY, APPLE_ID, APPLE_PASSWORD (an app-specific password) and APPLE_TEAM_ID.
+# The Windows build is unsigned.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  installers:
+    name: Installers (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The oldest supported Ubuntu, so the Linux packages run on older systems too.
+          - name: Linux
+            os: ubuntu-22.04
+            args: ''
+          # One app for both Apple silicon and Intel Macs.
+          - name: macOS
+            os: macos-latest
+            args: --target universal-apple-darwin
+          - name: Windows
+            os: windows-latest
+            args: ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ runner.os == 'macOS' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            plugin/package-lock.json
+      - run: npm ci
+      # The interface shares the command's maths typesetter, which is installed with the plugin.
+      - run: npm ci
+        working-directory: plugin
+
+      # Signing is switched on only when the certificate is there, so the build works without it.
+      - name: Set up macOS signing
+        if: runner.os == 'macOS' && env.APPLE_CERTIFICATE != ''
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        shell: bash
+        run: |
+          {
+            echo "APPLE_CERTIFICATE=$APPLE_CERTIFICATE"
+            echo "APPLE_CERTIFICATE_PASSWORD=$APPLE_CERTIFICATE_PASSWORD"
+            echo "APPLE_SIGNING_IDENTITY=$APPLE_SIGNING_IDENTITY"
+            echo "APPLE_ID=$APPLE_ID"
+            echo "APPLE_PASSWORD=$APPLE_PASSWORD"
+            echo "APPLE_TEAM_ID=$APPLE_TEAM_ID"
+          } >> "$GITHUB_ENV"
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # The version comes from the app's own config, so a run by hand makes the same draft a tag would.
+          tagName: v__VERSION__
+          releaseName: SwoReel __VERSION__
+          releaseBody: |
+            The SwoReel desktop app. It works with the SwoReel plugin for Claude Code, which provides the `sworeel` command the app runs; install the plugin first (see the README).
+
+            The Windows installer is not signed yet, so Windows will warn about an unknown publisher.
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}

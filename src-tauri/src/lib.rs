@@ -31,7 +31,17 @@ async fn sworeel<const N: usize>(args: [&str; N]) -> Result<String> {
     let output = tauri::async_runtime::spawn_blocking(move || command.output())
         .await
         .map_err(|error| error.to_string())?
-        .map_err(|error| format!("Could not run the sworeel command: {error}"))?;
+        .map_err(|error| {
+            if error.kind() == std::io::ErrorKind::NotFound {
+                // The app is a window onto the plugin's command; without it nothing can be changed or exported.
+                "SwoReel could not find the sworeel command, which comes with its Claude Code plugin. \
+                 Install the plugin (see https://github.com/tomswokowski/sworeel), then start the app again. \
+                 If it is installed somewhere unusual, set SWOREEL_CLI to its path."
+                    .to_string()
+            } else {
+                format!("Could not run the sworeel command: {error}")
+            }
+        })?;
 
     if output.status.success() {
         Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
