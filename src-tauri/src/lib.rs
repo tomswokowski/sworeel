@@ -20,7 +20,8 @@ struct Paths {
 /// text starting with a dash is taken as text and never as an option.
 async fn sworeel<const N: usize>(args: [&str; N]) -> Result<String> {
     let mut command = Command::new(paths::cli());
-    command.args(args);
+    // The command is a script that starts Node, so it needs the PATH a terminal would have.
+    command.args(args).env("PATH", paths::search_path());
     // The command is a script on Windows; without this each call would flash a console window.
     #[cfg(windows)]
     {
