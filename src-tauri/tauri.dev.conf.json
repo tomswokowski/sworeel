@@ -1,0 +1,17 @@
+{
+  "productName": "SwoReel Dev",
+  "identifier": "dev.swokowski.sworeel.dev",
+  "mainBinaryName": "sworeel-app-dev",
+  "app": {
+    "windows": [
+      {
+        "title": "SwoReel (dev)",
+        "width": 1400,
+        "height": 900,
+        "resizable": true,
+        "fullscreen": false,
+        "dragDropEnabled": false
+      }
+    ]
+  }
+}
