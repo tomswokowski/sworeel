@@ -16,8 +16,29 @@ permissions:
   contents: write
 
 jobs:
+  # Publishing a draft made by a run by hand creates its tag, which would start this again
+  # and rebuild installers that are already published. That second run stops here.
+  guard:
+    name: Check this version is not already published
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.check.outputs.build }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          published="$(gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --json isDraft --jq '.isDraft == false' 2>/dev/null || echo false)"
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "$published" = "true" ]; then
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
   installers:
     name: Installers (${{ matrix.name }})
+    needs: guard
+    if: needs.guard.outputs.build == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false

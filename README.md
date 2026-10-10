@@ -157,8 +157,22 @@ npm run dev                          # work on the interface in a browser, again
 npm test                             # test the reel kinds, the library, bundles and themes
 claude plugin test ./plugin          # test the in-session pane
 (cd src-tauri && cargo test)         # test the app's reading of the library
-npx tauri dev                        # run the app with live reload
+npm run sworeel -- list              # the command from this folder, in the sandbox
+npm run dev:app                      # the app from this folder with live reload, in the sandbox
 npx tauri build --no-bundle          # build it to src-tauri/target/release/sworeel-app
+```
+
+### Developing beside an installed SwoReel
+
+`npm run sworeel` and `npm run dev:app` keep development apart from the SwoReel you actually use:
+
+- They read and write a sandbox, `.dev-home/` in this folder, with its own reels, pictures, settings and exports. It starts with a few sample reels. Your real library is never touched.
+- The app runs as "SwoReel Dev", with its own window, remembered state and name, and it runs this folder's command instead of the installed one.
+
+To try the plugin itself in Claude Code without installing it, start a session with this folder's copy and the same sandbox:
+
+```bash
+SWOREEL_HOME="$PWD/.dev-home" claude --plugin-dir ./plugin
 ```
 
 When you build the app yourself, put the built `sworeel-app` on your PATH (or tell the command where it is with `sworeel config app <path>`) so that `sworeel app` can start it. An installed package does this for you.

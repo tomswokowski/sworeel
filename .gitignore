@@ -38,6 +38,9 @@ __screenshots__/
 # Vite
 *.timestamp-*-*.mjs
 
+# The sandbox library and settings used while developing (see scripts/dev.mjs)
+.dev-home
+
 # Tauri
 src-tauri/target
 src-tauri/gen
