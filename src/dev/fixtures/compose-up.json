@@ -1,0 +1,101 @@
+{
+  "title": "What docker compose up does",
+  "nodes": [
+    {
+      "id": "browser",
+      "label": "Browser",
+      "col": 1,
+      "row": 0,
+      "hidden": true
+    },
+    {
+      "id": "gateway",
+      "label": "Gateway",
+      "sub": "Caddy · :8080",
+      "col": 1,
+      "row": 1,
+      "hidden": true
+    },
+    {
+      "id": "catalog",
+      "label": "Catalog",
+      "sub": "Rails · :3000",
+      "col": 0,
+      "row": 2,
+      "hidden": true
+    },
+    {
+      "id": "storefront",
+      "label": "Storefront",
+      "sub": "Vite · :5173",
+      "col": 2,
+      "row": 2,
+      "hidden": true
+    },
+    {
+      "id": "catalog-db",
+      "label": "Catalog DB",
+      "sub": "PostgreSQL",
+      "col": 0,
+      "row": 3,
+      "hidden": true
+    }
+  ],
+  "groups": [
+    {
+      "id": "network",
+      "label": "private network",
+      "nodes": [
+        "gateway",
+        "catalog",
+        "storefront",
+        "catalog-db"
+      ],
+      "hidden": true
+    }
+  ],
+  "steps": [
+    {
+      "show": [
+        "network"
+      ],
+      "caption": "First, a private network. Containers on it find each other by name."
+    },
+    {
+      "show": [
+        "catalog-db"
+      ],
+      "caption": "The database starts first. Compose waits until it accepts connections."
+    },
+    {
+      "show": [
+        "catalog"
+      ],
+      "from": "catalog",
+      "to": "catalog-db",
+      "label": "db:prepare",
+      "caption": "The catalog service prepares its tables, then starts Rails."
+    },
+    {
+      "show": [
+        "storefront"
+      ],
+      "caption": "The storefront starts its own server. It knows nothing about the others."
+    },
+    {
+      "show": [
+        "gateway"
+      ],
+      "caption": "The gateway starts last, and publishes the only public port."
+    },
+    {
+      "show": [
+        "browser"
+      ],
+      "from": "browser",
+      "to": "gateway",
+      "label": "localhost:8080",
+      "caption": "Four containers, one way in."
+    }
+  ]
+}

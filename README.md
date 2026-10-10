@@ -1,0 +1,170 @@
+# SwoReel
+
+Short animated explanations, made by talking to Claude. Ask for a system diagram, a chart, a code walkthrough, some maths, a map or an annotated screenshot; Claude writes it as a *reel*, plays it for you in the chat, and exports video or images sized for X, TikTok, Instagram and YouTube.
+
+A *reel* is a JSON file: a picture that changes step by step, with a caption for each step. You describe what you want explained; Claude writes the reel, checks its own render, and hands you an MP4 or PNG. Nothing is drawn by hand.
+
+| Kind | Draws | For |
+|---|---|---|
+| `flow` | Boxes with messages travelling between them | System layouts, request flows, state machines |
+| `sequence` | Actors with arrows between them, building downwards | Protocols and handshakes |
+| `tree` | A hierarchy from the root down | Folders, components, org charts |
+| `timeline` | Events in order along a line | Histories |
+| `gantt` | Tasks as bars on a shared scale | Plans and schedules |
+| `chart` | Horizontal bars | Comparing quantities, before and after |
+| `line` | One to three lines over the same points | Trends and growth |
+| `scatter` | Points placed by two measurements | Relationships and groups |
+| `pie` | A ring of shares with a key | Parts of a whole |
+| `code` | One or more listings with lines lit up | Code walkthroughs, across files |
+| `array` | A row of cells with pointers | Algorithms over a list |
+| `math` | Typeset formulas | Derivations and definitions |
+| `map` | Places on a world map, with arcs between them | Where things are, how far requests travel |
+| `picture` | One or more images with parts picked out in turn | Walking through screenshots and user flows |
+| `screen` | A wireframe in a browser or phone frame | Explaining an interface design |
+| `sketch` | Shapes, icons and arrows placed freely | Anything else |
+
+## Install the Claude Code plugin
+
+```
+/plugin marketplace add tomswokowski/sworeel
+/plugin install sworeel@tomswokowski
+```
+
+Then ask Claude for one: "make a reel of how a request reaches the database", "chart these numbers", or "walk through this file".
+
+### In the session
+
+`/sworeel` opens a pane beside the chat with your reels; pick one and it plays, animated, without leaving Claude Code. `/sworeel <reel>` plays one directly.
+
+| Type | Does |
+|---|---|
+| `/sworeel` | Reel picker |
+| `/sworeel pause`, `play`, `next`, `back`, `restart` | Drive the player from the chat |
+| `/sworeel export wide`, `tall`, `square`, `still` | Export what's playing |
+| `/sworeel app` | Open what's playing in the desktop app |
+| `/sworeel keys` | Give the pane the keyboard, for its hotkeys; `Esc` gives it back |
+| `/sworeel close` | Close the pane |
+
+Or just ask: "show me the cors one", "pause that", "export it for TikTok". A banner in the pane always says whether your keys are going to the pane or to the chat.
+
+Requirements: Node.js 22.18 or newer, and `ffmpeg` for video. The first run of the `sworeel` command installs its npm dependencies. Developed and tested on Linux only so far.
+
+## Where files live
+
+Reels are SwoReel's working files, so they live with the app's data. Exports are what you publish, so they go in Documents.
+
+| | Linux | macOS | Windows |
+|---|---|---|---|
+| Reels | `~/.local/share/sworeel/reels` | `~/Library/Application Support/SwoReel/reels` | `%APPDATA%\SwoReel\reels` |
+| Settings | `~/.config/sworeel/config.json` | `~/Library/Application Support/SwoReel/config.json` | `%APPDATA%\SwoReel\config.json` |
+| Exports | `Documents/SwoReel` | `Documents/SwoReel` | `Documents\SwoReel` |
+
+Two more things sit beside these:
+
+- **Pictures.** Images that picture reels use are kept in an `assets` folder next to the reels folder, never inside it, so renaming or moving a reel can't break its pictures.
+- **Preferences.** `style.md`, next to `config.json`, holds your standing preferences for how reels are made. Claude reads it before making one.
+
+`sworeel paths` prints the locations in use. To change one, run `sworeel config exports <folder>` or `sworeel config reels <folder>`; changing the reels folder copies the library and its pictures there and leaves the originals in place.
+
+Setting `SWOREEL_HOME` to a folder puts everything in it: `reels/`, `assets/`, `exports/`, and its own `config.json` and `style.md`. Nothing outside that folder is read or written, which is what tests and try-outs want.
+
+### Moving reels to another computer
+
+`sworeel bundle <reel|folder>` (or "Export as File" in the app) packs reels and the pictures they use into one `.sworeel` file. `sworeel import <file>` (or the app's Import) adds them on the other computer. Importing never replaces anything already there. Settings and exported videos are not part of a bundle.
+
+## Command line
+
+The plugin puts `sworeel` on Claude's PATH. It also works on its own:
+
+```bash
+sworeel list                                   # what's in the library
+sworeel still front-door --format tall --step 5
+sworeel render web/cors --format tall
+
+sworeel show front-door                        # the reel as text, right in the terminal
+sworeel play                                   # pick a reel and watch it, animated
+sworeel app front-door                         # show it in the desktop app
+
+sworeel stills front-door                      # every step as an image
+sworeel config watermark "@you"                # credit every export
+sworeel config formats wide,tall               # what a plain "render" makes
+
+sworeel move front-door web                    # organise: move, rename, duplicate, delete, folders
+sworeel delete old-draft                       # goes to the system trash
+sworeel exports                                # what has been exported
+sworeel --help                                 # everything else
+```
+
+Everything the desktop app can do to the library, the command can do too, so Claude can manage it for you: "put the auth reels in a folder", "delete the old draft", "re-export everything for TikTok".
+
+Formats are `wide` (1600×900), `tall` (1080×1920) and `square` (1080×1080).
+
+## Repository layout
+
+| Path | What it is |
+|---|---|
+| `.claude-plugin/marketplace.json` | The marketplace listing: tells Claude Code this repository offers the SwoReel plugin, and where in it the plugin is |
+| `plugin/.claude-plugin/plugin.json` | The plugin's own manifest: its name, version and description |
+| `plugin/` | The plugin, and everything it needs to run |
+| `plugin/hooks/` | The in-session pane and `/sworeel` command: a Claude Code hooks module |
+| `plugin/skills/reel/` | The skill: how to choose a kind, write a reel that reads well, and manage the library. `kinds/` has the reference for each kind |
+| `plugin/bin/sworeel` | The command (`sworeel.cmd` on Windows). Installs dependencies on first run, then runs the CLI |
+| `plugin/cli/` | Validates reels and renders PNG stills and MP4 video, with no browser involved |
+| `plugin/core/` | The reel format and timing, shared by everything. `kinds/` has one file per kind of reel, each with a picture renderer (Canvas 2D), a text renderer, and its step descriptions |
+| `plugin/core/data/` | Generated data: the bundled icons (from Lucide, ISC) and the world's land outline (Natural Earth, public domain). `scripts/` regenerates both |
+| `plugin/host/` | What needs real packages: the maths typesetter (MathJax). Used by the command and the app, never by the core, which also runs inside Claude Code where packages can't load |
+| `src/`, `src-tauri/` | The optional desktop app (Vue inside a Tauri window): a reel library with folders, search, rename, move and delete, plus playback and export. It shares `plugin/core/` |
+| `brand/` | The icon and logo as SVG, with PNG renders. `icon-macos` is the same mark with the margin macOS expects |
+
+## The desktop app and Claude Code together
+
+They share one library and one renderer, and neither needs the other, but they hand off to each other:
+
+- **From the chat to the app:** `sworeel app <reel>`, `/sworeel app`, or the pane's "Open in app" button shows that reel in the app, starting it if needed.
+- **Follow Claude:** a switch in the app's sidebar. When on, the app shows whichever reel changed last, so you watch the real render update as Claude edits.
+- **From the app to the chat:** "Ask Claude…" on a reel copies the start of a message naming it, ready to paste into Claude Code.
+- **Shared settings:** the watermark, step dots, default formats and frame rate set in the app's Settings are used by Claude's exports too, and the other way round. Colours are set by asking Claude (`sworeel config theme`), and the app's previews follow.
+
+The app's sidebar is a file explorer: folders open and close, reels sit under them, and reels and whole folders are moved by dragging them onto a folder. Right-click for rename, duplicate and delete. The player has a scrubber with a mark at each step, and an Export menu for a video, a still, all stills, or the reel itself as a file for another computer.
+
+## App icons
+
+`src-tauri/icons/` holds the icons for each platform, generated from `brand/`:
+
+```bash
+npx tauri icon brand/icon.png                          # Windows .ico and the Linux PNGs
+npx tauri icon brand/icon-macos.png -o /tmp/mac-icons  # then copy its icon.icns into src-tauri/icons/
+```
+
+## Developing
+
+```bash
+claude plugin validate ./plugin      # check the plugin manifest
+claude --plugin-dir ./plugin         # try the plugin without installing it
+
+npm install                          # desktop app dependencies
+(cd plugin && npm install)           # the command's own, which the app's maths typesetting shares
+npm run dev                          # work on the interface in a browser, against a mock library
+npm test                             # test the reel kinds, the library, bundles and themes
+claude plugin test ./plugin          # test the in-session pane
+(cd src-tauri && cargo test)         # test the app's reading of the library
+npx tauri dev                        # run the app with live reload
+npx tauri build --no-bundle          # build it to src-tauri/target/release/sworeel-app
+```
+
+The desktop app is not packaged for distribution yet. Until it is, put the built `sworeel-app` on your PATH (or tell the command where it is with `sworeel config app <path>`) so that `sworeel app` can start it.
+
+The app reads the library itself, and runs the `sworeel` command (found on PATH, or at the path in `SWOREEL_CLI`) for every change and export, so the app and Claude follow the same rules. Deleting a reel or folder moves it to the system trash.
+
+When testing, set `SWOREEL_HOME` to a scratch folder so nothing touches your real library or settings.
+
+## Licence
+
+SwoReel is free and open source under the [MIT licence](LICENSE).
+
+It includes or depends on work by others, under their own terms:
+
+- Icons from [Lucide](https://lucide.dev) (ISC), bundled in `plugin/core/data/icons.ts`.
+- The world outline from [Natural Earth](https://www.naturalearthdata.com) (public domain), bundled in `plugin/core/data/land.ts`.
+- The [Noto Sans](https://fonts.google.com/noto) and [JetBrains Mono](https://www.jetbrains.com/lp/mono/) fonts (SIL Open Font License), installed as dependencies.
+- [MathJax](https://www.mathjax.org) (Apache 2.0) for typesetting formulas, installed as a dependency.

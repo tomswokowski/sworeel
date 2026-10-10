@@ -1,0 +1,118 @@
+{
+  "title": "One front door",
+  "nodes": [
+    {
+      "id": "browser",
+      "label": "Browser",
+      "col": 1,
+      "row": 0
+    },
+    {
+      "id": "gateway",
+      "label": "Gateway",
+      "sub": "Caddy · :8080",
+      "col": 1,
+      "row": 1
+    },
+    {
+      "id": "catalog",
+      "label": "Catalog",
+      "sub": "Rails API",
+      "col": 0,
+      "row": 2
+    },
+    {
+      "id": "storefront",
+      "label": "Storefront",
+      "sub": "Vue 3",
+      "col": 2,
+      "row": 2
+    },
+    {
+      "id": "catalog-db",
+      "label": "Catalog DB",
+      "sub": "PostgreSQL",
+      "col": 0,
+      "row": 3
+    }
+  ],
+  "groups": [
+    {
+      "id": "network",
+      "label": "private network",
+      "nodes": [
+        "gateway",
+        "catalog",
+        "storefront",
+        "catalog-db"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "from": "browser",
+      "to": "gateway",
+      "label": "GET /",
+      "caption": "The browser knows one address: the gateway."
+    },
+    {
+      "from": "gateway",
+      "to": "storefront",
+      "label": "GET /",
+      "caption": "No /api prefix, so the gateway forwards to the storefront."
+    },
+    {
+      "from": "storefront",
+      "to": "gateway",
+      "label": "Vue app",
+      "caption": "The storefront answers with the Vue app.",
+      "style": "reply"
+    },
+    {
+      "from": "gateway",
+      "to": "browser",
+      "label": "Vue app",
+      "caption": "From here on, that app runs in the browser, not on the server.",
+      "style": "reply"
+    },
+    {
+      "from": "browser",
+      "to": "gateway",
+      "label": "GET /api/catalog/products",
+      "caption": "The app asks for products. Same address, different path."
+    },
+    {
+      "from": "gateway",
+      "to": "catalog",
+      "label": "GET /products",
+      "caption": "The gateway strips the prefix and forwards by service name."
+    },
+    {
+      "from": "catalog",
+      "to": "catalog-db",
+      "label": "SELECT … products",
+      "caption": "Only the catalog service can reach its database."
+    },
+    {
+      "from": "catalog-db",
+      "to": "catalog",
+      "label": "rows",
+      "caption": "The data never leaves through any other door.",
+      "style": "reply"
+    },
+    {
+      "from": "catalog",
+      "to": "gateway",
+      "label": "JSON",
+      "caption": "The JSON is the contract. The tables behind it can change.",
+      "style": "reply"
+    },
+    {
+      "from": "gateway",
+      "to": "browser",
+      "label": "JSON",
+      "caption": "The storefront never called the catalog. The browser did, through one front door.",
+      "style": "reply"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "title": "Two addresses, no gateway",
+  "nodes": [
+    { "id": "browser", "label": "Browser", "col": 1, "row": 0 },
+    { "id": "frontend", "label": "Frontend", "sub": "shop.com", "col": 0, "row": 2 },
+    { "id": "api", "label": "API", "sub": "api.shop.com", "col": 2, "row": 2 }
+  ],
+  "steps": [
+    {
+      "caption": "The simple setup: the frontend on one address, the API on another.",
+      "from": "browser", "to": "frontend", "label": "GET /"
+    },
+    {
+      "caption": "The page loads from shop.com. So far, so easy.",
+      "from": "frontend", "to": "browser", "label": "Vue app", "style": "reply"
+    },
+    {
+      "caption": "Now the app calls the API. That is a different origin, so the browser asks permission first.",
+      "from": "browser", "to": "api", "label": "OPTIONS /products"
+    },
+    {
+      "caption": "The API has to answer with CORS headers naming shop.com, or the browser blocks the call.",
+      "from": "api", "to": "browser", "label": "CORS headers", "style": "reply"
+    },
+    {
+      "caption": "Only then does the real request go out.",
+      "from": "browser", "to": "api", "label": "GET /products"
+    },
+    {
+      "caption": "Fine for one API. With five services, the frontend needs five addresses and five CORS setups.",
+      "from": "api", "to": "browser", "label": "JSON", "style": "reply"
+    }
+  ]
+}

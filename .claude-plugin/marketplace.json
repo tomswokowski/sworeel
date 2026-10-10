@@ -1,0 +1,15 @@
+{
+  "name": "tomswokowski",
+  "description": "SwoReel for Claude Code: short animated explanations, made by talking to Claude.",
+  "owner": {
+    "name": "Thomas Swokowski"
+  },
+  "plugins": [
+    {
+      "name": "sworeel",
+      "source": "./plugin",
+      "description": "Ask Claude to explain anything as a short animated reel: system diagrams, charts, code walkthroughs, maths, maps, annotated screenshots and more. Watch it play in the chat, refine it by talking, and export video or stills sized for X, TikTok, Instagram and YouTube.",
+      "license": "MIT"
+    }
+  ]
+}

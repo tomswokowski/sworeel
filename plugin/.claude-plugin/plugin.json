@@ -1,0 +1,23 @@
+{
+  "name": "sworeel",
+  "version": "0.1.0",
+  "description": "Ask Claude to explain anything as a short animated reel: system diagrams, charts, code walkthroughs, maths, maps, annotated screenshots and more. Watch it play in the chat, refine it by talking, and export video or stills sized for X, TikTok, Instagram and YouTube.",
+  "author": {
+    "name": "Thomas Swokowski"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/tomswokowski/sworeel",
+  "homepage": "https://github.com/tomswokowski/sworeel",
+  "keywords": [
+    "reels",
+    "explainer",
+    "animation",
+    "diagrams",
+    "charts",
+    "code-walkthrough",
+    "visualization",
+    "video",
+    "social-media"
+  ],
+  "types": "./types/index.d.ts"
+}

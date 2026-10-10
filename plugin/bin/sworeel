@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Runs the sworeel CLI. Node executes the TypeScript source directly.
+set -e
+
+# Find this script's real folder, following a symlink to it. `readlink -f` is not on every
+# system, so the link is followed by hand.
+script="${BASH_SOURCE[0]}"
+while [ -L "$script" ]; do
+  target="$(readlink "$script")"
+  case "$target" in
+    /*) script="$target" ;;
+    *) script="$(dirname "$script")/$target" ;;
+  esac
+done
+root="$(cd "$(dirname "$script")/.." && pwd)"
+if [ ! -f "$root/cli/main.ts" ]; then
+  echo "sworeel: could not find its own files next to $script." >&2
+  exit 1
+fi
+
+# Desktop launchers may not have a version manager's Node on PATH.
+node=(node)
+npm=(npm)
+if ! command -v node >/dev/null && command -v mise >/dev/null; then
+  node=(mise exec node -- node)
+  npm=(mise exec node -- npm)
+fi
+
+if ! "${node[@]}" -e 'const [a, b] = process.versions.node.split(".").map(Number); process.exit(a > 22 || (a === 22 && b >= 18) ? 0 : 1)' 2>/dev/null; then
+  echo "sworeel needs Node.js 22.18 or newer." >&2
+  exit 1
+fi
+
+# A freshly installed plugin has no dependencies yet; fetch them once. The marker is written
+# only when the install finishes, so one cut short is tried again next time.
+if [ ! -f "$root/node_modules/.sworeel-installed" ]; then
+  echo "sworeel: installing dependencies (first run only)..." >&2
+  (cd "$root" && "${npm[@]}" install --omit=dev --no-audit --no-fund --loglevel=error) >&2
+  touch "$root/node_modules/.sworeel-installed"
+fi
+
+exec "${node[@]}" "$root/cli/main.ts" "$@"

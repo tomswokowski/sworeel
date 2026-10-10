@@ -1,0 +1,78 @@
+/* The same font files the CLI renders with, under the names the renderer asks for. */
+@font-face {
+  font-family: 'SwoReel Sans';
+  font-weight: 400;
+  src: url('@fontsource/noto-sans/files/noto-sans-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'SwoReel Sans';
+  font-weight: 600;
+  src: url('@fontsource/noto-sans/files/noto-sans-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'SwoReel Sans';
+  font-weight: 700;
+  src: url('@fontsource/noto-sans/files/noto-sans-latin-700-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'SwoReel Mono';
+  font-weight: 400;
+  src: url('@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2') format('woff2');
+}
+
+:root {
+  --bg: #04101a;
+  --surface: #0a1e2c;
+  --border: #1d4257;
+  --text: #e3fbff;
+  --muted: #7fa5b8;
+  --accent: #1acee3;
+  --error: #ff5c7a;
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+#app {
+  display: flex;
+}
+
+body {
+  margin: 0;
+  background: #020a11;
+  color: var(--text);
+  font-family: 'SwoReel Sans', system-ui, sans-serif;
+  font-size: 14px;
+}
+
+button,
+select {
+  height: 2rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  /* WebKitGTK otherwise draws selects with the light system theme. */
+  appearance: none;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
