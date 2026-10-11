@@ -180,6 +180,27 @@
   .code button { position: absolute; top: 8px; right: 8px; height: 28px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--muted); font: 400 0.8rem var(--sans); cursor: pointer; }
   .code button:hover { border-color: var(--accent); color: var(--text); }
 
+  /* The one-line install, and what it does. */
+  .auto { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); margin-top: 32px; border-color: var(--accent); box-shadow: 0 0 0 3px rgb(26 206 227 / 10%), 0 0 60px rgb(26 206 227 / 7%); overflow: hidden; }
+  .auto .ask { padding: 28px; }
+  .auto .ask h3 { font-size: 1.3rem; }
+  .auto .ask .code pre { padding: 46px 16px 16px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.95rem; }
+  .auto .ask p { margin-top: 14px; color: var(--muted); }
+  .auto .does { padding: 28px; border-left: 1px solid var(--border); background: var(--surface); }
+  .auto .does h4 { color: var(--muted); font: 600 0.75rem var(--sans); letter-spacing: 0.1em; text-transform: uppercase; }
+  .auto .does ul { display: grid; gap: 12px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .auto .does li { display: flex; gap: 10px; color: var(--muted); font-size: 0.95rem; }
+  .auto .does li .icon { margin-top: 5px; color: var(--accent); }
+  .auto .does li strong { color: var(--text); font-weight: 600; }
+  .auto .does p { margin-top: 16px; color: var(--muted); font-size: 0.9rem; }
+  /* The two ways to install are labelled alike, so it reads as a choice of two. */
+  .choice { color: var(--text); font-size: 1.3rem; font-weight: 700; }
+  .choice span { margin-right: 6px; padding: 3px 9px; border: 1px solid var(--accent); border-radius: 5px; color: var(--accent); font: 400 0.72rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; vertical-align: middle; }
+  .auto .choice { margin-bottom: 14px; }
+  .manual { margin-top: 56px; }
+  .manual .intro { margin-top: 8px; font-size: 1rem; }
+  .manual .steps { margin-top: 22px; }
+
   .systems { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 14px; margin-top: 18px; }
   .system { display: flex; flex-direction: column; padding: 18px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
   .system.yours { border-color: var(--accent); box-shadow: 0 0 0 3px rgb(26 206 227 / 12%); }
@@ -230,6 +251,8 @@
     .side { display: none; }
     .main header .path, .bar .speed { display: none; }
     .setting { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .auto { grid-template-columns: minmax(0, 1fr); }
+    .auto .does { border-left: 0; border-top: 1px solid var(--border); }
     .setting .said { max-width: none; }
   }
   @media (max-width: 640px) {
@@ -252,14 +275,13 @@
       <a class="brand" href="#top" id="top"><img src="assets/icon.svg" alt="" width="30" height="30"><span>Swo<b>Reel</b></span></a>
       <div class="links">
         <a href="#makes">What it makes</a>
-        <a href="#install">Install</a>
         <a href="#setup">Set up</a>
-        <a class="btn" href="https://github.com/tomswokowski/sworeel">GitHub</a>
+        <a class="btn" href="#install">Install</a>
       </div>
     </nav>
 
     <header class="hero">
-      <span class="pill"><i></i>A free plugin for Claude Code</span>
+      <span class="pill"><i></i>Made exclusively for Claude Code</span>
       <h1>Explain anything as a<br><em>short animated reel</em></h1>
       <p class="lede">Ask Claude how something works and get more than a paragraph: a diagram, chart or code walkthrough that builds step by step. Watch it in the chat, change it by talking, and export a video or images you can share anywhere.</p>
       <div class="cta">
@@ -379,10 +401,32 @@
   <section id="install">
     <div class="wrap">
       <p class="eyebrow">Install</p>
-      <h2 class="title">Up and running in a few minutes</h2>
-      <p class="intro">SwoReel is a plugin for <a href="https://claude.com/claude-code">Claude Code</a>. The plugin is all you need. The desktop app is an optional window onto your reels.</p>
+      <h2 class="title">Let Claude set it up for you</h2>
+      <p class="intro">SwoReel works only inside <a href="https://claude.com/claude-code">Claude Code</a>, so Claude can install it. Paste one line and it does the rest, telling you what it is about to do and asking before it runs anything.</p>
 
-      <div class="steps">
+      <div class="auto panel">
+        <div class="ask">
+          <p class="choice"><span>Recommended</span></p>
+          <h3>Paste this into Claude Code</h3>
+          <div class="code"><pre>Set up SwoReel for me. Follow the steps at https://tomswokowski.github.io/sworeel/setup.md</pre><button type="button">Copy</button></div>
+          <p>That is all. When it finishes, restart Claude Code once and ask for your first reel.</p>
+        </div>
+        <div class="does">
+          <h4>What happens on your computer</h4>
+          <ul>
+            <li><svg class="icon" data-icon="check"></svg><span><strong>Checks for Node.js and ffmpeg</strong>, which SwoReel runs on, and installs whichever is missing with your system's own package manager.</span></li>
+            <li><svg class="icon" data-icon="check"></svg><span><strong>Adds the SwoReel plugin</strong> to Claude Code.</span></li>
+            <li><svg class="icon" data-icon="check"></svg><span><strong>Asks if you want the desktop app</strong>, and installs it only if you say yes.</span></li>
+            <li><svg class="icon" data-icon="check"></svg><span><strong>Changes nothing else.</strong> SwoReel has no account and collects no data, and you approve each command before it runs.</span></li>
+          </ul>
+          <p>You can read <a href="setup.md">exactly what Claude is told to do</a>.</p>
+        </div>
+      </div>
+
+      <div class="manual">
+        <p class="choice"><span>Or</span> do it by hand</p>
+        <p class="intro">The same setup as three steps, if you would rather run it yourself. About five minutes.</p>
+        <div class="steps">
         <div class="step panel">
           <h3>Check you have Node and ffmpeg</h3>
           <p>SwoReel needs <strong>Node.js 22.18 or newer</strong> to run, and <strong>ffmpeg</strong> to make video. Images work without ffmpeg.</p>
@@ -424,8 +468,9 @@ sudo apt install nodejs ffmpeg</pre><button type="button">Copy</button></div>
               <p>The AppImage runs on any distribution: make it executable with <code>chmod +x</code> and open it.</p>
             </div>
           </div>
-          <p class="version" id="version">Downloads come from the <a href="https://github.com/tomswokowski/sworeel/releases/latest">latest release on GitHub</a>.</p>
+          <p class="version" id="version">These are always the newest version.</p>
         </div>
+      </div>
       </div>
     </div>
   </section>
@@ -473,16 +518,16 @@ sudo apt install nodejs ffmpeg</pre><button type="button">Copy</button></div>
         </details>
         <details class="panel">
           <summary>Is it free?</summary>
-          <p>Yes. SwoReel is free and open source under the MIT licence. You need Claude Code to use it.</p>
+          <p>Yes. SwoReel is free and open source under the MIT licence. It is made exclusively for Claude Code, so you need Claude Code to use it.</p>
         </details>
       </div>
 
       <div class="closing panel">
         <h2>Make your first reel</h2>
-        <p>Two commands in Claude Code, then ask for one.</p>
+        <p>One line in Claude Code, then ask for one.</p>
         <div class="cta">
           <a class="btn primary" href="#install">Install SwoReel</a>
-          <a class="btn" href="https://github.com/tomswokowski/sworeel">View on GitHub</a>
+          <a class="btn" href="#makes">See what it makes</a>
         </div>
       </div>
     </div>
@@ -492,7 +537,7 @@ sudo apt install nodejs ffmpeg</pre><button type="button">Copy</button></div>
 <footer>
   <div class="wrap">
     <span>SwoReel is free and open source, made by Desoto Labs.</span>
-    <span><a href="https://github.com/tomswokowski/sworeel">GitHub</a> · <a href="https://github.com/tomswokowski/sworeel/releases">Releases</a> · <a href="https://github.com/tomswokowski/sworeel/blob/main/LICENSE">MIT licence</a></span>
+    <span>Made for Claude Code. Not affiliated with Anthropic. MIT licence.</span>
   </div>
 </footer>
 
@@ -516,6 +561,7 @@ sudo apt install nodejs ffmpeg</pre><button type="button">Copy</button></div>
     calendar: ['M8 2v3', 'M16 2v3', 'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2Z', 'M3 9h18'],
     down: ['m6 9 6 6 6-6'],
     right: ['m9 18 6-6-6-6'],
+    check: ['M20 6 9 17l-5-5'],
   }
   for (const svg of document.querySelectorAll('svg[data-icon]')) {
     svg.setAttribute('viewBox', '0 0 24 24')
@@ -597,7 +643,7 @@ sudo apt install nodejs ffmpeg</pre><button type="button">Copy</button></div>
         if (file) link.href = file.browser_download_url
       }
       const date = new Date(release.published_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-      document.getElementById('version').innerHTML = `Version ${release.tag_name.replace(/^v/, '')}, released ${date}. <a href="${release.html_url}">Release notes</a>`
+      document.getElementById('version').textContent = `Version ${release.tag_name.replace(/^v/, '')}, released ${date}.`
     })
     .catch(() => {})
 </script>
