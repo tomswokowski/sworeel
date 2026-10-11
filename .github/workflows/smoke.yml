@@ -1,0 +1,105 @@
+# Runs SwoReel for real on Linux, macOS and Windows: the command through its launcher, then the
+# desktop app as installed from the latest release. It is how the systems nobody on the project
+# sits at are checked. Run it by hand from the Actions tab; it also runs when the test changes.
+name: Smoke test
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ['scripts/smoke.mjs', '.github/workflows/smoke.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Linux, os: ubuntu-latest }
+          - { name: macOS, os: macos-latest }
+          - { name: Windows, os: windows-latest }
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install ffmpeg
+        shell: bash
+        run: |
+          case "$RUNNER_OS" in
+            Linux) sudo apt-get update && sudo apt-get install -y ffmpeg ;;
+            macOS) brew install ffmpeg ;;
+            Windows) choco install ffmpeg -y --no-progress ;;
+          esac
+
+      # The first run of the launcher installs the command's own dependencies, as it does for a
+      # person who has just installed the plugin.
+      - name: The command, end to end
+        run: node scripts/smoke.mjs
+
+      - name: Install the desktop app from the latest release
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/app" && cd "$RUNNER_TEMP/app"
+          case "$RUNNER_OS" in
+            Linux)
+              sudo apt-get install -y xvfb libwebkit2gtk-4.1-0 libfuse2t64 || sudo apt-get install -y xvfb libwebkit2gtk-4.1-0 libfuse2
+              gh release download --repo "$GITHUB_REPOSITORY" --pattern '*.AppImage'
+              mkdir -p "$HOME/.local/bin" && mv ./*.AppImage "$HOME/.local/bin/sworeel-app" && chmod +x "$HOME/.local/bin/sworeel-app"
+              ;;
+            macOS)
+              gh release download --repo "$GITHUB_REPOSITORY" --pattern '*.dmg'
+              # Releases up to 0.1.2 ask for agreement to the licence when the image is opened; say yes.
+              # (`yes` is cut off once the image has what it needs, which is not a failure.)
+              set +o pipefail
+              yes | hdiutil attach ./*.dmg -nobrowse -mountpoint /Volumes/SwoReel
+              set -o pipefail
+              cp -R /Volumes/SwoReel/SwoReel.app /Applications/
+              hdiutil detach /Volumes/SwoReel
+              # What a person's Mac checks before it lets a downloaded app open.
+              spctl --assess --type execute --verbose /Applications/SwoReel.app
+              ;;
+            Windows)
+              gh release download --repo "$GITHUB_REPOSITORY" --pattern '*-setup.exe'
+              # /S installs without asking anything, into the user's own programs folder.
+              powershell -Command "Start-Process -FilePath (Get-ChildItem *-setup.exe).FullName -ArgumentList '/S' -Wait"
+              ls "$LOCALAPPDATA/SwoReel" || ls "$PROGRAMFILES/SwoReel"
+              ;;
+          esac
+
+      - name: The desktop app, as installed
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = Linux ]; then
+            # No screen on this machine, so give the app a pretend one.
+            export APPIMAGE_EXTRACT_AND_RUN=1
+            xvfb-run -a --server-args="-screen 0 1400x900x24" node scripts/smoke.mjs --app
+          else
+            node scripts/smoke.mjs --app
+          fi
+
+      - name: Take a picture of the screen
+        if: always() && runner.os != 'Linux'
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/shots"
+          if [ "$RUNNER_OS" = macOS ]; then
+            screencapture -x "$RUNNER_TEMP/shots/macos.png" || true
+          else
+            powershell -Command "Add-Type -AssemblyName System.Windows.Forms,System.Drawing; \$b = [System.Windows.Forms.SystemInformation]::VirtualScreen; \$i = New-Object System.Drawing.Bitmap \$b.Width, \$b.Height; [System.Drawing.Graphics]::FromImage(\$i).CopyFromScreen(\$b.Left, \$b.Top, 0, 0, \$i.Size); \$i.Save(\"\$env:RUNNER_TEMP\\shots\\windows.png\")" || true
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always() && runner.os != 'Linux'
+        with:
+          name: screen-${{ matrix.name }}
+          path: ${{ runner.temp }}/shots
+          if-no-files-found: ignore
