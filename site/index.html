@@ -131,6 +131,7 @@
   button.chip:hover { border-color: var(--accent); }
   .stage { padding: 18px; background: var(--page); }
   .stage video { width: 100%; aspect-ratio: 16 / 9; border-radius: 4px; background: var(--bg); cursor: pointer; }
+  .stage video.square { aspect-ratio: 1; }
   .controls { display: flex; flex-direction: column; gap: 9px; padding: 10px 14px 12px; border-top: 1px solid var(--border); }
   .scrub { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
   .track { position: relative; flex: 1; height: 18px; cursor: pointer; }
@@ -250,7 +251,9 @@
     .hero h1 { font-size: clamp(1.7rem, 8.4vw, 2.3rem); }
     .cta { flex-direction: column; align-items: stretch; max-width: 20rem; margin-inline: auto; }
     .app { margin-top: 40px; }
-    .stage { padding: 8px; }
+    .stage { padding: 0; }
+    .stage video { border-radius: 0; }
+    .main header .chip:last-child { display: none; }
     .bar .where { display: none; }
     .under { text-wrap: balance; }
     section { padding-top: 72px; }
@@ -316,7 +319,7 @@
             <span class="chip">Ask Claude…</span>
           </header>
           <div class="stage">
-            <video id="reel" src="assets/demo.mp4" poster="assets/demo-poster.webp" autoplay muted loop playsinline preload="metadata" aria-label="A reel showing how a request travels through a gateway to a database"></video>
+            <video id="reel" autoplay muted loop playsinline preload="metadata" aria-label="A reel showing how a request travels through a gateway to a database"></video>
           </div>
           <div class="controls">
             <div class="scrub">
@@ -333,7 +336,7 @@
                 <span class="where" id="where">10 Steps</span>
               </div>
               <div class="set">
-                <span class="seg"><span class="chip on">16:9</span><span class="chip">9:16</span><span class="chip">1:1</span></span>
+                <span class="seg" id="shape"><span class="chip on">16:9</span><span class="chip">9:16</span><span class="chip">1:1</span></span>
                 <span class="chip speed">1×</span>
                 <span class="chip export">Export ▾</span>
               </div>
@@ -399,7 +402,7 @@
     <div class="wrap">
       <p class="eyebrow">Install</p>
       <h2 class="title">Let Claude set it up for you</h2>
-      <p class="intro">SwoReel works only inside <a href="https://claude.com/claude-code">Claude Code</a>, so Claude can install it. Paste one line and it does the rest, telling you what it is about to do and asking before it runs anything.</p>
+      <p class="intro">SwoReel works only inside <a href="https://claude.com/claude-code">Claude Code</a>, so Claude can install it on your Mac, Windows PC or Linux machine. Paste one line and it does the rest, telling you what it is about to do and asking before it runs anything.</p>
 
       <div class="auto panel">
         <div class="ask">
@@ -561,6 +564,17 @@ sudo apt install nodejs ffmpeg</pre><button type="button">Copy</button></div>
   const STARTS = [1.2, 4.7, 8.6, 12.0, 16.1, 20.0, 23.9, 27.6, 31.1, 35.1]
   const LENGTH = 41.2
   const video = document.getElementById('reel')
+  // The same reel in two shapes, as the app exports it: wide on a big screen, and square on a
+  // phone, where the wide one would be too small to read.
+  const isNarrow = matchMedia('(max-width: 640px)').matches
+  video.poster = isNarrow ? 'assets/demo-square-poster.webp' : 'assets/demo-poster.webp'
+  video.src = isNarrow ? 'assets/demo-square.mp4' : 'assets/demo.mp4'
+  if (isNarrow) {
+    video.classList.add('square')
+    const [wide, , square] = document.getElementById('shape').children
+    wide.classList.remove('on')
+    square.classList.add('on')
+  }
   const track = document.getElementById('track')
   const marks = STARTS.map((start) => {
     const mark = document.createElement('div')
