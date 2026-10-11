@@ -76,7 +76,7 @@
   nav .links { display: flex; align-items: center; gap: 24px; font-size: 0.95rem; }
   nav .links a { color: var(--muted); }
   nav .links a:hover { color: var(--text); text-decoration: none; }
-  nav .links .btn { height: 2.1rem; padding: 0 0.85rem; color: var(--text); font-size: 0.9rem; }
+  nav .links .btn { height: 2.2rem; padding: 0 1rem; color: #04202a; font-size: 0.9rem; font-weight: 700; box-shadow: 0 4px 20px rgb(26 206 227 / 30%); }
 
   .hero { padding: 64px 0 0; text-align: center; }
   .pill { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 999px; background: rgb(10 30 44 / 70%); color: var(--muted); font-size: 0.85rem; }
@@ -85,7 +85,12 @@
   .hero h1 em { font-style: normal; color: var(--accent); }
   .hero .lede { max-width: 43rem; margin: 22px auto 0; color: var(--muted); font-size: clamp(1.05rem, 2.1vw, 1.25rem); }
   .cta { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 32px; }
-  .cta .btn { height: 3rem; padding: 0 1.4rem; }
+  .cta .btn { height: 3.2rem; padding: 0 1.5rem; }
+  /* The one thing the page wants pressed: larger, lit from behind, and it lifts under the pointer. */
+  .btn.big { padding: 0 1.9rem; font-size: 1.1rem; font-weight: 700; box-shadow: 0 0 0 4px rgb(26 206 227 / 16%), 0 10px 40px rgb(26 206 227 / 38%); }
+  .btn.big:hover { transform: translateY(-2px); box-shadow: 0 0 0 5px rgb(26 206 227 / 22%), 0 14px 50px rgb(26 206 227 / 50%); }
+  .btn.big .icon { width: 18px; height: 18px; stroke-width: 2.5; }
+  .hero .note { margin-top: 16px; color: var(--muted); font-size: 0.9rem; }
 
   /* ---- the app, as it looks ---- */
   .app {
@@ -216,32 +221,11 @@
   .system code { background: var(--bg); }
   .version { margin-top: 14px; color: var(--muted); font-size: 0.9rem; }
 
-  /* ---- settings, laid out like the app's own Settings window ---- */
-  .settings { margin-top: 32px; overflow: hidden; }
-  .settings > header { display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; border-bottom: 1px solid var(--border); }
-  .settings > header h3 { font-size: 1.15rem; }
-  .settings .group { padding: 16px 22px 0; color: var(--muted); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
-  .setting { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 14px 22px; border-top: 1px solid rgb(29 66 87 / 55%); }
-  .group + .setting { border-top: 0; }
-  .setting div strong { display: block; font-size: 1rem; }
-  .setting div span { display: block; margin-top: 2px; color: var(--muted); font-size: 0.92rem; }
-  .setting div em { color: var(--text); font-style: normal; }
-  .setting .said { flex: none; max-width: 46%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 0.9rem; }
-  .setting .said::before { content: '› '; color: var(--violet); font-family: var(--mono); }
-  .toggle { flex: none; position: relative; width: 44px; height: 24px; border: 1px solid var(--accent); border-radius: 999px; background: var(--accent); }
-  .toggle::after { content: ''; position: absolute; top: 3px; right: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--bg); }
-  .toggle.off { border-color: var(--border); background: var(--bg); }
-  .toggle.off::after { right: auto; left: 3px; background: var(--muted); }
-
   .faq { display: grid; gap: 10px; margin-top: 28px; }
   .faq details { padding: 16px 20px; }
   .faq summary { cursor: pointer; font-weight: 600; }
   .faq summary::marker { color: var(--accent); }
   .faq details p { margin-top: 10px; color: var(--muted); }
-
-  .closing { margin-top: 96px; padding: 56px 24px; text-align: center; background: radial-gradient(520px 220px at 50% 0, rgb(26 206 227 / 14%), transparent 70%), var(--bg); }
-  .closing h2 { font-size: clamp(1.6rem, 4vw, 2.3rem); }
-  .closing p { margin-top: 12px; color: var(--muted); }
 
   footer { margin-top: 72px; padding: 28px 0 44px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.9rem; }
   footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
@@ -250,10 +234,8 @@
     .app { grid-template-columns: minmax(0, 1fr); }
     .side { display: none; }
     .main header .path, .bar .speed { display: none; }
-    .setting { flex-direction: column; align-items: flex-start; gap: 10px; }
     .auto { grid-template-columns: minmax(0, 1fr); }
     .auto .does { border-left: 0; border-top: 1px solid var(--border); }
-    .setting .said { max-width: none; }
   }
   @media (max-width: 640px) {
     nav .links a:not(.btn) { display: none; }
@@ -275,8 +257,8 @@
       <a class="brand" href="#top" id="top"><img src="assets/icon.svg" alt="" width="30" height="30"><span>Swo<b>Reel</b></span></a>
       <div class="links">
         <a href="#makes">What it makes</a>
-        <a href="#setup">Set up</a>
-        <a class="btn" href="#install">Install</a>
+        <a href="#setup">Make it yours</a>
+        <a class="btn primary" href="#install">Install</a>
       </div>
     </nav>
 
@@ -285,9 +267,10 @@
       <h1>Explain anything as a<br><em>short animated reel</em></h1>
       <p class="lede">Ask Claude how something works and get more than a paragraph: a diagram, chart or code walkthrough that builds step by step. Watch it in the chat, change it by talking, and export a video or images you can share anywhere.</p>
       <div class="cta">
-        <a class="btn primary" href="#install">Install SwoReel</a>
+        <a class="btn primary big" href="#install"><svg class="icon" data-icon="download"></svg>Install SwoReel</a>
         <a class="btn" href="#makes">See what it makes</a>
       </div>
+      <p class="note">One line in Claude Code. Free and open source.</p>
 
       <!-- The desktop app as it looks, with a real reel playing in it. The controls work. -->
       <div class="app" aria-label="The SwoReel desktop app, playing a reel">
@@ -477,26 +460,26 @@ sudo apt install nodejs ffmpeg</pre><button type="button">Copy</button></div>
 
   <section id="setup">
     <div class="wrap">
-      <p class="eyebrow">Set up</p>
-      <h2 class="title">Nothing to configure. Plenty you can change.</h2>
-      <p class="intro">The app finds the plugin on its own and opens on your library. Settings are shared between the app and Claude, so flip a switch or just say what you want.</p>
+      <p class="eyebrow">Make it yours</p>
+      <h2 class="title">Nothing to configure. Just say what you want.</h2>
+      <p class="intro">The defaults are ready to share as they are. When you want something different, there is no settings maze: tell Claude and it changes.</p>
 
-      <div class="settings panel">
-        <header><h3>Settings</h3><span class="chip">Done</span></header>
-
-        <p class="group">Your look</p>
-        <div class="setting"><div><strong>Watermark</strong><span>A small credit, such as your handle, in the corner of everything you export.</span></div><p class="said">Put @me on my exports.</p></div>
-        <div class="setting"><div><strong>Colours</strong><span>Reels are drawn in ten colours you can change, for every reel or just one.</span></div><p class="said">Match our brand: navy and orange, on a light background.</p></div>
-        <div class="setting"><div><strong>Standing preferences</strong><span>Tell Claude once how you like your reels and it keeps to it.</span></div><p class="said">Always keep captions under ten words.</p></div>
-
-        <p class="group">Exports</p>
-        <div class="setting"><div><strong>Default Video Formats</strong><span>Which shapes "export it" makes. Pick one or several.</span></div><span class="seg"><span class="chip on">16:9</span><span class="chip on">9:16</span><span class="chip">1:1</span></span></div>
-        <div class="setting"><div><strong>Frame Rate</strong><span>30 suits everywhere. 60 is smoother and makes larger files.</span></div><span class="chip">30 fps</span></div>
-        <div class="setting"><div><strong>Step Dots</strong><span>A row of dots on every frame that shows how far along the reel is.</span></div><span class="toggle off" role="img" aria-label="Off"></span></div>
-        <div class="setting"><div><strong>Exports Folder</strong><span>Where videos and images are saved: <em>Documents/SwoReel</em> unless you move it.</span></div><span class="chip">Change</span></div>
-
-        <p class="group">Working with Claude</p>
-        <div class="setting"><div><strong>Follow Claude</strong><span>Keeps the app on whichever reel Claude changed last, so you watch edits happen.</span></div><span class="toggle" role="img" aria-label="On"></span></div>
+      <div class="cards">
+        <div class="card panel">
+          <h3>Your credit</h3>
+          <p>A small watermark, such as your handle, in the corner of everything you export.</p>
+          <p class="said">Put @me on my exports.</p>
+        </div>
+        <div class="card panel">
+          <h3>Your colours</h3>
+          <p>Reels are drawn in ten colours you can change, for every reel or just one.</p>
+          <p class="said">Match our brand: navy and orange, on a light background.</p>
+        </div>
+        <div class="card panel">
+          <h3>Your habits</h3>
+          <p>Tell Claude once how you like your reels and it keeps to it from then on.</p>
+          <p class="said">Always keep captions under ten words.</p>
+        </div>
       </div>
 
       <div class="faq">
@@ -522,14 +505,6 @@ sudo apt install nodejs ffmpeg</pre><button type="button">Copy</button></div>
         </details>
       </div>
 
-      <div class="closing panel">
-        <h2>Make your first reel</h2>
-        <p>One line in Claude Code, then ask for one.</p>
-        <div class="cta">
-          <a class="btn primary" href="#install">Install SwoReel</a>
-          <a class="btn" href="#makes">See what it makes</a>
-        </div>
-      </div>
     </div>
   </section>
 </main>
