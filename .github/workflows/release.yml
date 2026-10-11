@@ -47,6 +47,9 @@ jobs:
     # After a release was just made, or when run by hand (the release job is skipped then).
     if: always() && (github.event_name == 'workflow_dispatch' || needs.release.outputs.created == 'true')
     runs-on: ${{ matrix.os }}
+    # A build takes about ten minutes. Notarizing with Apple usually adds a few more, but has no
+    # limit of its own, so this stops a run that is waiting on Apple from waiting for hours.
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
