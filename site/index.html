@@ -35,6 +35,8 @@
 
   *, *::before, *::after { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
+  /* Phones otherwise enlarge some text on their own when turned sideways. */
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   body { margin: 0; background: var(--page); color: var(--text); font: 17px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
@@ -85,7 +87,8 @@
   .pill { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 999px; background: rgb(10 30 44 / 70%); color: var(--muted); font-size: 0.85rem; }
   .pill i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
   .hero h1 { margin-top: 22px; font-size: clamp(2.3rem, 6.4vw, 4.4rem); font-weight: 700; }
-  .hero h1 em { font-style: normal; color: var(--accent); }
+  /* The coloured half always starts its own line, so the heading breaks in the same place at every width. */
+  .hero h1 em { display: block; font-style: normal; color: var(--accent); }
   .hero .lede { max-width: 36rem; margin: 22px auto 0; color: var(--muted); font-size: clamp(1.05rem, 2.1vw, 1.25rem); }
   .cta { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 32px; }
   .cta .btn { height: 3.2rem; padding: 0 1.5rem; }
@@ -192,7 +195,7 @@
   .auto { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); margin-top: 32px; border-color: var(--accent); box-shadow: 0 0 0 3px rgb(26 206 227 / 10%), 0 0 60px rgb(26 206 227 / 7%); overflow: hidden; }
   .auto .ask { padding: 28px; }
   .auto .ask h3 { font-size: 1.3rem; }
-  .auto .ask .code pre { padding: 46px 16px 16px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.95rem; }
+  .auto .ask .code pre { padding: 46px 16px 16px; white-space: pre-wrap; font-size: 0.95rem; }
   .auto .ask p { margin-top: 14px; color: var(--muted); }
   .auto .does { padding: 28px; border-left: 1px solid var(--border); background: var(--surface); }
   .auto .does h4 { color: var(--muted); font: 600 0.75rem var(--sans); letter-spacing: 0.1em; text-transform: uppercase; }
@@ -241,12 +244,23 @@
     .auto .does { border-left: 0; border-top: 1px solid var(--border); }
   }
   @media (max-width: 640px) {
-    .step { padding: 76px 18px 22px; }
-    /* Room above the commands for the Copy button, which would otherwise sit on them. */
-    .code pre { padding-top: 46px; }
+    body { font-size: 16px; }
+    /* Small enough that each half of the heading stays on one line. */
+    .hero { padding-top: 40px; }
+    .hero h1 { font-size: clamp(1.7rem, 8.4vw, 2.3rem); }
+    .cta { flex-direction: column; align-items: stretch; max-width: 20rem; margin-inline: auto; }
+    .app { margin-top: 40px; }
     .stage { padding: 8px; }
     .bar .where { display: none; }
+    .under { text-wrap: balance; }
     section { padding-top: 72px; }
+    .step { padding: 76px 18px 22px; }
+    .auto .ask, .auto .does { padding: 22px 18px; }
+    /* Commands wrap here instead of running off the side, with room above for the Copy button. */
+    .code pre { padding-top: 46px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.75rem; }
+    .auto .ask .code pre { overflow-wrap: normal; font-size: 0.8rem; }
+    .gallery figcaption { flex-wrap: wrap; row-gap: 0; }
+    .faq details { padding: 14px 16px; }
   }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
 </style>
@@ -264,7 +278,7 @@
 
     <header class="hero">
       <span class="pill"><i></i>Made exclusively for Claude Code</span>
-      <h1>Explain anything as a<br><em>short animated reel</em></h1>
+      <h1>Explain anything as a <em>short animated reel</em></h1>
       <p class="lede">Turn any explanation into a shareable diagram, chart or code walkthrough that plays step by step.</p>
       <div class="cta">
         <a class="btn primary big" href="#install"><svg class="icon" data-icon="download"></svg>Install SwoReel</a>
@@ -377,7 +391,7 @@
         <figure class="panel"><img src="assets/declined-card.webp" alt="A mock-up of a checkout page" loading="lazy" width="800" height="450"><figcaption><svg class="icon" data-icon="monitor"></svg>Screen mock-ups <span>state by state</span></figcaption></figure>
         <figure class="panel"><img src="assets/first-deploy-plan.webp" alt="A Gantt chart of five tasks" loading="lazy" width="800" height="450"><figcaption><svg class="icon" data-icon="calendar"></svg>Plans and timelines <span>what happens when</span></figcaption></figure>
       </div>
-      <p class="more">Also: system and request flows, state machines, array and algorithm steps, and free-form sketches.</p>
+      <p class="more">Also: system and request flows, state machines, array and algorithm steps, and freehand sketches.</p>
     </div>
   </section>
 
@@ -391,7 +405,7 @@
         <div class="ask">
           <p class="choice"><span>Recommended</span></p>
           <h3>Paste this into Claude Code</h3>
-          <div class="code"><pre>Set up SwoReel for me. Follow the steps at https://tomswokowski.github.io/sworeel/setup.md</pre><button type="button">Copy</button></div>
+          <div class="code"><pre>Set up SwoReel for me. Follow the steps at https://tomswokowski.github.io/<wbr>sworeel/<wbr>setup.md</pre><button type="button">Copy</button></div>
           <p>That is all. When it finishes, restart Claude Code once and ask for your first reel.</p>
         </div>
         <div class="does">
