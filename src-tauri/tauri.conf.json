@@ -41,7 +41,7 @@
     "category": "DeveloperTool",
     "shortDescription": "Browse, play and export the reels Claude makes",
     "longDescription": "SwoReel turns small JSON files (reels) into short animated explanations, exported as video or stills. This app browses, plays, organises and exports them. It works with the SwoReel plugin for Claude Code, which provides the sworeel command the app runs.",
-    "homepage": "https://github.com/tomswokowski/sworeel",
+    "homepage": "https://sworeel.com",
     "linux": {
       "deb": {
         "section": "graphics"
