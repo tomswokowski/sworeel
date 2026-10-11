@@ -1,6 +1,6 @@
 # SwoReel
 
-Short animated explanations, made by talking to Claude. Ask for a system diagram, a chart, a code walkthrough, some maths, a map or an annotated screenshot; Claude writes it as a *reel*, plays it for you in the chat, and exports video or images sized for X, TikTok, Instagram and YouTube.
+Short animated explanations, made by talking to Claude. Ask for a system diagram, a chart, a code walkthrough, some maths, a map or an annotated screenshot; Claude writes it as a *reel*, plays it for you in the chat, and exports it as a video or images that are easy to share anywhere: in a post, a doc, a slide or a message.
 
 A *reel* is a JSON file: a picture that changes step by step, with a caption for each step. You describe what you want explained; Claude writes the reel, checks its own render, and hands you an MP4 or PNG. Nothing is drawn by hand.
 
@@ -45,7 +45,7 @@ Then ask Claude for one: "make a reel of how a request reaches the database", "c
 | `/sworeel keys` | Give the pane the keyboard, for its hotkeys; `Esc` gives it back |
 | `/sworeel close` | Close the pane |
 
-Or just ask: "show me the cors one", "pause that", "export it for TikTok". A banner in the pane always says whether your keys are going to the pane or to the chat.
+Or just ask: "show me the cors one", "pause that", "export it as a tall video". A banner in the pane always says whether your keys are going to the pane or to the chat.
 
 Requirements: Node.js 22.18 or newer, and `ffmpeg` for video. The first run of the `sworeel` command installs its npm dependencies. Developed and tested on Linux only so far.
 
@@ -104,7 +104,7 @@ sworeel exports                                # what has been exported
 sworeel --help                                 # everything else
 ```
 
-Everything the desktop app can do to the library, the command can do too, so Claude can manage it for you: "put the auth reels in a folder", "delete the old draft", "re-export everything for TikTok".
+Everything the desktop app can do to the library, the command can do too, so Claude can manage it for you: "put the auth reels in a folder", "delete the old draft", "re-export everything as tall videos".
 
 Formats are `wide` (1600×900), `tall` (1080×1920) and `square` (1080×1080).
 
@@ -123,6 +123,7 @@ Formats are `wide` (1600×900), `tall` (1080×1920) and `square` (1080×1080).
 | `plugin/core/data/` | Generated data: the bundled icons (from Lucide, ISC) and the world's land outline (Natural Earth, public domain). `scripts/` regenerates both |
 | `plugin/host/` | What needs real packages: the maths typesetter (MathJax). Used by the command and the app, never by the core, which also runs inside Claude Code where packages can't load |
 | `src/`, `src-tauri/` | The optional desktop app (Vue inside a Tauri window): a reel library with folders, search, rename, move and delete, plus playback and export. It shares `plugin/core/` |
+| `site/` | The landing page, one static HTML file and its images, published to GitHub Pages by `.github/workflows/pages.yml`. Its download buttons look up the latest release, so it needs no edit when a version ships |
 | `brand/` | The icon and logo as SVG, with PNG renders. `icon-macos` is the same mark with the margin macOS expects |
 
 ## The desktop app and Claude Code together

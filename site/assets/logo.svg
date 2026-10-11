@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 200">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#020a11"/>
+      <stop offset="1" stop-color="#12234d"/>
+    </linearGradient>
+    <linearGradient id="route" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6ee9f2"/>
+      <stop offset="1" stop-color="#10b0d1"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(20 20) scale(0.15625)">
+    <rect width="1024" height="1024" rx="228" fill="url(#sky)"/>
+    <path d="M 680 312 H 440 a 100 100 0 0 0 0 200 H 584 a 100 100 0 0 1 0 200 H 344"
+        fill="none" stroke="url(#route)" stroke-width="76" stroke-linecap="round"/>
+  <circle cx="680" cy="312" r="70" fill="#e3fbff"/>
+  <circle cx="344" cy="712" r="70" fill="#e3fbff"/>
+  <circle cx="512" cy="512" r="50" fill="#b79cff" stroke="#04101a" stroke-width="16"/>
+  </g>
+  <text x="212" y="138" font-family="Noto Sans, sans-serif" font-size="112" font-weight="700" letter-spacing="-2"><tspan fill="#e3fbff">Swo</tspan><tspan fill="#1acee3">Reel</tspan></text>
+</svg>
