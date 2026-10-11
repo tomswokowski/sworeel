@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SwoReel: explain anything as a short animated reel</title>
+<meta name="description" content="Ask Claude to explain anything as a short animated reel: diagrams, charts, code walkthroughs, maths, maps and annotated screenshots. Export a video or images you can share anywhere.">
+<meta property="og:title" content="SwoReel">
+<meta property="og:description" content="Short animated explanations, made by talking to Claude.">
+<meta property="og:image" content="https://tomswokowski.github.io/sworeel/assets/demo-poster.webp">
+<meta name="theme-color" content="#04101a">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<style>
+  :root {
+    --bg: #04101a;
+    --bg-2: #071826;
+    --surface: #0a1e2c;
+    --border: #1d4257;
+    --text: #e3fbff;
+    --muted: #8fb2c4;
+    --accent: #1acee3;
+    --accent-2: #b79cff;
+    --warn: #f0b429;
+    --radius: 14px;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 17px/1.6 var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  img, video { display: block; max-width: 100%; }
+  code, pre { font-family: var(--mono); }
+  h1, h2, h3 { margin: 0; line-height: 1.15; letter-spacing: -0.01em; text-wrap: balance; }
+  p { margin: 0; text-wrap: pretty; }
+
+  .wrap { width: min(1080px, 100% - 32px); margin-inline: auto; }
+
+  /* The glow behind the top of the page. */
+  .sky {
+    background:
+      radial-gradient(900px 480px at 50% -120px, rgb(26 206 227 / 16%), transparent 70%),
+      radial-gradient(700px 420px at 85% 0, rgb(183 156 255 / 12%), transparent 70%);
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 0;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; color: var(--text); font-weight: 700; font-size: 1.15rem; }
+  .brand:hover { text-decoration: none; }
+  .brand b { color: var(--accent); }
+  nav .links { display: flex; align-items: center; gap: 22px; font-size: 0.95rem; }
+  nav .links a { color: var(--muted); }
+  nav .links a:hover { color: var(--text); text-decoration: none; }
+
+  .hero { padding: 56px 0 28px; text-align: center; }
+  .hero h1 { font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 800; }
+  .hero h1 em { font-style: normal; color: var(--accent); }
+  .hero .lede { max-width: 44rem; margin: 20px auto 0; color: var(--muted); font-size: clamp(1.05rem, 2.2vw, 1.25rem); }
+  .cta { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 30px; }
+
+  .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  .button:hover { border-color: var(--accent); text-decoration: none; }
+  .button.primary { border-color: var(--accent); background: var(--accent); color: #04202a; }
+  .button.primary:hover { filter: brightness(1.08); }
+
+  .player {
+    margin: 44px auto 0;
+    max-width: 960px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--bg-2);
+    box-shadow: 0 30px 80px rgb(0 0 0 / 50%), 0 0 0 1px rgb(26 206 227 / 8%);
+    overflow: hidden;
+  }
+  .player video { width: 100%; aspect-ratio: 16 / 9; background: var(--bg); }
+  .player figcaption { padding: 10px 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.9rem; text-align: left; }
+
+  section { padding: 72px 0 0; }
+  .eyebrow { color: var(--accent); font: 600 0.8rem/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; }
+  section > .wrap > h2 { margin-top: 12px; font-size: clamp(1.6rem, 4vw, 2.3rem); }
+  .intro { max-width: 42rem; margin-top: 12px; color: var(--muted); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 16px; margin-top: 28px; }
+  .card { padding: 22px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+  .card h3 { font-size: 1.1rem; }
+  .card p { margin-top: 8px; color: var(--muted); font-size: 0.97rem; }
+  .card .said { margin-top: 14px; padding: 10px 12px; border-left: 3px solid var(--accent-2); border-radius: 0 8px 8px 0; background: var(--bg); color: var(--text); font-size: 0.93rem; }
+
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 14px; margin-top: 28px; }
+  .gallery figure { margin: 0; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+  .gallery img { width: 100%; height: auto; aspect-ratio: 16 / 9; }
+  .gallery figcaption { padding: 10px 14px; font-size: 0.92rem; }
+  .gallery figcaption span { color: var(--muted); }
+
+  /* minmax(0, …) lets a wide command block scroll inside its step instead of widening the page. */
+  .steps { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; margin-top: 28px; counter-reset: step; }
+  .step { position: relative; padding: 24px 24px 24px 76px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); counter-increment: step; }
+  .step::before {
+    content: counter(step);
+    position: absolute; top: 22px; left: 22px;
+    display: grid; place-items: center;
+    width: 36px; height: 36px;
+    border: 1px solid var(--accent); border-radius: 50%;
+    color: var(--accent); font: 700 1rem var(--mono);
+  }
+  .step h3 { font-size: 1.2rem; }
+  .step > p { margin-top: 8px; color: var(--muted); }
+  .step .optional { margin-left: 8px; padding: 2px 8px; border: 1px solid var(--border); border-radius: 999px; color: var(--muted); font: 500 0.72rem var(--mono); vertical-align: middle; }
+
+  .code { position: relative; margin-top: 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); }
+  .code pre { margin: 0; padding: 14px 84px 14px 16px; overflow-x: auto; color: var(--text); font-size: 0.9rem; line-height: 1.7; }
+  .code pre .dim { color: var(--muted); }
+  .code button {
+    position: absolute; top: 8px; right: 8px;
+    padding: 5px 10px;
+    border: 1px solid var(--border); border-radius: 7px;
+    background: var(--surface); color: var(--muted);
+    font: 500 0.78rem var(--sans); cursor: pointer;
+  }
+  .code button:hover { border-color: var(--accent); color: var(--text); }
+
+  .systems { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr)); gap: 14px; margin-top: 18px; }
+  .system { display: flex; flex-direction: column; padding: 18px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
+  .system.yours { border-color: var(--accent); box-shadow: 0 0 0 3px rgb(26 206 227 / 12%); }
+  .system h4 { display: flex; align-items: center; justify-content: space-between; margin: 0; font-size: 1.05rem; }
+  .system h4 small { display: none; color: var(--accent); font: 600 0.7rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; }
+  .system.yours h4 small { display: inline; }
+  .system .files { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+  .system .files a { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font: 600 0.88rem var(--mono); }
+  .system .files a:first-child { border-color: var(--accent); background: var(--accent); color: #04202a; }
+  .system .files a:hover { border-color: var(--accent); text-decoration: none; }
+  .system p { color: var(--muted); font-size: 0.9rem; }
+  .system p + p { margin-top: 8px; }
+  .system code, .step code, .settings code, .faq code { padding: 1px 6px; border-radius: 5px; background: var(--surface); color: var(--text); font-size: 0.88em; }
+  .system code { background: var(--bg-2); }
+  .version { margin-top: 14px; color: var(--muted); font-size: 0.9rem; }
+
+  .settings { width: 100%; margin-top: 18px; border-collapse: collapse; font-size: 0.95rem; }
+  .settings th, .settings td { padding: 12px 14px; border-top: 1px solid var(--border); text-align: left; vertical-align: top; }
+  .settings th { width: 30%; color: var(--text); font-weight: 600; }
+  .settings td { color: var(--muted); }
+  .table-wrap { margin-top: 18px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow-x: auto; }
+  .table-wrap .settings { margin: 0; }
+  .table-wrap .settings tr:first-child th, .table-wrap .settings tr:first-child td { border-top: 0; }
+
+  .faq { display: grid; gap: 10px; margin-top: 24px; }
+  .faq details { padding: 16px 20px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+  .faq summary { cursor: pointer; font-weight: 600; }
+  .faq details p { margin-top: 10px; color: var(--muted); }
+
+  footer { margin-top: 88px; padding: 28px 0 40px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.9rem; }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+
+  @media (max-width: 640px) {
+    nav .links a:not(.keep) { display: none; }
+    .step { padding: 70px 18px 20px; }
+    .settings th { width: 38%; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<div class="sky">
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="#top" id="top"><img src="assets/icon.svg" alt="" width="30" height="30"><span>Swo<b>Reel</b></span></a>
+      <div class="links">
+        <a href="#makes">What it makes</a>
+        <a href="#install">Install</a>
+        <a href="#setup">Set up</a>
+        <a class="keep" href="https://github.com/tomswokowski/sworeel">GitHub</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <h1>Explain anything as a<br><em>short animated reel</em></h1>
+      <p class="lede">Ask Claude how something works and get more than a paragraph: a diagram, chart or code walkthrough that builds step by step. Watch it in the chat, change it by talking, and export a video or images you can share anywhere.</p>
+      <div class="cta">
+        <a class="button primary" href="#install">Install SwoReel</a>
+        <a class="button" href="https://github.com/tomswokowski/sworeel">View on GitHub</a>
+      </div>
+
+      <figure class="player">
+        <video src="assets/demo.mp4" poster="assets/demo-poster.webp" autoplay muted loop playsinline controls preload="metadata"></video>
+        <figcaption>A real reel, exported as it is. Claude wrote it from one request: "show how a request reaches the database through the gateway."</figcaption>
+      </figure>
+    </header>
+  </div>
+</div>
+
+<main>
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">How it works</p>
+      <h2>You talk. Claude draws.</h2>
+      <p class="intro">There is nothing to draw and no timeline to edit. A reel is a small file Claude writes for you, and everything about it can be changed by asking.</p>
+      <div class="cards">
+        <div class="card">
+          <h3>Ask for it</h3>
+          <p>Describe what you want explained. Claude picks the right kind of picture, writes the reel and checks its own render before showing you.</p>
+          <p class="said">"Make a reel of how our checkout handles a declined card."</p>
+        </div>
+        <div class="card">
+          <h3>Watch and refine</h3>
+          <p>It plays in a pane beside the chat. Point at what you see and say what to change; Claude edits that step and shows it again.</p>
+          <p class="said">"Shorten this caption, and add a step for the retry."</p>
+        </div>
+        <div class="card">
+          <h3>Share it</h3>
+          <p>Export a video, one image or an image per step, in wide, tall or square. Put it in a post, a doc, a slide or a message.</p>
+          <p class="said">"Export it as a tall video and a set of stills."</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="makes">
+    <div class="wrap">
+      <p class="eyebrow">What it makes</p>
+      <h2>Sixteen kinds of reel</h2>
+      <p class="intro">From system diagrams to annotated screenshots. Each one builds up a step at a time, with a caption for every step. These are stills from real reels.</p>
+      <div class="gallery">
+        <figure><img src="assets/one-request.webp" alt="A sequence diagram of a request passing through four services" loading="lazy" width="800" height="450"><figcaption>Sequences <span>· who talks to whom, in order</span></figcaption></figure>
+        <figure><img src="assets/request-through-the-code.webp" alt="A code file with one line picked out" loading="lazy" width="800" height="450"><figcaption>Code walkthroughs <span>· file by file, line by line</span></figcaption></figure>
+        <figure><img src="assets/search-scales.webp" alt="A line chart rising slowly" loading="lazy" width="800" height="450"><figcaption>Charts <span>· bar, line, scatter and pie</span></figcaption></figure>
+        <figure><img src="assets/annotated-storefront.webp" alt="A screenshot with arrows and notes on it" loading="lazy" width="800" height="450"><figcaption>Annotated screenshots <span>· arrows, circles and notes</span></figcaption></figure>
+        <figure><img src="assets/why-log-n.webp" alt="A derivation set as typeset maths" loading="lazy" width="800" height="450"><figcaption>Maths <span>· typeset, one line at a time</span></figcaption></figure>
+        <figure><img src="assets/cdn.webp" alt="A world map with a route between two places" loading="lazy" width="800" height="450"><figcaption>Maps <span>· places and what travels between them</span></figcaption></figure>
+        <figure><img src="assets/file-structure.webp" alt="A project's folders as a tree" loading="lazy" width="800" height="450"><figcaption>Trees <span>· file structures and hierarchies</span></figcaption></figure>
+        <figure><img src="assets/declined-card.webp" alt="A mock-up of a checkout page" loading="lazy" width="800" height="450"><figcaption>Screen mock-ups <span>· a page, state by state</span></figcaption></figure>
+        <figure><img src="assets/first-deploy-plan.webp" alt="A Gantt chart of five tasks" loading="lazy" width="800" height="450"><figcaption>Plans and timelines <span>· what happens when</span></figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="install">
+    <div class="wrap">
+      <p class="eyebrow">Install</p>
+      <h2>Up and running in a few minutes</h2>
+      <p class="intro">SwoReel is a plugin for <a href="https://claude.com/claude-code">Claude Code</a>. The plugin is all you need. The desktop app is an optional window onto your reels.</p>
+
+      <div class="steps">
+        <div class="step">
+          <h3>Check you have Node and ffmpeg</h3>
+          <p>SwoReel needs <strong>Node.js 22.18 or newer</strong> to run, and <strong>ffmpeg</strong> to make video. Images work without ffmpeg.</p>
+          <div class="code"><pre><span class="dim"># macOS</span>
+brew install node ffmpeg
+
+<span class="dim"># Windows</span>
+winget install OpenJS.NodeJS Gyan.FFmpeg
+
+<span class="dim"># Linux: use your package manager, for example</span>
+sudo apt install nodejs ffmpeg</pre><button type="button">Copy</button></div>
+        </div>
+
+        <div class="step">
+          <h3>Add the plugin to Claude Code</h3>
+          <p>Run these two commands inside Claude Code. The first tells it where SwoReel lives; the second installs it.</p>
+          <div class="code"><pre>/plugin marketplace add tomswokowski/sworeel
+/plugin install sworeel@tomswokowski</pre><button type="button">Copy</button></div>
+          <p>Then ask for a reel: <em>"make a reel of how a request reaches the database."</em> Type <code>/sworeel</code> any time to browse and play what you have made.</p>
+        </div>
+
+        <div class="step" id="download">
+          <h3>Get the desktop app <span class="optional">optional</span></h3>
+          <p>A window for browsing, playing, organising and exporting your reels. It works with the plugin from the step above, so install that first.</p>
+          <div class="systems">
+            <div class="system" data-os="mac">
+              <h4>macOS <small>Your system</small></h4>
+              <div class="files"><a data-asset=".dmg" href="https://github.com/tomswokowski/sworeel/releases/latest">Download .dmg</a></div>
+              <p>Open the file and drag SwoReel to Applications. One download for Apple silicon and Intel Macs.</p>
+            </div>
+            <div class="system" data-os="windows">
+              <h4>Windows <small>Your system</small></h4>
+              <div class="files"><a data-asset="-setup.exe" href="https://github.com/tomswokowski/sworeel/releases/latest">Download .exe</a><a data-asset=".msi" href="https://github.com/tomswokowski/sworeel/releases/latest">.msi</a></div>
+              <p>The installer is not signed yet, so Windows shows a warning. Choose <strong>More info</strong>, then <strong>Run anyway</strong>.</p>
+            </div>
+            <div class="system" data-os="linux">
+              <h4>Linux <small>Your system</small></h4>
+              <div class="files"><a data-asset=".AppImage" href="https://github.com/tomswokowski/sworeel/releases/latest">AppImage</a><a data-asset=".deb" href="https://github.com/tomswokowski/sworeel/releases/latest">.deb</a><a data-asset=".rpm" href="https://github.com/tomswokowski/sworeel/releases/latest">.rpm</a></div>
+              <p>The AppImage runs on any distribution: make it executable with <code>chmod +x</code> and open it.</p>
+            </div>
+          </div>
+          <p class="version" id="version">Downloads come from the <a href="https://github.com/tomswokowski/sworeel/releases/latest">latest release on GitHub</a>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="setup">
+    <div class="wrap">
+      <p class="eyebrow">Set up</p>
+      <h2>Nothing to configure. Plenty you can change.</h2>
+      <p class="intro">The app finds the plugin on its own and opens on your library. Every setting below is shared between the app and Claude, so you can flip a switch in Settings or just ask.</p>
+
+      <div class="table-wrap">
+        <table class="settings">
+          <tr><th>Your credit</th><td>A small watermark, such as your handle, in the corner of everything you export. <em>"Put @me on my exports."</em></td></tr>
+          <tr><th>Your colours</th><td>Reels are drawn in ten colours you can change, for every reel or just one. <em>"Make my reels match our brand: navy and orange, light background."</em></td></tr>
+          <tr><th>Your preferences</th><td>Tell Claude once how you like things and it keeps to it. <em>"Always keep captions under ten words."</em></td></tr>
+          <tr><th>Default formats</th><td>Which shapes "export it" makes: wide (16:9), tall (9:16), square (1:1), or several at once.</td></tr>
+          <tr><th>Frame rate and step dots</th><td>24, 30 or 60 frames a second for video, and whether a row of progress dots is drawn on each frame.</td></tr>
+          <tr><th>Where files go</th><td>Exports land in <code>Documents/SwoReel</code>. Your reels live with the app's data. Both can be moved.</td></tr>
+          <tr><th>Follow Claude</th><td>A switch in the app that keeps it on whichever reel Claude changed last, so you watch edits happen.</td></tr>
+        </table>
+      </div>
+
+      <div class="faq">
+        <details>
+          <summary>Do I need the desktop app?</summary>
+          <p>No. Everything works from Claude Code: making reels, playing them beside the chat, exporting and organising. The app is for when you would like a window with thumbnails, a scrubber and drag and drop.</p>
+        </details>
+        <details>
+          <summary>The app says it cannot find the sworeel command</summary>
+          <p>That command comes with the plugin, so install the plugin in Claude Code first, then start the app again. If Node.js is missing or older than 22.18, the command cannot start; install or update it.</p>
+        </details>
+        <details>
+          <summary>How do I move my reels to another computer?</summary>
+          <p>In the app, open Settings and choose <strong>Export All Reels</strong>, or ask Claude to bundle them. You get one <code>.sworeel</code> file holding your reels and their pictures. Import it on the other computer. Nothing already there is replaced.</p>
+        </details>
+        <details>
+          <summary>How do I update?</summary>
+          <p>The plugin updates through Claude Code: <code>/plugin update sworeel@tomswokowski</code>. For the app, download the newest version from this page and install it over the old one. Your reels and settings are kept.</p>
+        </details>
+        <details>
+          <summary>Is it free?</summary>
+          <p>Yes. SwoReel is free and open source under the MIT licence. You need Claude Code to use it.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>SwoReel is free and open source, made by Desoto Labs.</span>
+    <span><a href="https://github.com/tomswokowski/sworeel">GitHub</a> · <a href="https://github.com/tomswokowski/sworeel/releases">Releases</a> · <a href="https://github.com/tomswokowski/sworeel/blob/main/LICENSE">MIT licence</a></span>
+  </div>
+</footer>
+
+<script>
+  // Copy buttons on the command blocks.
+  for (const button of document.querySelectorAll('.code button')) {
+    button.addEventListener('click', async () => {
+      const text = button.previousElementSibling.textContent.split('\n').filter((line) => line.trim() && !line.trim().startsWith('#')).join('\n')
+      try {
+        await navigator.clipboard.writeText(text)
+        button.textContent = 'Copied'
+      } catch {
+        button.textContent = 'Select and copy'
+      }
+      setTimeout(() => (button.textContent = 'Copy'), 1800)
+    })
+  }
+
+  // Pick out the visitor's own system, and put it first.
+  const agent = navigator.userAgent
+  const os = /Mac|iPhone|iPad/.test(agent) ? 'mac' : /Win/.test(agent) ? 'windows' : /Linux|X11/.test(agent) ? 'linux' : null
+  const yours = os && document.querySelector(`.system[data-os="${os}"]`)
+  if (yours) {
+    yours.classList.add('yours')
+    yours.parentElement.prepend(yours)
+  }
+
+  // Point each button straight at its file in the latest release. If that can't be looked
+  // up, the buttons keep their link to the releases page, which always works.
+  fetch('https://api.github.com/repos/tomswokowski/sworeel/releases/latest')
+    .then((reply) => (reply.ok ? reply.json() : Promise.reject()))
+    .then((release) => {
+      for (const link of document.querySelectorAll('[data-asset]')) {
+        const file = release.assets.find((asset) => asset.name.endsWith(link.dataset.asset))
+        if (file) link.href = file.browser_download_url
+      }
+      const date = new Date(release.published_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+      document.getElementById('version').innerHTML = `Version ${release.tag_name.replace(/^v/, '')}, released ${date}. <a href="${release.html_url}">Release notes</a>`
+    })
+    .catch(() => {})
+</script>
+</body>
+</html>
