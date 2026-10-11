@@ -58,7 +58,10 @@ jobs:
             macOS)
               gh release download --repo "$GITHUB_REPOSITORY" --pattern '*.dmg'
               # Releases up to 0.1.2 ask for agreement to the licence when the image is opened; say yes.
+              # (`yes` is cut off once the image has what it needs, which is not a failure.)
+              set +o pipefail
               yes | hdiutil attach ./*.dmg -nobrowse -mountpoint /Volumes/SwoReel
+              set -o pipefail
               cp -R /Volumes/SwoReel/SwoReel.app /Applications/
               hdiutil detach /Volumes/SwoReel
               # What a person's Mac checks before it lets a downloaded app open.
