@@ -8,7 +8,7 @@
     {
       "name": "sworeel",
       "source": "./plugin",
-      "description": "Ask Claude to explain anything as a short animated reel: system diagrams, charts, code walkthroughs, maths, maps, annotated screenshots and more. Watch it play in the chat, refine it by talking, and export video or stills sized for X, TikTok, Instagram and YouTube.",
+      "description": "Ask Claude to explain anything as a short animated reel: system diagrams, charts, code walkthroughs, maths, maps, annotated screenshots and more. Watch it play in the chat, refine it by talking, and export it as a video or images that are easy to share anywhere.",
       "license": "MIT"
     }
   ]
