@@ -15,7 +15,8 @@
 #
 # The macOS build is signed and notarized when these repository secrets are set, and unsigned
 # otherwise: APPLE_CERTIFICATE (the Developer ID certificate as base64), APPLE_CERTIFICATE_PASSWORD,
-# APPLE_SIGNING_IDENTITY, APPLE_ID, APPLE_PASSWORD (an app-specific password) and APPLE_TEAM_ID.
+# APPLE_ID, APPLE_PASSWORD (an app-specific password) and APPLE_TEAM_ID. The app is signed as
+# whoever the certificate names, so there is no separate identity to keep in step with it.
 # The Windows build is unsigned.
 name: Release
 
@@ -95,7 +96,6 @@ jobs:
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
@@ -104,7 +104,6 @@ jobs:
           {
             echo "APPLE_CERTIFICATE=$APPLE_CERTIFICATE"
             echo "APPLE_CERTIFICATE_PASSWORD=$APPLE_CERTIFICATE_PASSWORD"
-            echo "APPLE_SIGNING_IDENTITY=$APPLE_SIGNING_IDENTITY"
             echo "APPLE_ID=$APPLE_ID"
             echo "APPLE_PASSWORD=$APPLE_PASSWORD"
             echo "APPLE_TEAM_ID=$APPLE_TEAM_ID"
