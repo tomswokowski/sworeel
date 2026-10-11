@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/tomswokowski/sworeel/compare/v0.1.1...v0.1.2) (2026-10-11)
+
+
+### Bug Fixes
+
+* find the plugin's command and Node when the app is started from a dock or menu ([#7](https://github.com/tomswokowski/sworeel/issues/7)) ([2934dfe](https://github.com/tomswokowski/sworeel/commit/2934dfe0ad8080c3ec3242047ac1cf00af954773))
+
 ## [0.1.1](https://github.com/tomswokowski/sworeel/compare/v0.1.0...v0.1.1) (2026-10-10)
 
 
