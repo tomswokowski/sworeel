@@ -76,7 +76,10 @@
   nav .links { display: flex; align-items: center; gap: 24px; font-size: 0.95rem; }
   nav .links a { color: var(--muted); }
   nav .links a:hover { color: var(--text); text-decoration: none; }
-  nav .links .btn { height: 2.2rem; padding: 0 1rem; color: #04202a; font-size: 0.9rem; font-weight: 700; box-shadow: 0 4px 20px rgb(26 206 227 / 30%); }
+  /* The top bar's own install button: the same lit look as the big one below, a size down. */
+  nav .links .btn { height: 2.6rem; padding: 0 1.25rem; color: #04202a; font-size: 1rem; font-weight: 700; box-shadow: 0 0 0 3px rgb(26 206 227 / 16%), 0 6px 28px rgb(26 206 227 / 42%); }
+  nav .links .btn:hover { transform: translateY(-1px); box-shadow: 0 0 0 4px rgb(26 206 227 / 22%), 0 10px 36px rgb(26 206 227 / 55%); }
+  nav .links .btn .icon { width: 16px; height: 16px; stroke-width: 2.5; }
 
   .hero { padding: 64px 0 0; text-align: center; }
   .pill { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 999px; background: rgb(10 30 44 / 70%); color: var(--muted); font-size: 0.85rem; }
@@ -255,7 +258,7 @@
     <nav>
       <a class="brand" href="#top" id="top"><img src="assets/icon.svg" alt="" width="30" height="30"><span>Swo<b>Reel</b></span></a>
       <div class="links">
-        <a class="btn primary" href="#install">Install</a>
+        <a class="btn primary" href="#install"><svg class="icon" data-icon="download"></svg>Install</a>
       </div>
     </nav>
 
