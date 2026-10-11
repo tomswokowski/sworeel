@@ -37,7 +37,6 @@
     "publisher": "Desoto Labs LLC",
     "copyright": "Copyright (c) 2026 Desoto Labs LLC",
     "license": "MIT",
-    "licenseFile": "../LICENSE",
     "category": "DeveloperTool",
     "shortDescription": "Browse, play and export the reels Claude makes",
     "longDescription": "SwoReel turns small JSON files (reels) into short animated explanations, exported as video or stills. This app browses, plays, organises and exports them. It works with the SwoReel plugin for Claude Code, which provides the sworeel command the app runs.",
