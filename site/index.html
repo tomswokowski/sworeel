@@ -256,7 +256,12 @@
     .stage { padding: 0; }
     .stage video { border-radius: 0; }
     .main header .chip:last-child { display: none; }
-    .bar .where { display: none; }
+    /* The player's controls on one line: the less needed ones go, and the rest tighten up. */
+    .bar { flex-wrap: nowrap; gap: 6px; }
+    .bar .set { gap: 4px; }
+    .bar .where, .bar #restart, .bar .speed { display: none; }
+    .controls { padding: 10px; }
+    .controls .chip { height: 30px; padding: 0 9px; font-size: 13px; }
     .under { text-wrap: balance; }
     section { padding-top: 72px; }
     .step { padding: 76px 18px 22px; }
@@ -267,6 +272,8 @@
     .gallery figcaption { flex-wrap: wrap; row-gap: 0; }
     .faq details { padding: 14px 16px; }
   }
+  /* The narrowest phones have no room for the last button on that line. */
+  @media (max-width: 350px) { .bar .export { display: none; } }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
 </style>
 </head>
