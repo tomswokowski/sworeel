@@ -24,8 +24,8 @@ const emit = defineEmits<{
 }>()
 
 const FORMATS: { name: Format; label: string; use: string }[] = [
-  { name: 'wide', label: FORMAT_LABELS.wide, use: 'X, YouTube' },
-  { name: 'tall', label: FORMAT_LABELS.tall, use: 'TikTok, Instagram' },
+  { name: 'wide', label: FORMAT_LABELS.wide, use: 'Slides, landscape video' },
+  { name: 'tall', label: FORMAT_LABELS.tall, use: 'Phones, vertical video' },
   { name: 'square', label: FORMAT_LABELS.square, use: 'Feeds' },
 ]
 

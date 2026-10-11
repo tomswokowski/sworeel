@@ -1,14 +1,15 @@
 ---
 name: reel
 description: >
-  SwoReel: short animated explanations ("reels") that Claude writes and the user posts, exported
-  as MP4 video or PNG stills for X, TikTok, Instagram and YouTube. Sixteen kinds: system and
+  SwoReel: short animated explanations ("reels") that Claude writes and the user shares, exported
+  as MP4 video or PNG stills in wide, tall and square shapes, to put anywhere: a post, a doc, a
+  slide, a message. Sixteen kinds: system and
   request-flow diagrams, sequences, trees and file structures, timelines, Gantt plans, bar, line,
   scatter and pie charts, code walkthroughs, array and algorithm steps, maths, maps, annotated
   screenshots, UI mock-ups and free sketches. Use for three kinds of request. (1) Making or
   changing a reel: the user asks to diagram, chart, visualize, illustrate, animate or walk
   through how something works, to turn an explanation, some code or some screenshots into
-  something postable, or to change a reel they are looking at ("make this step shorter").
+  something they can share, or to change a reel they are looking at ("make this step shorter").
   (2) Making reels look their way: brand colours, a light or dark look for all reels or one,
   the watermark, or a lasting preference for how their reels are made. (3) Managing SwoReel:
   anything about the user's library, reels, folders or exports, such as listing, finding,
@@ -17,7 +18,7 @@ description: >
   skill's `sworeel` command knows.
   Triggers: SwoReel, sworeel, reel, make a reel, my reels, my exports, diagram this, chart
   this, visualize, animate, code walkthrough, annotate this screenshot, show the flow of calls,
-  something for a tweet/post/TikTok, match my brand.
+  something to share or post, a video or image of this, match my brand.
 ---
 
 # SwoReel
@@ -138,8 +139,8 @@ sworeel config app <path>                              # where the desktop app i
 sworeel style [add "…" | remove N]                     # the user's standing preferences for reels
 ```
 
-Formats: `wide` (1600×900, X and YouTube), `tall` (1080×1920, TikTok and Instagram), `square`
-(1080×1080). Steps are counted from 1. For `still`, `--step 0` is the reel before any step and
+Formats: `wide` (1600×900, for slides, docs and landscape video), `tall` (1080×1920, for
+phones and vertical video), `square` (1080×1080, for feeds). Steps are counted from 1. For `still`, `--step 0` is the reel before any step and
 the default is the last step; `show --step` takes 1 upwards and, left out, shows the whole reel.
 
 Exports are named after the reel, with its folders: `web/cors` exports as
@@ -277,7 +278,7 @@ The theme changes reels only. The desktop app's own window keeps its look.
 
 Most users never open the desktop app's menus; they ask you. Treat requests like "tidy up my
 reels", "put the auth ones in a folder", "delete the old draft", "what have I exported?" or
-"re-export everything for TikTok" as jobs to do with the commands above, not as questions.
+"re-export everything as tall videos" as jobs to do with the commands above, not as questions.
 
 - Start with `sworeel list` (and `sworeel exports` when exports are involved) so you act on
   what is really there, and match what the user said to reel names and titles yourself.

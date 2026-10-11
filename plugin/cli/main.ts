@@ -168,7 +168,7 @@ async function render(name: string, format: Format, fps: number, out: string | u
   const path = resolve(out ?? join(exportsFolder(), `${id}-${format}.mp4`))
   await mkdir(dirname(path), { recursive: true })
 
-  // Raw frames in, H.264 out, with settings that X and TikTok both accept. The video is made
+  // Raw frames in, H.264 out, with settings that play everywhere. The video is made
   // under another name and moved into place when it is whole, so a failure never leaves a
   // broken file where a good one was expected.
   const draft = join(dirname(path), `.${basename(path, '.mp4')}.rendering.mp4`)
