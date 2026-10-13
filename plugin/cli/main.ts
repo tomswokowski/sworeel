@@ -1,5 +1,7 @@
 // sworeel: validate reel files and render them to PNG stills or MP4 video.
 import { spawn } from 'node:child_process'
+import { accessSync, constants } from 'node:fs'
+import { createRequire } from 'node:module'
 import { once } from 'node:events'
 import { cp, mkdir, readdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
@@ -163,6 +165,34 @@ async function stills(name: string, format: Format) {
   console.log(folder)
 }
 
+/**
+ * The ffmpeg that makes video: the one on the person's PATH if they have one, otherwise the
+ * one that comes with SwoReel's own dependencies, so nobody has to install it to get a video.
+ */
+function ffmpegProgram(): string {
+  const names = process.platform === 'win32' ? ['ffmpeg.exe', 'ffmpeg.cmd'] : ['ffmpeg']
+  // SWOREEL_FFMPEG=bundled skips the person's own, which is how the tests prove the bundled one.
+  for (const folder of process.env.SWOREEL_FFMPEG === 'bundled' ? [] : (process.env.PATH ?? '').split(delimiter)) {
+    for (const name of names) {
+      const candidate = join(folder, name)
+      try {
+        accessSync(candidate, constants.X_OK)
+        return candidate
+      } catch {
+        // Not here; keep looking.
+      }
+    }
+  }
+  try {
+    const bundled = (createRequire(import.meta.url)('@ffmpeg-installer/ffmpeg') as { path: string }).path
+    accessSync(bundled, constants.X_OK)
+    return bundled
+  } catch {
+    // The package has no ffmpeg for this kind of computer, or it was not installed.
+    fail('SwoReel has no ffmpeg for this computer, which it needs to make video. Install ffmpeg (https://ffmpeg.org) and try again. Images work without it.')
+  }
+}
+
 async function render(name: string, format: Format, fps: number, out: string | undefined) {
   const { reel, id, draw } = await loadToDraw(name)
   const { w, h } = FORMATS[format]
@@ -174,12 +204,12 @@ async function render(name: string, format: Format, fps: number, out: string | u
   // broken file where a good one was expected.
   const draft = join(dirname(path), `.${basename(path, '.mp4')}.rendering.mp4`)
   const ffmpeg = spawn(
-    'ffmpeg',
+    ffmpegProgram(),
     ['-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgba', '-s', `${w}x${h}`, '-r', String(fps), '-i', '-',
       '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-movflags', '+faststart', draft],
     { stdio: ['pipe', 'inherit', 'inherit'] },
   )
-  ffmpeg.on('error', () => fail('Could not run ffmpeg. Is it installed?'))
+  ffmpeg.on('error', (error) => fail(`Could not run ffmpeg: ${error.message}`))
   const closed = once(ffmpeg, 'close')
   // If ffmpeg stops early, writing to it fails; its exit code below says why.
   let stopped = false

@@ -13,8 +13,8 @@ what they can do about it; do not work around it with a different method.
 
 Tell the person exactly this, in your own words, before starting:
 
-- You will check for Node.js (22.18 or newer) and ffmpeg, and install whichever is missing
-  using their system's own package manager.
+- You will check for Node.js (22.18 or newer), and install or update it if needed using their
+  system's own package manager. It is the one thing SwoReel needs that it does not bring.
 - You will add the SwoReel plugin to Claude Code.
 - You will ask whether they want SwoReel to keep itself up to date, and turn that on only if
   they say yes.
@@ -23,24 +23,21 @@ Tell the person exactly this, in your own words, before starting:
 
 ## 1. Check what is already there
 
-Run `node --version` and `ffmpeg -version`. Node must be 22.18 or newer. Report what you found
-in one line each.
+Run `node --version`. Node must be 22.18 or newer. Report what you found in one line.
 
 ## 2. Install what is missing
 
-Only install what step 1 showed to be missing or too old. Use the package manager the system
-already has, and tell the person the command before running it:
+Skip this step if step 1 showed Node.js 22.18 or newer. Otherwise use the package manager the
+system already has, and tell the person the command before running it:
 
-- macOS: `brew install node ffmpeg`. If Homebrew is not installed, stop and tell them to
-  install Node.js from https://nodejs.org and ffmpeg from https://ffmpeg.org, then ask you
-  again. Do not install Homebrew for them.
-- Windows: `winget install OpenJS.NodeJS --accept-source-agreements --accept-package-agreements`
-  and `winget install Gyan.FFmpeg --accept-source-agreements --accept-package-agreements`. The
-  two options answer questions that winget would otherwise stop and wait on.
-- Linux: the distribution's own manager, for example `sudo apt install nodejs ffmpeg`,
-  `sudo dnf install nodejs ffmpeg` or `sudo pacman -S nodejs ffmpeg`. If the packaged Node.js
-  is older than 22.18, say so and point them to https://nodejs.org instead of adding
-  third-party repositories yourself.
+- macOS: `brew install node`. If Homebrew is not installed, stop and tell them to install
+  Node.js from https://nodejs.org, then ask you again. Do not install Homebrew for them.
+- Windows: `winget install OpenJS.NodeJS --accept-source-agreements --accept-package-agreements`.
+  The two options answer questions that winget would otherwise stop and wait on.
+- Linux: the distribution's own manager, for example `sudo apt install nodejs`,
+  `sudo dnf install nodejs` or `sudo pacman -S nodejs`. If the packaged Node.js is older than
+  22.18, say so and point them to https://nodejs.org instead of adding third-party
+  repositories yourself.
 
 If Node.js is managed by a version manager (nvm, fnm, mise, volta), use that to get a new
 enough version instead of the system package manager. A sign of one is `node` living under
@@ -50,10 +47,10 @@ A command that needs `sudo` will ask for a password you cannot type. When that h
 the person the exact command and ask them to run it themselves by typing `!` followed by the
 command in Claude Code, then tell you when it is done.
 
-ffmpeg is only needed for video. If it cannot be installed, carry on and tell the person that
-image export works and video export will not until ffmpeg is there.
+Do not install ffmpeg. SwoReel makes video with one that comes with its own dependencies, and
+uses the person's own if they already have it.
 
-Check both again afterwards. A terminal sometimes has to be reopened before a new program is
+Check Node.js again afterwards. A terminal sometimes has to be reopened before a new program is
 found; if so, say that.
 
 If Node.js still is not 22.18 or newer, carry on with step 3 so the plugin is in place, but

@@ -49,7 +49,7 @@ Then ask Claude for one: "make a reel of how a request reaches the database", "c
 
 Or just ask: "show me the cors one", "pause that", "export it as a tall video". A banner in the pane always says whether your keys are going to the pane or to the chat.
 
-Requirements: Node.js 22.18 or newer, and `ffmpeg` for video. The first run of the `sworeel` command installs its npm dependencies. Developed and tested on Linux only so far.
+Requirements: Node.js 22.18 or newer. The first run of the `sworeel` command installs its npm dependencies, which include an ffmpeg for making video; your own is used if you have one. Developed and tested on Linux only so far.
 
 ## Install the desktop app (optional)
 
@@ -163,7 +163,7 @@ Nothing is installed, linked or changed in your Claude Code settings to develop.
 
 ### Setting up
 
-You need Node.js 22.18 or newer, `ffmpeg`, and Claude Code. The desktop app also needs [Rust and Tauri's system packages](https://tauri.app/start/prerequisites/); skip them if you are only working on the plugin.
+You need Node.js 22.18 or newer and Claude Code. The desktop app also needs [Rust and Tauri's system packages](https://tauri.app/start/prerequisites/); skip them if you are only working on the plugin.
 
 ```bash
 git clone https://github.com/tomswokowski/sworeel && cd sworeel
