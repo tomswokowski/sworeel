@@ -55,6 +55,15 @@ test('a slip on the command line is answered in a sentence, not a stack trace', 
   assert.match((await sworeel('still', 'front-door', '--step', '')).err, /--step must be between 0/)
 })
 
+test('offering reels is on until it is turned off', async () => {
+  assert.equal(JSON.parse((await sworeel('config')).out).suggest, true)
+  assert.equal((await sworeel('config', 'suggest', 'off')).out, 'Claude makes a reel only when asked')
+  assert.equal(JSON.parse((await sworeel('config')).out).suggest, false)
+  await sworeel('config', 'suggest', 'on')
+  assert.equal(JSON.parse((await sworeel('config')).out).suggest, true)
+  assert.equal((await sworeel('config', 'suggest', 'maybe')).code, 1)
+})
+
 test('text that starts with a dash is taken as text after --', async () => {
   assert.equal((await sworeel('config', 'watermark', '--', '-tom')).out, 'Watermark set to -tom')
   assert.equal(JSON.parse(await readFile(join(home, 'config.json'), 'utf8')).watermark, '-tom')

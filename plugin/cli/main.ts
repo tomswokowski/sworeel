@@ -81,6 +81,7 @@ const USAGE = `Usage:
     sworeel config                          Show the settings
     sworeel config watermark <text>         Credit every export, e.g. "@you"; leave the text out to remove it
     sworeel config progress <on|off>        Show or hide the step dots at the bottom of every export
+    sworeel config suggest <on|off>         Whether Claude may offer a reel when an explanation would suit one
     sworeel config formats <list>           Default video formats, e.g. wide,tall
     sworeel config fps <N>                  Frames per second for video
     sworeel config theme                    The colours every reel is drawn in
@@ -572,10 +573,10 @@ try {
       break
     }
     case 'config': {
-      const usage = 'config [reels|exports|app <path>] [watermark <text>] [progress <on|off>] [theme [colour #hex]] [formats <list>] [fps <N>]'
+      const usage = 'config [reels|exports|app <path>] [watermark <text>] [progress <on|off>] [suggest <on|off>] [theme [colour #hex]] [formats <list>] [fps <N>]'
       const [name, value] = args
       if (!name) {
-        console.log(JSON.stringify({ reels: LIBRARY, exports: exportsFolder(), watermark: CONFIG.watermark ?? '', progress: CONFIG.progress === true, theme: { ...DEFAULT_THEME, ...CONFIG.theme }, formats: defaultFormats, fps: CONFIG.fps ?? 30, app: CONFIG.app ?? '' }, null, 2))
+        console.log(JSON.stringify({ reels: LIBRARY, exports: exportsFolder(), watermark: CONFIG.watermark ?? '', progress: CONFIG.progress === true, suggest: CONFIG.suggest !== false, theme: { ...DEFAULT_THEME, ...CONFIG.theme }, formats: defaultFormats, fps: CONFIG.fps ?? 30, app: CONFIG.app ?? '' }, null, 2))
       } else if (name === 'formats') {
         const list = (value ?? '').split(/[\s,]+/).filter(Boolean)
         if (list.length === 0 || !list.every(isFormat)) fail(`Give one or more of: ${Object.keys(FORMATS).join(', ')}, separated by commas.`)
@@ -612,6 +613,11 @@ try {
         // Off is the default, so only "on" is written down.
         writeConfig({ progress: value === 'on' ? true : undefined })
         console.log(value === 'on' ? 'Step dots are shown on exports' : 'Step dots are hidden on exports')
+      } else if (name === 'suggest') {
+        if (value !== 'on' && value !== 'off') fail('Usage: sworeel config suggest <on|off>')
+        // On is the default, so only "off" is written down.
+        writeConfig({ suggest: value === 'off' ? false : undefined })
+        console.log(value === 'on' ? 'Claude may offer a reel when an explanation would suit one' : 'Claude makes a reel only when asked')
       } else if (name === 'watermark') {
         // An empty value, or none, removes it.
         writeConfig({ watermark: value?.trim() || undefined })
