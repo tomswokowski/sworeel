@@ -41,6 +41,10 @@ __screenshots__/
 # The sandbox library and settings used while developing (see scripts/dev.mjs)
 .dev-home
 
+# Written by Claude Code when it loads the plugin from this folder; it points at files only that
+# computer has
+plugin/tsconfig.json
+
 # Tauri
 src-tauri/target
 src-tauri/gen
