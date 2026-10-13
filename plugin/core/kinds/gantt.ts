@@ -22,15 +22,18 @@ export function draw(ctx: Context2D, reel: GanttReel, f: Sizes, area: Area, play
   const { step, shown, emphasis } = stage(reel.tasks, reel.steps, 'gantt', playhead)
   const { from, to, ticks } = scaleOf(reel)
 
-  ctx.font = `600 ${f.label * 0.9}px ${SANS}`
+  // With few tasks the rows are tall, and their names grow with them.
+  const rowsH = Math.min((area.h - f.sub * 2.6) / reel.tasks.length, f.label * 5.2)
+  const type = Math.max(f.label * 0.9, Math.min(f.label * 1.35, rowsH * 0.3))
+  ctx.font = `600 ${type}px ${SANS}`
   // Labels get up to a third of the width; longer ones are set smaller so none runs off the edge.
   const widest = Math.max(...reel.tasks.map((task) => ctx.measureText(task.label).width))
   const labelW = Math.min(widest, area.w * 0.34)
-  const labelSize = f.label * 0.9 * Math.max(labelW / widest, 0.6)
+  const labelSize = type * Math.max(labelW / widest, 0.6)
   const left = area.x + labelW + f.label
   const right = area.x + area.w - f.sub
   const axisH = f.sub * 2.6
-  const rowH = Math.min((area.h - axisH) / reel.tasks.length, f.label * 3.4)
+  const rowH = rowsH
   const top = area.y + (area.h - axisH - rowH * reel.tasks.length) / 2
   const bottom = top + rowH * reel.tasks.length
   const x = (value: number) => left + ((right - left) * (value - from)) / (to - from)

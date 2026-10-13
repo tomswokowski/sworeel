@@ -43,7 +43,7 @@ export function draw(ctx: Context2D, reel: MathReel, f: Sizes, area: Area, playh
     return { line, formula, plain, width: formula?.width ?? plain!.length * 0.62, height: (formula?.height ?? 1.3) + (line.note ? NOTE + 0.35 : 0) }
   })
   const total = rows.reduce((sum, row) => sum + row.height, 0) + GAP * (rows.length - 1)
-  const em = Math.min(f.label * 2.6, (area.w * 0.94) / Math.max(...rows.map((row) => row.width)), (area.h * 0.94) / total)
+  const em = Math.min(f.label * 4, (area.w * 0.94) / Math.max(...rows.map((row) => row.width)), (area.h * 0.94) / total)
 
   let y = area.y + (area.h - total * em) / 2
   for (const { line, formula, plain, width, height } of rows) {

@@ -56,7 +56,7 @@ function drawList(ctx: Context2D, reel: TreeReel, f: Sizes, area: Area, playhead
   for (const root of children.get(undefined) ?? []) visit(root, 0, -1)
 
   const widest = Math.max(...rows.map((row) => row.depth * 2.4 + row.node.label.length + 2.6))
-  const size = Math.min(f.label * 1.25, (area.h * 0.94) / (rows.length * 1.7 + 1.2), (area.w * 0.86) / ((widest + 3) * 0.6))
+  const size = Math.min(f.label * 2.1, (area.h * 0.94) / (rows.length * 1.7 + 1.2), (area.w * 0.86) / ((widest + 3) * 0.6))
   const lineH = size * 1.7
   const indent = size * 0.6 * 2.4
   const panelW = (widest + 3) * size * 0.6
@@ -117,8 +117,8 @@ export function draw(ctx: Context2D, reel: TreeReel, f: Sizes, area: Area, playh
   const { shown, emphasis } = stage(reel.nodes, reel.steps, 'tree', playhead)
   const cellW = area.w / leaves
   const cellH = area.h / rows
-  const nodeW = Math.min(cellW * 0.86, 260)
-  const nodeH = Math.min(cellH * 0.46, 96)
+  const nodeW = Math.min(cellW * 0.86, f.label * 13)
+  const nodeH = Math.min(cellH * 0.46, f.label * 4.6)
   const at = (id: string) => ({ x: area.x + cellW * (place.get(id)!.x + 0.5), y: area.y + cellH * (place.get(id)!.depth + 0.5) })
 
   for (const node of reel.nodes) {
@@ -146,7 +146,7 @@ export function draw(ctx: Context2D, reel: TreeReel, f: Sizes, area: Area, playh
     ctx.fill()
     ctx.stroke()
     ctx.fillStyle = level === 'high' ? COLORS.request : COLORS.text
-    ctx.font = `600 ${Math.min(f.label, (nodeW * 0.9) / (node.label.length * 0.58))}px ${SANS}`
+    ctx.font = `600 ${Math.min(f.label * 1.35, nodeH * 0.34, (nodeW * 0.9) / (node.label.length * 0.58))}px ${SANS}`
     ctx.fillText(node.label, x, y)
   }
   ctx.globalAlpha = 1

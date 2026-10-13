@@ -52,6 +52,9 @@ walk through a real one, use `picture`.
 ## Making it read well
 
 - **Up to about 8 elements** in a browser and 7 on a phone; more and everything shrinks.
+- **Match the frame to the format.** A phone frame is tall, so it is small in a `wide` reel
+  and fills a `tall` one; a browser frame is the other way round. Unless the point is that it
+  is a phone, use the browser for `wide` and the phone for `tall`.
 - **Show a change.** The best screens press something: a button's words change, a notice
   appears, a value fills in.
 - **Real words for what matters, placeholders for the rest.** Write the heading, the button
