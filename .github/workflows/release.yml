@@ -17,7 +17,11 @@
 # otherwise: APPLE_CERTIFICATE (the Developer ID certificate as base64), APPLE_CERTIFICATE_PASSWORD,
 # APPLE_ID, APPLE_PASSWORD (an app-specific password) and APPLE_TEAM_ID. The app is signed as
 # whoever the certificate names, so there is no separate identity to keep in step with it.
-# The Windows build is unsigned.
+#
+# The Windows build is signed as Desoto Labs LLC with Azure Artifact Signing when these repository
+# secrets are set, and unsigned otherwise: AZURE_TENANT_ID, AZURE_CLIENT_ID and AZURE_CLIENT_SECRET
+# (an app registration allowed to sign with the certificate profile). Which signing account and
+# profile it uses is written in src-tauri/tauri.signing.conf.json.
 name: Release
 
 on:
@@ -112,6 +116,24 @@ jobs:
             echo "APPLE_TEAM_ID=$APPLE_TEAM_ID"
           } >> "$GITHUB_ENV"
 
+      # As with macOS, only when the sign-in is there. The extra settings file tells the build to
+      # sign the app and its installers with the tool installed here.
+      - name: Set up Windows signing
+        if: runner.os == 'Windows' && env.AZURE_CLIENT_ID != ''
+        env:
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        shell: bash
+        run: |
+          cargo install trusted-signing-cli --locked
+          {
+            echo "AZURE_TENANT_ID=$AZURE_TENANT_ID"
+            echo "AZURE_CLIENT_ID=$AZURE_CLIENT_ID"
+            echo "AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET"
+            echo "SIGNING=--config src-tauri/tauri.signing.conf.json"
+          } >> "$GITHUB_ENV"
+
       # With a tag, the installers are attached to that release; without one they are only built.
       - id: build
         uses: tauri-apps/tauri-action@v0
@@ -119,7 +141,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ needs.release.outputs.tag }}
-          args: ${{ matrix.args }}
+          args: ${{ matrix.args }} ${{ env.SIGNING }}
 
       - name: Keep the installers from a run by hand
         if: github.event_name == 'workflow_dispatch'
