@@ -46,6 +46,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/app" && cd "$RUNNER_TEMP/app"
           case "$RUNNER_OS" in
             Linux)
+              sudo apt-get update
               sudo apt-get install -y xvfb libwebkit2gtk-4.1-0 libfuse2t64 || sudo apt-get install -y xvfb libwebkit2gtk-4.1-0 libfuse2
               gh release download --repo "$GITHUB_REPOSITORY" --pattern '*.AppImage'
               mkdir -p "$HOME/.local/bin" && mv ./*.AppImage "$HOME/.local/bin/sworeel-app" && chmod +x "$HOME/.local/bin/sworeel-app"
@@ -181,6 +182,7 @@ jobs:
           asset() { node -e 'const found = require("./latest.json").assets.find((a) => a.name.endsWith(process.argv[1])); if (!found) process.exit(1); console.log(found.browser_download_url)' -- "$1"; }
           case "$RUNNER_OS" in
             Linux)
+              sudo apt-get update
               sudo apt-get install -y xvfb libwebkit2gtk-4.1-0 libfuse2t64
               [ "$(uname -m)" = x86_64 ]
               mkdir -p "$HOME/.local/bin"
