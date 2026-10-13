@@ -32,7 +32,9 @@ already has, and tell the person the command before running it:
 - macOS: `brew install node ffmpeg`. If Homebrew is not installed, stop and tell them to
   install Node.js from https://nodejs.org and ffmpeg from https://ffmpeg.org, then ask you
   again. Do not install Homebrew for them.
-- Windows: `winget install OpenJS.NodeJS` and `winget install Gyan.FFmpeg`.
+- Windows: `winget install OpenJS.NodeJS --accept-source-agreements --accept-package-agreements`
+  and `winget install Gyan.FFmpeg --accept-source-agreements --accept-package-agreements`. The
+  two options answer questions that winget would otherwise stop and wait on.
 - Linux: the distribution's own manager, for example `sudo apt install nodejs ffmpeg`,
   `sudo dnf install nodejs ffmpeg` or `sudo pacman -S nodejs ffmpeg`. If the packaged Node.js
   is older than 22.18, say so and point them to https://nodejs.org instead of adding

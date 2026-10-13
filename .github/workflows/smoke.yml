@@ -1,12 +1,16 @@
 # Runs SwoReel for real on Linux, macOS and Windows: the command through its launcher, then the
 # desktop app as installed from the latest release. It is how the systems nobody on the project
 # sits at are checked. Run it by hand from the Actions tab; it also runs when the test changes.
+#
+# The second job does what sworeel.com asks Claude to do on a new person's machine: the commands
+# in site/setup.md, as written there, and then the same checks against what those installed.
+# Keep the two in step: a command changed in one is changed in the other.
 name: Smoke test
 
 on:
   workflow_dispatch:
   pull_request:
-    paths: ['scripts/smoke.mjs', '.github/workflows/smoke.yml']
+    paths: ['scripts/smoke.mjs', '.github/workflows/smoke.yml', 'site/setup.md']
 
 permissions:
   contents: read
@@ -101,5 +105,135 @@ jobs:
         if: always() && runner.os != 'Linux'
         with:
           name: screen-${{ matrix.name }}
+          path: ${{ runner.temp }}/shots
+          if-no-files-found: ignore
+
+  setup:
+    name: Set up from sworeel.com (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Linux, os: ubuntu-latest }
+          - { name: macOS, os: macos-latest }
+          - { name: Windows, os: windows-latest }
+    steps:
+      # Only for the test itself and its example reels; the plugin comes from the marketplace.
+      - uses: actions/checkout@v4
+
+      # Ubuntu's own Node.js is too old, which setup.md answers by sending the person to nodejs.org.
+      - uses: actions/setup-node@v4
+        if: runner.os == 'Linux'
+        with:
+          node-version: 24
+
+      - name: 'setup.md step 2: install Node.js and ffmpeg'
+        shell: bash
+        timeout-minutes: 15
+        # No keyboard is attached, as when Claude runs a command, so a question would stop it here.
+        run: |
+          case "$RUNNER_OS" in
+            Linux) sudo apt-get update && sudo apt install -y ffmpeg < /dev/null ;;
+            macOS) brew install node ffmpeg < /dev/null ;;
+            Windows)
+              winget install OpenJS.NodeJS --accept-source-agreements --accept-package-agreements < /dev/null
+              winget install Gyan.FFmpeg --accept-source-agreements --accept-package-agreements < /dev/null
+              # A new terminal would find these; this one was opened before they were installed.
+              cygpath -w "$LOCALAPPDATA/Microsoft/WinGet/Links" >> "$GITHUB_PATH"
+              ;;
+          esac
+
+      - name: 'setup.md step 2: check both again'
+        shell: bash
+        run: |
+          node --version
+          node -e 'const [a, b] = process.versions.node.split(".").map(Number); if (a < 22 || (a === 22 && b < 18)) { console.error("Node.js is older than 22.18"); process.exit(1) }'
+          ffmpeg -version | head -1
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: 'setup.md step 3: add the plugin'
+        shell: bash
+        run: |
+          claude plugin marketplace add tomswokowski/sworeel
+          claude plugin install sworeel@tomswokowski
+
+      - name: 'setup.md step 3: update a plugin that is already there'
+        shell: bash
+        run: |
+          claude plugin marketplace update tomswokowski
+          claude plugin update sworeel@tomswokowski
+
+      - name: Find where Claude Code put the plugin
+        shell: bash
+        run: |
+          node -e '
+            const { join } = require("node:path")
+            const all = require(join(require("node:os").homedir(), ".claude", "plugins", "installed_plugins.json"))
+            const bin = join(all.plugins["sworeel@tomswokowski"][0].installPath, "bin")
+            console.log(bin)
+            require("node:fs").appendFileSync(process.env.GITHUB_ENV, `SWOREEL_BIN=${bin}\n`)
+          '
+
+      - name: The command, as installed
+        run: node scripts/smoke.mjs
+
+      - name: 'setup.md step 4: install the desktop app'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/app" && cd "$RUNNER_TEMP/app"
+          # Signed in only so that a busy build machine is not turned away; a person's is not.
+          curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/tomswokowski/sworeel/releases/latest > latest.json
+          asset() { node -e 'const found = require("./latest.json").assets.find((a) => a.name.endsWith(process.argv[1])); if (!found) process.exit(1); console.log(found.browser_download_url)' -- "$1"; }
+          case "$RUNNER_OS" in
+            Linux)
+              sudo apt-get install -y xvfb libwebkit2gtk-4.1-0 libfuse2t64
+              [ "$(uname -m)" = x86_64 ]
+              mkdir -p "$HOME/.local/bin"
+              curl -fsSL -o "$HOME/.local/bin/sworeel-app" "$(asset .AppImage)"
+              chmod +x "$HOME/.local/bin/sworeel-app"
+              ;;
+            macOS)
+              curl -fsSL -o SwoReel.dmg "$(asset .dmg)"
+              hdiutil attach SwoReel.dmg -nobrowse -mountpoint /Volumes/SwoReel < /dev/null
+              cp -R /Volumes/SwoReel/SwoReel.app /Applications/
+              hdiutil detach /Volumes/SwoReel
+              ;;
+            Windows)
+              curl -fsSL -o SwoReel-setup.exe "$(asset -setup.exe)"
+              powershell -Command "Start-Process -FilePath .\\SwoReel-setup.exe -ArgumentList '/S' -Wait"
+              ;;
+          esac
+
+      - name: The desktop app, as installed
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = Linux ]; then
+            export APPIMAGE_EXTRACT_AND_RUN=1
+            xvfb-run -a --server-args="-screen 0 1400x900x24" node scripts/smoke.mjs --app
+          else
+            node scripts/smoke.mjs --app
+          fi
+
+      - name: Take a picture of the screen
+        if: always() && runner.os != 'Linux'
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/shots"
+          if [ "$RUNNER_OS" = macOS ]; then
+            screencapture -x "$RUNNER_TEMP/shots/macos.png" || true
+          else
+            powershell -Command "Add-Type -AssemblyName System.Windows.Forms,System.Drawing; \$b = [System.Windows.Forms.SystemInformation]::VirtualScreen; \$i = New-Object System.Drawing.Bitmap \$b.Width, \$b.Height; [System.Drawing.Graphics]::FromImage(\$i).CopyFromScreen(\$b.Left, \$b.Top, 0, 0, \$i.Size); \$i.Save(\"\$env:RUNNER_TEMP\\shots\\windows.png\")" || true
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always() && runner.os != 'Linux'
+        with:
+          name: screen-setup-${{ matrix.name }}
           path: ${{ runner.temp }}/shots
           if-no-files-found: ignore
