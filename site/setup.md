@@ -16,6 +16,8 @@ Tell the person exactly this, in your own words, before starting:
 - You will check for Node.js (22.18 or newer) and ffmpeg, and install whichever is missing
   using their system's own package manager.
 - You will add the SwoReel plugin to Claude Code.
+- You will ask whether they want SwoReel to keep itself up to date, and turn that on only if
+  they say yes.
 - You will ask whether they also want the desktop app, and install it only if they say yes.
 - Nothing else on their computer is changed. SwoReel has no account and collects no data.
 
@@ -70,7 +72,23 @@ claude plugin install sworeel@tomswokowski
 If the plugin is already installed, run `claude plugin marketplace update tomswokowski` and
 `claude plugin update sworeel@tomswokowski` instead, so they have the latest version.
 
-## 4. Offer the desktop app
+## 4. Offer to keep it up to date
+
+Claude Code does not update plugins from a marketplace like this one unless the person turns
+that on. Ask: "Do you want SwoReel to keep itself up to date? New versions arrive often. Claude
+Code would fetch them in the background, and you would get them the next time you start it."
+
+If they say yes, add `"autoUpdate": true` to the `tomswokowski` entry under
+`extraKnownMarketplaces` in their user settings file (`~/.claude/settings.json`), leaving
+everything else in that file as it is. Show them the change before making it. If the entry is
+not there, or the file cannot be changed, do not work around it: tell them to turn it on
+themselves by typing `/plugin`, opening the Marketplaces tab, choosing `tomswokowski` and
+choosing "Enable auto-update".
+
+If they say no, tell them that pasting the setup request again later brings SwoReel up to
+date.
+
+## 5. Offer the desktop app
 
 Ask: "Do you also want the SwoReel desktop app? It is an optional window for browsing, playing
 and exporting your reels. Everything also works without it." Install it only if they say yes.
@@ -87,7 +105,7 @@ download the one for their system from its `assets` list:
   It is built for 64-bit Intel and AMD computers (`uname -m` prints `x86_64`); on anything
   else, say the desktop app is not available for their computer yet and skip it.
 
-## 5. Finish
+## 6. Finish
 
 Tell the person:
 
