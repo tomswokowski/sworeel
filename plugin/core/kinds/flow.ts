@@ -109,6 +109,12 @@ export function draw(ctx: Context2D, reel: FlowReel, f: Sizes, area: Area, playh
       if (isLoop) {
         x = loop(message.from).x + loopRadius + 14
         y = loop(message.from).y - loopRadius * 0.4
+      } else if (a.y === b.y) {
+        // Between two boxes side by side there is no room beside the line, so the label sits
+        // above the gap, clear of both boxes.
+        x = (a.x + b.x) / 2
+        y = a.y - nodeH / 2 - edgeSize * 0.75
+        align = 'center'
       } else {
         // The label sits beside the line, on the side the lower node leans towards.
         const [upper, lower] = a.y <= b.y ? [a, b] : [b, a]
@@ -162,11 +168,13 @@ export function draw(ctx: Context2D, reel: FlowReel, f: Sizes, area: Area, playh
 
     ctx.textAlign = 'center'
     ctx.fillStyle = COLORS.text
-    ctx.font = `600 ${labelSize}px ${SANS}`
+    // A label that would run into its icon or the box's edge is set smaller, not left to collide.
+    const room = nodeW * 0.9 - (iconSize ? iconSize * 1.45 : 0)
+    ctx.font = `600 ${Math.min(labelSize, room / (node.label.length * 0.56))}px ${SANS}`
     ctx.fillText(node.label, textX, node.sub ? y - subSize * 0.6 : y)
     if (node.sub) {
       ctx.fillStyle = COLORS.muted
-      ctx.font = `400 ${subSize}px ${SANS}`
+      ctx.font = `400 ${Math.min(subSize, room / (node.sub.length * 0.5))}px ${SANS}`
       ctx.fillText(node.sub, textX, y + labelSize * 0.7)
     }
   }
