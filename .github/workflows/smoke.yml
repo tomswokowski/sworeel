@@ -189,7 +189,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/app" && cd "$RUNNER_TEMP/app"
           # Signed in only so that a busy build machine is not turned away; a person's is not.
           curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/tomswokowski/sworeel/releases/latest > latest.json
-          asset() { node -e 'const found = require("./latest.json").assets.find((a) => a.name.endsWith(process.argv[1])); if (!found) process.exit(1); console.log(found.browser_download_url)' "$1"; }
+          asset() { node -e 'const found = require("./latest.json").assets.find((a) => a.name.endsWith(process.argv[1])); if (!found) process.exit(1); console.log(found.browser_download_url)' -- "$1"; }
           case "$RUNNER_OS" in
             Linux)
               sudo apt-get install -y xvfb libwebkit2gtk-4.1-0 libfuse2t64
