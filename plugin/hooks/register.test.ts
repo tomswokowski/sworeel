@@ -48,7 +48,8 @@ function world(on: On) {
     return { value: undefined }
   })
   on('fs.read', async (_, e) => {
-    if (e.path !== '/library/tiny.json') throw new Error('no such file')
+    // On Windows the path arrives as that system writes it, with a drive and backslashes.
+    if (!e.path.replaceAll('\\', '/').endsWith('/library/tiny.json')) throw new Error(`no such file: ${e.path}`)
     return { value: JSON.stringify(REEL) }
   })
   on('process.run', async (_, e) => {
