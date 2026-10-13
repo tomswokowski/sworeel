@@ -14,10 +14,19 @@ function messagesOf(reel: SequenceReel) {
 export function draw(ctx: Context2D, reel: SequenceReel, f: Sizes, area: Area, playhead: Playhead, assets: Assets = {}) {
   const messages = messagesOf(reel)
   const colW = area.w / reel.actors.length
-  const boxW = Math.min(colW * 0.82, 280)
-  const boxH = Math.min(f.label * 2.6, area.h * 0.16)
-  const rowH = Math.min((area.h - boxH - f.label) / Math.max(messages.length, 1), f.label * 3.6)
+  const boxW = Math.min(colW * 0.82, f.label * 15)
+  const boxH = Math.min(f.label * 2.9, area.h * 0.16)
+  const rowH = Math.min((area.h - boxH - f.label) / Math.max(messages.length, 1), f.label * 4.4)
   const x = (id: string) => area.x + colW * (reel.actors.findIndex((actor) => actor.id === id) + 0.5)
+  // A label may run a little past the ends of its arrow, but never off the picture.
+  const roomFor = (from: string, to: string) => {
+    const middle = (x(from) + x(to)) / 2
+    return Math.min(Math.abs(x(to) - x(from)) * 1.5, 2 * Math.min(middle - area.x, area.x + area.w - middle)) * 0.94
+  }
+  // Arrow labels grow with the room between rows, so a short exchange is not drawn in small
+  // print, and they share one size: the largest that every label between two actors fits at.
+  const widest = Math.min(...messages.filter(({ step, from, to }) => step.label && from !== to).map(({ step, from, to }) => roomFor(from, to) / (step.label!.length * 0.6)), Infinity)
+  const edgeSize = Math.max(f.edge, Math.min(rowH * 0.38, f.edge * 1.7, widest))
   const current = reel.steps[playhead.index]
 
   for (const actor of reel.actors) {
@@ -58,7 +67,7 @@ export function draw(ctx: Context2D, reel: SequenceReel, f: Sizes, area: Area, p
       ctx.lineTo(a + head, y)
       ctx.stroke()
       if (step.label) {
-        ctx.font = `400 ${f.edge}px ${MONO}`
+        ctx.font = `400 ${edgeSize}px ${MONO}`
         ctx.textAlign = 'left'
         ctx.fillText(step.label, a + out + 12, y - drop / 2)
       }
@@ -78,18 +87,21 @@ export function draw(ctx: Context2D, reel: SequenceReel, f: Sizes, area: Area, p
     ctx.fill()
 
     if (step.label) {
-      // A label wider than the gap between its two actors shrinks to fit it.
-      const room = Math.abs(x(to) - a) * 0.94
-      ctx.font = `400 ${Math.max(Math.min(f.edge, room / (step.label.length * 0.6)), f.edge * 0.6)}px ${MONO}`
+      // A label too wide even for that shrinks to fit.
+      const room = roomFor(from, to)
+      ctx.font = `400 ${Math.max(Math.min(edgeSize, room / (step.label.length * 0.6)), f.edge * 0.6)}px ${MONO}`
       ctx.textAlign = 'center'
       ctx.lineWidth = 8
       ctx.strokeStyle = COLORS.bg
-      ctx.strokeText(step.label, (a + x(to)) / 2, y - f.edge * 0.95)
-      ctx.fillText(step.label, (a + x(to)) / 2, y - f.edge * 0.95)
+      ctx.strokeText(step.label, (a + x(to)) / 2, y - edgeSize * 0.95)
+      ctx.fillText(step.label, (a + x(to)) / 2, y - edgeSize * 0.95)
     }
   }
   ctx.globalAlpha = 1
 
+  // Actor names share one size too: the largest the longest of them fits its box at.
+  const iconRoom = (actor: (typeof reel.actors)[number]) => (actor.icon && assets.makePath ? boxH * 0.5 * 1.3 : 0)
+  const nameSize = Math.min(f.label * 1.25, ...reel.actors.map((actor) => ((boxW - iconRoom(actor)) * 0.9) / (actor.label.length * 0.58)))
   for (const actor of reel.actors) {
     const active = current?.from === actor.id || current?.to === actor.id
     ctx.fillStyle = COLORS.surface
@@ -103,7 +115,7 @@ export function draw(ctx: Context2D, reel: SequenceReel, f: Sizes, area: Area, p
     drawIcon(ctx, assets, ICONS[actor.icon ?? ''], x(actor.id) - boxW / 2 + boxH * 0.22, area.y + (boxH - iconSize) / 2, iconSize, COLORS.muted)
     ctx.textAlign = 'center'
     ctx.fillStyle = COLORS.text
-    ctx.font = `600 ${Math.min(f.label, ((boxW - iconSize * 1.3) * 0.9) / (actor.label.length * 0.58))}px ${SANS}`
+    ctx.font = `600 ${nameSize}px ${SANS}`
     ctx.fillText(actor.label, x(actor.id) + iconSize * 0.6, area.y + boxH / 2)
   }
 }

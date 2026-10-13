@@ -68,7 +68,7 @@ export function draw(ctx: Context2D, reel: CodeReel, f: Sizes, area: Area, playh
   const header = file.name ? 1.5 : 0
 
   // The largest type that fits the listing in the area, both ways.
-  const size = Math.min(f.label * 1.05, (area.w * 0.96) / ((longest + gutter + 2) * 0.6), (area.h * 0.96) / ((rows.length + header) * 1.55 + 1))
+  const size = Math.min(f.label * 1.9, (area.w * 0.96) / ((longest + gutter + 2) * 0.6), (area.h * 0.96) / ((rows.length + header) * 1.55 + 1))
   const charW = size * 0.6
   const lineH = size * 1.55
   const panelW = (longest + gutter + 2) * charW

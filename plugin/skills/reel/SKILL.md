@@ -75,7 +75,11 @@ forcing one (see "What SwoReel cannot draw").
 4. Look at your own work before showing it: render stills of two or three steps and Read the
    PNGs. Always check the `tall` format, since it is the tightest.
    `sworeel still <name> --format tall --step 3 --out <scratch>/check.png`
-5. Fix overlaps, clipped text and awkward wording.
+5. Fix overlaps, clipped text and awkward wording. Then ask of each still: does the picture
+   fill the frame, and could its smallest text be read on a phone? A picture that sits small
+   in an empty frame is a layout to fix (fewer columns, shorter labels, a sketch space shaped
+   for the format), not a detail. Check the format the user will actually use as well as
+   `tall`.
 6. Give the user something to look at. Play it in the pane, or paste the text version (see
    "Showing a reel in the chat"), so they see it at once. Render the video only if they
    asked for one, and tell them the path the command printed.
