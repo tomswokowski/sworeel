@@ -250,6 +250,13 @@ async function openInApp(name: string | undefined) {
     await new Promise((done) => setTimeout(done, 150))
   }
 
+  // While SwoReel itself is being worked on, the app to show it in is the one run from the
+  // project, which only its developer can start; an installed app is someone's real one.
+  if (process.env.SWOREEL_DEV) {
+    await rm(requestFile, { force: true })
+    fail('The development app is not running. Start it in another terminal with: npm run dev:app')
+  }
+
   // Where the app might be: where the settings say, on PATH, then where each system's
   // installer puts it.
   const binary = process.platform === 'win32' ? 'sworeel-app.exe' : 'sworeel-app'

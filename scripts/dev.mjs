@@ -30,7 +30,8 @@ if (!existsSync(reels)) {
 const [what, ...args] = process.argv.slice(2)
 // This folder's command goes first on PATH: Claude Code adds a plugin's commands last, so an
 // installed `sworeel` would otherwise be the one a development session runs.
-const env = { ...process.env, SWOREEL_HOME: home, SWOREEL_CLI: cli, PATH: `${dirname(cli)}${delimiter}${process.env.PATH ?? ''}` }
+// SWOREEL_DEV keeps `sworeel app` from starting an installed app when the one from this folder is not running.
+const env = { ...process.env, SWOREEL_HOME: home, SWOREEL_CLI: cli, SWOREEL_DEV: '1', PATH: `${dirname(cli)}${delimiter}${process.env.PATH ?? ''}` }
 const [program, programArgs] =
   what === 'app'
     ? [join(root, 'node_modules', '.bin', isWindows ? 'tauri.cmd' : 'tauri'), ['dev', '--config', join('src-tauri', 'tauri.dev.conf.json'), ...args]]

@@ -200,6 +200,17 @@ npx tauri build --no-bundle          # build it to src-tauri/target/release/swor
 
 When you build the app yourself, put the built `sworeel-app` on your PATH (or tell the command where it is with `sworeel config app <path>`) so that `sworeel app` can start it. An installed package does this for you.
 
+### Everything at once
+
+To work with the plugin and the app together, run each in its own terminal, in this folder:
+
+```bash
+npm run dev:claude                   # terminal 1: Claude Code with this folder's plugin
+npm run dev:app                      # terminal 2: the app, as "SwoReel Dev"
+```
+
+Both use the sandbox, so they see the same reels and settings: a reel Claude writes appears in the app, "show it in the app" in the session opens it in SwoReel Dev, and the app's Follow Claude switch follows that session. Start them in either order and stop either one without affecting the other. If the session asks for the app while it is not running, the command says so; it never starts an installed SwoReel.
+
 ### From a change to a release
 
 1. Make the change on a branch, and try it with `npm run dev:claude`.

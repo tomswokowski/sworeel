@@ -8,6 +8,7 @@ The person working here usually also has SwoReel installed and in daily use on t
 
 - Run the command as `npm run sworeel -- <args>`, never as plain `sworeel`, which is the installed release.
 - Try the plugin with `npm run dev:claude`, and the app with `npm run dev:app`. All three use the sandbox `.dev-home/`.
+- To see a change in the desktop app, run `npm run dev:app` in the background (it stays running, with live reload) and hand it a reel with `npm run sworeel -- app <reel>`. Never start the installed `sworeel-app` to test.
 - For anything else that writes (a test, a script, a subagent), set `SWOREEL_HOME` to a scratch folder. Never run `sworeel config <name> <value>` without it.
 - Do not install, link or enable anything in `~/.claude` to develop, and do not edit files under `~/.claude/plugins`.
 
