@@ -162,21 +162,24 @@ claude plugin test ./plugin          # test the in-session pane
 (cd src-tauri && cargo test)         # test the app's reading of the library
 npm run sworeel -- list              # the command from this folder, in the sandbox
 npm run dev:app                      # the app from this folder with live reload, in the sandbox
+npm run dev:claude                   # Claude Code with this folder's plugin, in the sandbox
 npx tauri build --no-bundle          # build it to src-tauri/target/release/sworeel-app
 ```
 
 ### Developing beside an installed SwoReel
 
-`npm run sworeel` and `npm run dev:app` keep development apart from the SwoReel you actually use:
+`npm run sworeel`, `npm run dev:app` and `npm run dev:claude` keep development apart from the SwoReel you actually use:
 
 - They read and write a sandbox, `.dev-home/` in this folder, with its own reels, pictures, settings and exports. It starts with a few sample reels. Your real library is never touched.
 - The app runs as "SwoReel Dev", with its own window, remembered state and name, and it runs this folder's command instead of the installed one.
 
-To try the plugin itself in Claude Code without installing it, start a session with this folder's copy and the same sandbox:
+To work on the plugin itself, start Claude Code with this folder's copy and the same sandbox:
 
 ```bash
-SWOREEL_HOME="$PWD/.dev-home" claude --plugin-dir ./plugin
+npm run dev:claude                   # or, from any folder: node <this folder>/scripts/dev.mjs claude
 ```
+
+That session uses this folder's skill, pane and `sworeel` command in place of an installed SwoReel's. An edit to the skill or the command is there the next time Claude uses it, and an edit to the pane's hooks reloads by itself, so there is nothing to rebuild or reinstall.
 
 When you build the app yourself, put the built `sworeel-app` on your PATH (or tell the command where it is with `sworeel config app <path>`) so that `sworeel app` can start it. An installed package does this for you.
 

@@ -1,15 +1,16 @@
-// Runs the command or the desktop app from this folder against a sandbox, so that working on
+// Runs the command, the desktop app or Claude Code from this folder against a sandbox, so that working on
 // SwoReel never touches the reels, pictures, settings or exports of the copy you actually use.
 //
 //   npm run sworeel -- <args>    the command, e.g. `npm run sworeel -- list`
 //   npm run dev:app              the desktop app, with live reload
+//   npm run dev:claude           Claude Code with this folder's plugin in place of an installed one
 //
 // The sandbox is `.dev-home/` here (or wherever SWOREEL_HOME already points). It starts with a
 // few sample reels. The app is built under another name ("SwoReel Dev"), so it can sit beside
 // an installed SwoReel without sharing its window, its remembered state or its place in menus.
 import { spawn } from 'node:child_process'
 import { cpSync, existsSync, mkdirSync, readdirSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { delimiter, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -27,15 +28,19 @@ if (!existsSync(reels)) {
 }
 
 const [what, ...args] = process.argv.slice(2)
-const env = { ...process.env, SWOREEL_HOME: home, SWOREEL_CLI: cli }
+// This folder's command goes first on PATH: Claude Code adds a plugin's commands last, so an
+// installed `sworeel` would otherwise be the one a development session runs.
+const env = { ...process.env, SWOREEL_HOME: home, SWOREEL_CLI: cli, PATH: `${dirname(cli)}${delimiter}${process.env.PATH ?? ''}` }
 const [program, programArgs] =
   what === 'app'
     ? [join(root, 'node_modules', '.bin', isWindows ? 'tauri.cmd' : 'tauri'), ['dev', '--config', join('src-tauri', 'tauri.dev.conf.json'), ...args]]
     : what === 'sworeel'
       ? [cli, args]
-      : [null, []]
+      : what === 'claude'
+        ? ['claude', ['--plugin-dir', join(root, 'plugin'), ...args]]
+        : [null, []]
 if (!program) {
-  console.error('Usage: node scripts/dev.mjs <sworeel|app> [args]')
+  console.error('Usage: node scripts/dev.mjs <sworeel|app|claude> [args]')
   process.exit(1)
 }
 
