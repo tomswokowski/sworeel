@@ -51,6 +51,9 @@ export interface Settings {
 /** What an export makes: one video, a video per default format, one still, or every step as a still. */
 export type ExportKind = 'video' | 'videos' | 'still' | 'stills'
 
+/** The web pages the app can open, by name. */
+export type Site = 'claude-code' | 'sworeel'
+
 export interface Backend {
   paths(): Promise<Paths>
   settings(): Promise<Settings>
@@ -85,6 +88,8 @@ export interface Backend {
   open(path: string): Promise<void>
   /** Whether the `sworeel` command, which comes with the Claude Code plugin, can be found. */
   pluginFound(): Promise<boolean>
+  /** Opens one of the web pages the welcome screen names in the browser. */
+  openSite(site: Site): Promise<void>
   /** The newer version of the app that has been fetched and opens after a restart, if there is one. */
   updateReady(): Promise<string | null>
   /** Closes the app and opens the newer version. */
@@ -113,6 +118,7 @@ const tauri: Backend = {
   importBundle: (text) => invoke('import_bundle', { text }),
   open: (path) => invoke('open_path', { path }),
   pluginFound: () => invoke('plugin_found'),
+  openSite: (site) => invoke('open_site', { site }),
   updateReady: () => invoke('update_ready'),
   restartToUpdate: () => invoke('restart_to_update'),
 }
