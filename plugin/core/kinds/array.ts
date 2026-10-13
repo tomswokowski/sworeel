@@ -35,7 +35,9 @@ function pointersBy(step: ArrayStep | undefined) {
 
 export function draw(ctx: Context2D, reel: ArrayReel, f: Sizes, area: Area, playhead: Playhead) {
   const { step, change, cells, swap } = stateAt(reel, playhead)
-  const size = Math.min((area.w * 0.96) / cells.length, area.h * 0.3, f.label * 5.5)
+  const size = Math.min((area.w * 0.96) / cells.length, area.h * 0.34, f.label * 8)
+  // Pointer names and positions grow with the cells, up to half as large again.
+  const grow = Math.min(Math.max(size / (f.label * 5.5), 1), 1.5)
   const left = area.x + (area.w - size * cells.length) / 2
   const middle = area.y + area.h / 2
   const highlighted = new Set(step?.highlight ?? [])
@@ -71,9 +73,9 @@ export function draw(ctx: Context2D, reel: ArrayReel, f: Sizes, area: Area, play
 
   ctx.globalAlpha = 1
   ctx.textAlign = 'center'
-  ctx.font = `400 ${f.sub}px ${MONO}`
+  ctx.font = `400 ${f.sub * grow}px ${MONO}`
   ctx.fillStyle = COLORS.muted
-  cells.forEach((_, i) => ctx.fillText(String(i), slot(i) + size / 2, middle + size * 0.44 + f.sub * 1.3))
+  cells.forEach((_, i) => ctx.fillText(String(i), slot(i) + size / 2, middle + size * 0.44 + f.sub * grow * 1.3))
 
   // Pointers sit above their cell, each with a short line down to it.
   for (const [position, names] of pointersBy(step)) {
@@ -83,7 +85,7 @@ export function draw(ctx: Context2D, reel: ArrayReel, f: Sizes, area: Area, play
     ctx.fillStyle = COLORS.reply
     ctx.lineWidth = 3
     ctx.beginPath()
-    ctx.moveTo(x, tip - f.label * 0.9)
+    ctx.moveTo(x, tip - f.label * grow * 0.9)
     ctx.lineTo(x, tip)
     ctx.stroke()
     ctx.beginPath()
@@ -91,8 +93,8 @@ export function draw(ctx: Context2D, reel: ArrayReel, f: Sizes, area: Area, play
     ctx.lineTo(x, tip)
     ctx.lineTo(x + 8, tip - 10)
     ctx.stroke()
-    ctx.font = `600 ${f.label * 0.85}px ${MONO}`
-    names.forEach((name, n) => ctx.fillText(name, x, tip - f.label * 1.5 - n * f.label * 1.05))
+    ctx.font = `600 ${f.label * grow * 0.85}px ${MONO}`
+    names.forEach((name, n) => ctx.fillText(name, x, tip - f.label * grow * 1.5 - n * f.label * grow * 1.05))
   }
 }
 
