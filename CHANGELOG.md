@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/tomswokowski/sworeel/compare/v0.1.2...v0.1.3) (2026-10-13)
+
+
+### Bug Fixes
+
+* install without a licence agreement screen ([#27](https://github.com/tomswokowski/sworeel/issues/27)) ([a9b6925](https://github.com/tomswokowski/sworeel/commit/a9b69254ff108f8b0e18348d5b3d8d24368c0805))
+
 ## [0.1.2](https://github.com/tomswokowski/sworeel/compare/v0.1.1...v0.1.2) (2026-10-11)
 
 
