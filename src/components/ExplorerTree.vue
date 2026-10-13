@@ -212,7 +212,7 @@ useDismiss(menuRoot, () => menu.value !== null, () => (menu.value = null))
       <span>{{ row.label }}</span>
     </div>
 
-    <p v-if="rows.length === 0" class="empty">No reels yet. Ask Claude to explain something as a reel.</p>
+    <p v-if="rows.length === 0" class="empty">No reels yet.</p>
     <p v-if="dragging" class="hint">Drop on a folder to move it there, or on empty space for the top level.</p>
 
     <div v-if="menu" ref="menuRoot" class="menu" role="menu" :style="{ left: `${menu.x}px`, top: `${menu.y}px` }" @click.stop>
