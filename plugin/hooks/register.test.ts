@@ -1,5 +1,5 @@
-import { expect, mock, test } from 'claude-code/testing'
-import type { On } from 'claude-code'
+import { expect, mock, test, type TestBody } from 'claude-code/testing'
+import type { On, PromptComposeTrait } from 'claude-code'
 
 const REEL = {
   title: 'Tiny',
@@ -252,7 +252,7 @@ function settings(on: On, suggest: boolean | 'broken') {
   return now
 }
 
-const offer = async ($: { prompt: { compose: (input?: object) => Promise<{ sections: readonly { id: string }[] }> } }, traits: string[] = []) =>
+const offer = async ($: Parameters<TestBody>[0], traits: PromptComposeTrait[] = []) =>
   (await $.prompt.compose({ model: 'claude', promptModel: 'claude', surfaces: ['terminal'], tools: [], outputStyle: null, traits })).sections.some(section => section.id === 'sworeel:offer')
 
 test('Claude is told it may offer a reel, unless the person turned that off', async ($, on) => {

@@ -35,6 +35,14 @@ jobs:
         run: npm run type-check
       - name: Test
         run: npm test
+      # The in-session pane and what Claude is told run inside Claude Code, so its own test
+      # runner checks them. Neither step signs in or talks to a model.
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Check the plugin
+        run: claude plugin validate --strict ./plugin
+      - name: Test the pane
+        run: claude plugin test ./plugin
 
   app:
     name: Desktop app (Linux)
