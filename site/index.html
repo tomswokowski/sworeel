@@ -428,7 +428,7 @@
           <ul>
             <li><svg class="icon" data-icon="check"></svg><span><strong>Checks for Node.js and ffmpeg</strong>, which SwoReel runs on, and installs whichever is missing with your system's own package manager.</span></li>
             <li><svg class="icon" data-icon="check"></svg><span><strong>Adds the SwoReel plugin</strong> to Claude Code.</span></li>
-            <li><svg class="icon" data-icon="check"></svg><span><strong>Asks if you want the desktop app</strong>, and installs it only if you say yes.</span></li>
+            <li><svg class="icon" data-icon="check"></svg><span><strong>Asks if you want automatic updates</strong> and the desktop app, and sets up only what you say yes to.</span></li>
             <li><svg class="icon" data-icon="check"></svg><span><strong>Changes nothing else.</strong> SwoReel has no account and collects no data, and you approve each command before it runs.</span></li>
           </ul>
           <p>You can read <a href="setup.md">exactly what Claude is told to do</a>.</p>
@@ -540,7 +540,7 @@ sudo apt install nodejs ffmpeg</pre><button type="button">Copy</button></div>
         </details>
         <details class="panel">
           <summary>How do I update?</summary>
-          <p>For the plugin, paste the setup line from <a href="#install">Install</a> into Claude Code again; Claude brings what you have up to date. For the desktop app, download the newest version from <a href="#download">this page</a> and install it over the old one. From version 0.2.0 on, the app keeps itself up to date and there is nothing to download. Your reels and settings are kept either way.</p>
+          <p>If you said yes to automatic updates during setup, there is nothing to do: Claude Code fetches new versions of the plugin in the background, and the desktop app updates itself (from version 0.2.0 on). Otherwise, paste the setup line from <a href="#install">Install</a> into Claude Code again and Claude brings what you have up to date; you can turn automatic updates on then, or under <code>/plugin</code>, Marketplaces. An app older than 0.2.0 needs one last download from <a href="#download">this page</a>. Your reels and settings are kept either way.</p>
         </details>
         <details class="panel">
           <summary>How do I move my reels to another computer?</summary>
