@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/tomswokowski/sworeel/compare/v0.2.0...v0.3.0) (2026-10-13)
+
+
+### Features
+
+* setup offers to keep the plugin up to date automatically ([#46](https://github.com/tomswokowski/sworeel/issues/46)) ([66f24a6](https://github.com/tomswokowski/sworeel/commit/66f24a6b24b98a2da55ec183818a6a0743df4f2d))
+* video without installing ffmpeg ([#50](https://github.com/tomswokowski/sworeel/issues/50)) ([6292706](https://github.com/tomswokowski/sworeel/commit/6292706dafd3f0945682f0761ad2bcc53979815e))
+
 ## [0.2.0](https://github.com/tomswokowski/sworeel/compare/v0.1.3...v0.2.0) (2026-10-13)
 
 
