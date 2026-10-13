@@ -1,5 +1,5 @@
-import { expect, mock, test } from 'claude-code/testing'
-import type { On } from 'claude-code'
+import { expect, mock, test, type TestBody } from 'claude-code/testing'
+import type { On, PromptComposeTrait } from 'claude-code'
 
 const REEL = {
   title: 'Tiny',
@@ -48,7 +48,8 @@ function world(on: On) {
     return { value: undefined }
   })
   on('fs.read', async (_, e) => {
-    if (e.path !== '/library/tiny.json') throw new Error('no such file')
+    // On Windows the path arrives as that system writes it, with a drive and backslashes.
+    if (!e.path.replaceAll('\\', '/').endsWith('/library/tiny.json')) throw new Error(`no such file: ${e.path}`)
     return { value: JSON.stringify(REEL) }
   })
   on('process.run', async (_, e) => {
@@ -252,7 +253,7 @@ function settings(on: On, suggest: boolean | 'broken') {
   return now
 }
 
-const offer = async ($: { prompt: { compose: (input?: object) => Promise<{ sections: readonly { id: string }[] }> } }, traits: string[] = []) =>
+const offer = async ($: Parameters<TestBody>[0], traits: PromptComposeTrait[] = []) =>
   (await $.prompt.compose({ model: 'claude', promptModel: 'claude', surfaces: ['terminal'], tools: [], outputStyle: null, traits })).sections.some(section => section.id === 'sworeel:offer')
 
 test('Claude is told it may offer a reel, unless the person turned that off', async ($, on) => {

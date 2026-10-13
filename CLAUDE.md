@@ -18,9 +18,12 @@ The person working here usually also has SwoReel installed and in daily use on t
 npm run type-check
 npm test
 claude plugin test ./plugin
-claude plugin validate ./plugin
+claude plugin validate --strict ./plugin
+npx tsc -p plugin/tsconfig.json --allowImportingTsExtensions   # the pane's hooks; see below
 (cd src-tauri && cargo clippy --all-targets -- -D warnings && cargo test)   # only if the app changed
 ```
+
+The pull request's checks run all of these except the hooks' type check (the `tsc` line). It needs type files that Claude Code writes beside the plugin the first time `npm run dev:claude` runs here, so it can only be run on a computer that has done that; run it whenever `plugin/hooks/` changes.
 
 ## Changes and releases
 
