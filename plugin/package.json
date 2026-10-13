@@ -8,6 +8,7 @@
     "node": ">=22.18.0"
   },
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@fontsource/jetbrains-mono": "^5.0.0",
     "@fontsource/noto-sans": "^5.0.0",
     "@napi-rs/canvas": "^1.0.11",

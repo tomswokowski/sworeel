@@ -62,7 +62,10 @@ const still = run('a still is exported', ['still', 'front-door', '--format', 'ta
 check('the still is a real image file', sized(still.out), still.out)
 const stills = run('every step is exported as a still', ['stills', 'compose-up', '--format', 'square'])
 check('the stills folder has one image per step', existsSync(stills.out) && readdirSync(stills.out).length === 6, stills.out)
-const video = run('a video is rendered (needs ffmpeg)', ['render', 'two-addresses', '--format', 'square'])
+// The ffmpeg that comes with the command's dependencies, whatever else this computer has.
+env.SWOREEL_FFMPEG = 'bundled'
+const video = run('a video is rendered with the bundled ffmpeg', ['render', 'two-addresses', '--format', 'square'])
+delete env.SWOREEL_FFMPEG
 check('the video is a real file', sized(video.out), video.out)
 
 run('a reel is duplicated', ['duplicate', 'front-door', 'copy'], /Copied to copy/)

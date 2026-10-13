@@ -56,8 +56,8 @@ this file before writing. If no kind fits, say so and offer a table or a paragra
 forcing one (see "What SwoReel cannot draw").
 
 - The `sworeel` command comes with this plugin and is on PATH. Its first run installs its
-  dependencies, which takes a few seconds. It needs Node.js 22.18 or newer, and `ffmpeg` for
-  video.
+  dependencies, which can take a minute. It needs Node.js 22.18 or newer and nothing else: the
+  ffmpeg that makes video comes with those dependencies, so never ask the user to install one.
 - Reels are JSON files in SwoReel's library folder, and renders go to its exports folder.
   Both differ by operating system and can be changed, so run `sworeel paths` to find them;
   never assume a location. `sworeel list` shows the reels already there.
