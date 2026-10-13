@@ -81,6 +81,8 @@ struct Settings {
     watermark: String,
     /// Whether the row of step dots is drawn on every frame.
     progress: bool,
+    /// Whether Claude may offer a reel nobody asked for.
+    suggest: bool,
     /// Colours that replace the default ones on every reel; an empty object when none are set.
     theme: serde_json::Value,
     /// The formats a video is rendered in when none is asked for.
@@ -100,6 +102,7 @@ fn get_settings() -> Settings {
     Settings {
         watermark: config.get("watermark").and_then(|value| value.as_str()).unwrap_or_default().to_owned(),
         progress: config.get("progress").and_then(|value| value.as_bool()).unwrap_or(false),
+        suggest: config.get("suggest").and_then(|value| value.as_bool()).unwrap_or(true),
         theme: config.get("theme").filter(|value| value.is_object()).cloned().unwrap_or_else(|| serde_json::json!({})),
         formats: if formats.is_empty() { vec!["wide".into()] } else { formats },
         fps: config.get("fps").and_then(|value| value.as_u64()).unwrap_or(30),
@@ -110,7 +113,7 @@ fn get_settings() -> Settings {
 /// both the command and the app read it.
 #[tauri::command]
 async fn set_setting(key: String, value: String) -> Result<()> {
-    if !["watermark", "progress", "formats", "fps", "exports"].contains(&key.as_str()) {
+    if !["watermark", "progress", "suggest", "formats", "fps", "exports"].contains(&key.as_str()) {
         return Err(format!("Unknown setting \"{key}\""));
     }
     sworeel(["config", "--", &key, &value]).await.map(|_| ())

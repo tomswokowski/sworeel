@@ -35,7 +35,7 @@ interface Ask {
 
 const backend = ref<Backend | null>(null)
 const paths = ref<Paths | null>(null)
-const settings = ref<Settings>({ watermark: '', progress: false, theme: {}, formats: ['wide'], fps: 30 })
+const settings = ref<Settings>({ watermark: '', progress: false, suggest: true, theme: {}, formats: ['wide'], fps: 30 })
 const settingsOpen = ref(false)
 const settingsError = ref<string | null>(null)
 
@@ -347,6 +347,7 @@ async function setSetting(key: SettingKey, value: string) {
   // Show the change at once; saving goes through the sworeel command, which takes a moment.
   const before = settings.value
   if (key === 'progress') settings.value = { ...before, progress: value === 'on' }
+  else if (key === 'suggest') settings.value = { ...before, suggest: value === 'on' }
   else if (key === 'watermark') settings.value = { ...before, watermark: value }
   else if (key === 'fps') settings.value = { ...before, fps: Number(value) }
   else if (key === 'formats') settings.value = { ...before, formats: value.split(',') as Settings['formats'] }
