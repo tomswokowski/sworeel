@@ -4,7 +4,8 @@
 //! version has been released and fetches it in the background. The download is checked against
 //! the public key in `tauri.conf.json`, so only a version built by the release workflow is ever
 //! accepted. On macOS and Linux the new version is put in place straight away and is what opens
-//! next time. On Windows installing closes the app, so it waits until the person chooses
+//! next time. On Windows installing has to close the app, so it waits until the app is closed
+//! anyway and installs then, without opening it again; or sooner, if the person chooses
 //! "Restart" in the notice the window shows.
 //!
 //! An app that was not installed in a way that can replace itself is left alone: a build for
@@ -81,4 +82,15 @@ pub fn restart_to_update(app: AppHandle, ready: State<Ready>) -> Result<(), Stri
         update.install(bytes).map_err(|error| format!("Could not install the update: {error}"))?;
     }
     app.restart()
+}
+
+/// Installs a fetched version that is still waiting, as the app closes. It is not opened
+/// afterwards: the person has just closed it.
+pub fn install_on_close(app: &AppHandle) {
+    let fetched = app.state::<Ready>().0.lock().unwrap().take();
+    if let Some(Fetched { waiting: Some((update, bytes)), .. }) = fetched
+        && let Err(error) = update.restart_after_install(false).install(bytes)
+    {
+        eprintln!("SwoReel could not install the newer version: {error}");
+    }
 }

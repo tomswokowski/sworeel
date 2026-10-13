@@ -344,6 +344,11 @@ pub fn run() {
             update::update_ready,
             update::restart_to_update
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running sworeel");
+        .build(tauri::generate_context!())
+        .expect("error while running sworeel")
+        .run(|app, event| {
+            if let tauri::RunEvent::Exit = event {
+                update::install_on_close(app);
+            }
+        });
 }

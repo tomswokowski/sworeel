@@ -484,7 +484,7 @@ onUnmounted(() => {
       <button
         v-if="update"
         class="update"
-        :title="`SwoReel ${update} has been downloaded. Restart to use it; otherwise it opens next time.`"
+        :title="`SwoReel ${update} has been downloaded. Restart to use it now; otherwise it opens next time.`"
         @click="attempt(() => backend!.restartToUpdate())"
       >
         Version {{ update }} Is Ready · Restart
