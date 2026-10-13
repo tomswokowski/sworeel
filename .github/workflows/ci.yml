@@ -1,10 +1,17 @@
 # Checks every change: the command and core on all three systems, the desktop app's own code on Linux.
+#
+# It also runs once a day with nothing changed here. The plugin runs inside Claude Code, which
+# updates on its own schedule, so a new Claude Code can break the plugin without a commit to
+# blame. The daily run installs the newest one and fails, with an email, the day that happens.
 name: CI
 
 on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: '17 9 * * *'
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -38,7 +45,7 @@ jobs:
       # The in-session pane and what Claude is told run inside Claude Code, so its own test
       # runner checks them. Neither step signs in or talks to a model.
       - name: Install Claude Code
-        run: npm install -g @anthropic-ai/claude-code
+        run: npm install -g @anthropic-ai/claude-code && claude --version
       - name: Check the plugin
         run: claude plugin validate --strict ./plugin
       - name: Test the pane
