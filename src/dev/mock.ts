@@ -121,4 +121,6 @@ export const mockBackend: Backend = {
     return added.length ? `Imported ${added.length === 1 ? '1 reel' : `${added.length} reels`}: ${added.map((each) => each.name).join(', ')}` : ''
   },
   open: async (path) => console.log('open', path),
+  updateReady: async () => null,
+  restartToUpdate: async () => {},
 }
