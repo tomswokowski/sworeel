@@ -130,6 +130,7 @@ sworeel paths [--json]                                 # where reels, pictures, 
 sworeel config                                         # print the settings
 sworeel config watermark [text]                        # credit on every export; no text removes it
 sworeel config progress <on|off>                       # step dots on every export; off by default
+sworeel config suggest <on|off>                        # whether you may offer a reel unasked; on by default
 sworeel config formats <list>                          # default video formats, e.g. wide,tall
 sworeel config fps <N>                                 # frames per second for video
 sworeel config theme [colour #hex|reset]               # the colours every reel is drawn in
@@ -181,6 +182,30 @@ result immediately and can ask for changes before any video is rendered.
 Both show structure and order, not the finished look. Check stills as well before calling a
 reel done. `sworeel play` is the same animation for a terminal of the user's own; you cannot
 watch it yourself.
+
+## Offering a reel
+
+Where this plugin's hooks run, you are told at the start of a session that you may end an
+explanation with a one-line offer to show it as a reel. That note says when to offer; this is
+what to do when the user says yes. If `sworeel config` shows `"suggest": false`, do not
+offer at all.
+
+An accepted offer is a look, not a request for a file, so show it first and save it only if
+they want it:
+
+1. Write the reel as usual (style, kind, `kinds/<kind>.md`), but to a scratch folder, not the
+   library. Take the content from the explanation you gave; do not add claims it did not make.
+2. `sworeel validate <path>.json` and check a still or two with `--out` into the same scratch
+   folder, as in the workflow.
+3. Show it with the `play` tool, passing the whole reel object as `reel`. Nothing is added to
+   the library. Where there is no `play` tool, paste `sworeel show <path>.json`.
+4. Say in one line that it is not saved, and that they can keep it, change it or export it.
+   When they ask for any of those, copy it into the library under a name that fits and carry
+   on from there; it is then a reel like any other.
+
+If the user asks you to stop offering, run `sworeel config suggest off`, tell them it is off
+and how to turn it back on, and make no more offers in this session either: the note you were
+given at the start does not change until the next session.
 
 ## Changing a reel together
 
@@ -242,6 +267,8 @@ share. Change one when the user asks for it:
 - `sworeel config progress on` adds a row of step dots to the bottom of every video and image,
   showing how far along it is (a bar past 30 steps). They are off unless the user asks; `off`
   removes them again.
+- `sworeel config suggest off` stops you offering reels nobody asked for (see "Offering a
+  reel"); `on` allows it again. Reels the user asks for are made either way.
 - `sworeel config formats wide,tall` sets which formats a plain `sworeel render` makes.
 - `sworeel config fps 60` sets the frame rate for video (30 unless changed).
 

@@ -269,6 +269,33 @@ function runs(row: TextCell[]) {
   return out
 }
 
+/**
+ * What Claude is told about offering a reel nobody asked for. It is part of every prompt, so
+ * it is short; what to do once the person says yes is in the skill.
+ */
+const OFFER = `# Offering a SwoReel reel
+
+The user has SwoReel, which shows an explanation as a short animation that builds step by step. When you have just explained something that is naturally a picture changing over time (how the parts of a system talk to each other, the order of a protocol or a request, a path through code, an algorithm working along a list, a few quantities compared) and the user did not ask for a visual, you may end that reply with one short line offering to show it as a reel, such as "Want to see this as a reel?".
+
+- Only offer after a real explanation, never after a short answer, in the middle of a task, or while the user is fixing something.
+- Offer once for a topic. If the user ignores or declines an offer, make no more in this session.
+- Never make, show or save a reel nobody asked for. The offer is one line and nothing else.
+- When they accept, load the sworeel:reel skill and follow "Offering a reel" in it.
+- If they ask you to stop offering, run \`sworeel config suggest off\` and stop.`
+
+/** Whether the person's settings let Claude offer reels; asked once, the first time it matters. */
+let offers: Promise<boolean> | null = null
+
+const mayOffer = ($: EngineInterface) =>
+  (offers ??= sworeel($, ['config'], 5_000)
+    .then(printed => (JSON.parse(printed) as { suggest?: boolean }).suggest !== false)
+    // Without an answer, say nothing this time and ask again next time: an offer the person
+    // turned off is worse than a missing one.
+    .catch(() => ((offers = null), false)))
+
+/** Sessions with nobody there to take up an offer: scripts, other programs, helpers of another Claude. */
+const UNATTENDED = ['bare', 'print', 'sdk-preset', 'teammate'] as const
+
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
@@ -299,6 +326,12 @@ export const register: Register = on => {
     })
 
     return next(e)
+  })
+
+  on('prompt.compose', async ($, e, next) => {
+    const composed = await next(e)
+    if (UNATTENDED.some(trait => e.traits.includes(trait)) || !(await mayOffer($))) return composed
+    return { sections: [...composed.sections, { id: 'sworeel:offer', text: OFFER, scope: 'session' }] }
   })
 
   on('command.run', { command: 'sworeel' }, async ($, e) => {

@@ -241,3 +241,35 @@ test('a reel that does not exist, or is not valid, says what is wrong', async ($
   expect((await $.command.run(typed('{ "title": "Half-written" }'))).text).toMatch(/"nodes" must be a non-empty array/)
   expect((await $.command.run(typed('pause'))).text).toMatch(/Nothing is playing/)
 })
+
+/** The `sworeel` command answering `config` with offers allowed or not, or not answering at all. */
+function settings(on: On, suggest: boolean | 'broken') {
+  const now = { suggest }
+  on('prompt.compose', async () => ({ sections: [{ id: 'intro', text: 'You are Claude.', scope: 'shared' as const }] }))
+  on('process.run', async () => ({
+    value: { exitCode: now.suggest === 'broken' ? 1 : 0, stdout: JSON.stringify(now), stderr: '', isStdoutTruncated: false, isStderrTruncated: false },
+  }))
+  return now
+}
+
+const offer = async ($: { prompt: { compose: (input?: object) => Promise<{ sections: readonly { id: string }[] }> } }, traits: string[] = []) =>
+  (await $.prompt.compose({ model: 'claude', promptModel: 'claude', surfaces: ['terminal'], tools: [], outputStyle: null, traits })).sections.some(section => section.id === 'sworeel:offer')
+
+test('Claude is told it may offer a reel, unless the person turned that off', async ($, on) => {
+  settings(on, true)
+  expect(await offer($)).toBe(true)
+  // Nobody is there to take up an offer in a scripted session.
+  expect(await offer($, ['print'])).toBe(false)
+})
+
+test('with offers turned off, Claude is told nothing', async ($, on) => {
+  settings(on, false)
+  expect(await offer($)).toBe(false)
+})
+
+test('settings that cannot be read are asked for again', async ($, on) => {
+  const now = settings(on, 'broken')
+  expect(await offer($)).toBe(false)
+  now.suggest = true
+  expect(await offer($)).toBe(true)
+})
