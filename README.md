@@ -233,6 +233,8 @@ The version and the changelog come from commit messages on `main`, so each start
 
 Pull requests are squashed, so it is the pull request's title that needs the prefix.
 
+Each release also moves a tag named `stable` to itself. Anything that should follow releases and not `main`, such as a listing in Anthropic's plugin directory, follows that tag.
+
 Installed apps update themselves: soon after starting, the app fetches the newest release in the background and it opens next time (on Windows it is installed as the app closes). Each build is signed for this with a key kept in the repository's secrets, and apps accept only what that key signed; see the top of `.github/workflows/release.yml`. On Linux only the AppImage updates itself.
 
 The macOS build is signed and notarized once the Apple secrets named at the top of `.github/workflows/release.yml` are set in the repository; without them it is unsigned. Running that workflow by hand from the Actions tab builds the installers without releasing, for trying a build.
