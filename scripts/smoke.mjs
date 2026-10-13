@@ -4,6 +4,7 @@
 //
 //   node scripts/smoke.mjs            the command, end to end
 //   node scripts/smoke.mjs --app      also start the installed desktop app and ask it what it shows
+//   SWOREEL_BIN=<folder> node scripts/smoke.mjs    use an installed plugin's command, not this checkout's
 import { spawnSync } from 'node:child_process'
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
@@ -17,11 +18,19 @@ const isWindows = process.platform === 'win32'
 // is left out so that nothing lands in a real person's trash.
 const onBuildMachine = Boolean(process.env.CI)
 const home = mkdtempSync(join(onBuildMachine ? homedir() : tmpdir(), 'sworeel-smoke-'))
-const env = { ...process.env, SWOREEL_HOME: home, PATH: `${join(root, 'plugin', 'bin')}${isWindows ? ';' : ':'}${process.env.PATH}` }
+// SWOREEL_BIN is the `bin` folder of a plugin installed by Claude Code. The launcher is then run
+// from there and is not put on the PATH, so the desktop app has to find the plugin by itself,
+// as it does when a person opens it. Without it, this checkout's launcher is found by name.
+const installed = process.env.SWOREEL_BIN
+const env = { ...process.env, SWOREEL_HOME: home, PATH: installed ? process.env.PATH : `${join(root, 'plugin', 'bin')}${isWindows ? ';' : ':'}${process.env.PATH}` }
+const name = isWindows ? 'sworeel.cmd' : 'sworeel'
+const launcher = installed ? (isWindows ? `"${join(installed, name)}"` : join(installed, name)) : name
 
-// The launcher is found by name, as it is on a real machine: a script here, a .cmd on Windows.
+function launch(args, withEnv) {
+  return spawnSync(launcher, args, { env: withEnv, encoding: 'utf8', shell: isWindows })
+}
 function sworeel(...args) {
-  const ran = spawnSync(isWindows ? 'sworeel.cmd' : 'sworeel', args, { env, encoding: 'utf8', shell: isWindows })
+  const ran = launch(args, env)
   return { code: ran.status, out: (ran.stdout ?? '').trim(), err: (ran.stderr ?? '').trim() }
 }
 
@@ -42,7 +51,7 @@ const sized = (path) => existsSync(path) && statSync(path).size > 1000
 mkdirSync(join(home, 'reels'), { recursive: true })
 for (const file of readdirSync(join(root, 'src', 'dev', 'fixtures'))) if (file.endsWith('.json')) cpSync(join(root, 'src', 'dev', 'fixtures', file), join(home, 'reels', file))
 
-console.log(`SwoReel smoke test on ${process.platform} ${process.arch}, Node ${process.version}\nLibrary: ${home}\n`)
+console.log(`SwoReel smoke test on ${process.platform} ${process.arch}, Node ${process.version}\nLibrary: ${home}\nCommand: ${installed ? join(installed, name) : 'this checkout'}\n`)
 
 run('the launcher starts and lists the library', ['list'], /front-door/)
 run('paths are inside the test folder', ['paths'], new RegExp(home.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&').slice(0, 20)))
@@ -68,7 +77,7 @@ const bundle = run('the library is bundled into one file', ['bundle', '.'])
 check('the bundle is a real file', sized(bundle.out), bundle.out)
 const otherHome = mkdtempSync(join(tmpdir(), 'sworeel-smoke-other-'))
 const other = { ...env, SWOREEL_HOME: otherHome }
-const imported = spawnSync(isWindows ? 'sworeel.cmd' : 'sworeel', ['import', bundle.out], { env: other, encoding: 'utf8', shell: isWindows })
+const imported = launch(['import', bundle.out], other)
 check('the bundle is imported into another library', imported.status === 0 && /Imported 4 reels/.test(imported.stdout), `${imported.stdout}\n${imported.stderr}`)
 
 if (onBuildMachine) {
