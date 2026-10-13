@@ -42,6 +42,8 @@ const settingsError = ref<string | null>(null)
 /** The reel or folder being dragged, from the explorer or the grid. */
 const dragging = ref<Dragged | null>(null)
 const library = ref<Library>({ reels: [], folders: [] })
+/** Whether the library has been read once. Until then it is unknown, not empty. */
+const ready = ref(false)
 const loaded = reactive(new Map<string, Loaded>())
 
 /** The folder being browsed; null shows every reel. */
@@ -183,6 +185,7 @@ async function readLibrary(ownChange: boolean) {
   }
 
   library.value = next
+  ready.value = true
   if (carry) {
     const { openPath: path, openName: name, folder: chosen } = carry
     carry = null
@@ -452,6 +455,7 @@ onMounted(async () => {
     plugins = window.setInterval(lookForPlugin, 3000)
   } catch (error) {
     failure.value = String(error)
+    ready.value = true
   }
   // Once the window is gone it is showing nothing.
   window.addEventListener('pagehide', forget)
@@ -476,6 +480,7 @@ onUnmounted(() => {
 
     <ExplorerTree
       :library="library"
+      :ready="ready"
       :open-path="openPath"
       :folder="folder"
       :dragging="dragging"
@@ -548,8 +553,8 @@ onUnmounted(() => {
       <button @click="copyText(SETUP, 'Copied. Paste it into Claude Code.')">Copy Setup Request</button>
     </p>
 
-    <WelcomePanel v-if="library.reels.length === 0" :plugin="plugin" @copy="copyText($event, 'Copied. Paste it into Claude Code.')" @open="openSite" />
-    <p v-else-if="shown.length === 0" class="empty">
+    <WelcomePanel v-if="ready && library.reels.length === 0" :plugin="plugin" @copy="copyText($event, 'Copied. Paste it into Claude Code.')" @open="openSite" />
+    <p v-else-if="ready && shown.length === 0" class="empty">
       {{ query ? 'No reels match that search.' : 'This folder is empty. Drag a reel here, or use Move to… in its ⋯ menu.' }}
     </p>
 

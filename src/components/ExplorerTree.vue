@@ -12,6 +12,8 @@ type Row = { key: string; type: 'folder' | 'reel'; depth: number; label: string;
 
 const props = defineProps<{
   library: Library
+  /** False until the library has been read once, so nothing claims it is empty before then. */
+  ready: boolean
   /** The open reel's path, and the folder whose reels the main area is listing. */
   openPath: string | null
   folder: string | null
@@ -212,7 +214,7 @@ useDismiss(menuRoot, () => menu.value !== null, () => (menu.value = null))
       <span>{{ row.label }}</span>
     </div>
 
-    <p v-if="rows.length === 0" class="empty">No reels yet.</p>
+    <p v-if="ready && rows.length === 0" class="empty">No reels yet.</p>
     <p v-if="dragging" class="hint">Drop on a folder to move it there, or on empty space for the top level.</p>
 
     <div v-if="menu" ref="menuRoot" class="menu" role="menu" :style="{ left: `${menu.x}px`, top: `${menu.y}px` }" @click.stop>
