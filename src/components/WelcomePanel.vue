@@ -1,8 +1,10 @@
 <script setup lang="ts">
 // What the library shows before there are any reels: how to get the plugin when it is missing,
 // and what to ask Claude for once it is there.
+import type { Site } from '@/backend.ts'
+
 defineProps<{ plugin: boolean }>()
-const emit = defineEmits<{ copy: [text: string] }>()
+const emit = defineEmits<{ copy: [text: string]; open: [site: Site] }>()
 
 /** The same request the website gives; Claude follows the steps at that address. */
 const SETUP = 'Set up SwoReel for me. Follow the steps at https://sworeel.com/setup.md'
@@ -28,7 +30,7 @@ const IDEAS = ['Make a reel of how a request reaches the database', 'Explain thi
       <p>Reels are made by asking Claude. This app is where you browse, play and export them, so it needs the SwoReel plugin for Claude Code.</p>
       <ol>
         <li>
-          <span>Install Claude Code, if you haven't: <b>claude.com/claude-code</b></span>
+          <span>Install Claude Code, if you haven't: <button class="link" @click="emit('open', 'claude-code')">claude.com/claude-code</button></span>
         </li>
         <li>
           <span>Paste this into Claude Code, and it does the rest:</span>
@@ -41,7 +43,7 @@ const IDEAS = ['Make a reel of how a request reaches the database', 'Explain thi
           <span>Restart Claude Code, then ask it for a reel. This screen changes by itself once the plugin is there.</span>
         </li>
       </ol>
-      <p class="aside">More at <b>sworeel.com</b></p>
+      <p class="aside">More at <button class="link" @click="emit('open', 'sworeel')">sworeel.com</button></p>
     </template>
   </section>
 </template>
@@ -135,9 +137,16 @@ ol li::before {
   font-weight: 600;
 }
 
-b {
-  color: var(--text);
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
   font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
   user-select: text;
 }
 

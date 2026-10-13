@@ -312,6 +312,18 @@ fn plugin_found() -> bool {
     paths::cli().is_file()
 }
 
+/// Opens one of the web pages the welcome screen names in the person's browser.
+#[tauri::command]
+fn open_site(site: String) -> Result<()> {
+    // By name, not by address, so the window can send the browser nowhere else.
+    let address = match site.as_str() {
+        "claude-code" => "https://claude.com/claude-code",
+        "sworeel" => "https://sworeel.com",
+        _ => return Err(format!("{site} is not a page SwoReel opens.")),
+    };
+    open::that_detached(address).map_err(|error| format!("Could not open {address}: {error}"))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -349,6 +361,7 @@ pub fn run() {
             import_bundle,
             open_path,
             plugin_found,
+            open_site,
             update::update_ready,
             update::restart_to_update
         ])

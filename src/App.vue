@@ -7,7 +7,7 @@ import WelcomePanel from '@/components/WelcomePanel.vue'
 import SettingsDialog from '@/components/SettingsDialog.vue'
 import ReelCard from '@/components/ReelCard.vue'
 import ReelPlayer from '@/components/ReelPlayer.vue'
-import { baseName, fullName, loadBackend, within, type Backend, type Library, type Paths, type ReelFile, type SettingKey, type Settings } from '@/backend.ts'
+import { baseName, fullName, loadBackend, within, type Backend, type Library, type Paths, type ReelFile, type SettingKey, type Settings, type Site } from '@/backend.ts'
 import { BASE, prepare } from '@/assets.ts'
 import type { Assets } from '../plugin/core/canvas.ts'
 import { kindOf, parseReel, type Reel } from '../plugin/core/reel.ts'
@@ -421,6 +421,8 @@ const SETUP = 'Set up SwoReel for me. Follow the steps at https://sworeel.com/se
 /** Whether the plugin's command is there. Without it the app can show reels but change nothing. */
 const plugin = ref(true)
 
+const openSite = (site: Site) => backend.value?.openSite(site).catch((error) => (failure.value = String(error)))
+
 async function lookForPlugin() {
   plugin.value = (await backend.value?.pluginFound().catch(() => true)) ?? true
 }
@@ -545,7 +547,7 @@ onUnmounted(() => {
       <button @click="copyText(SETUP, 'Copied. Paste it into Claude Code.')">Copy Setup Request</button>
     </p>
 
-    <WelcomePanel v-if="library.reels.length === 0" :plugin="plugin" @copy="copyText($event, 'Copied. Paste it into Claude Code.')" />
+    <WelcomePanel v-if="library.reels.length === 0" :plugin="plugin" @copy="copyText($event, 'Copied. Paste it into Claude Code.')" @open="openSite" />
     <p v-else-if="shown.length === 0" class="empty">
       {{ query ? 'No reels match that search.' : 'This folder is empty. Drag a reel here, or use Move to… in its ⋯ menu.' }}
     </p>

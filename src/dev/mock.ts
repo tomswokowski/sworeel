@@ -128,6 +128,7 @@ export const mockBackend: Backend = {
   open: async (path) => console.log('open', path),
   // `?noplugin` shows the app as it is before the plugin has been installed.
   pluginFound: async () => !new URLSearchParams(location.search).has('noplugin'),
+  openSite: async (site) => console.log('open site', site),
   updateReady: async () => null,
   restartToUpdate: async () => {},
 }
