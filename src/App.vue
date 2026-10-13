@@ -3,6 +3,7 @@ import { computed, markRaw, onMounted, onUnmounted, reactive, ref, watch } from 
 import AppDialog from '@/components/AppDialog.vue'
 import AppIcon from '@/components/AppIcon.vue'
 import ExplorerTree, { type Dragged } from '@/components/ExplorerTree.vue'
+import WelcomePanel from '@/components/WelcomePanel.vue'
 import SettingsDialog from '@/components/SettingsDialog.vue'
 import ReelCard from '@/components/ReelCard.vue'
 import ReelPlayer from '@/components/ReelPlayer.vue'
@@ -324,16 +325,19 @@ function deleteReel(file: ReelFile) {
   })
 }
 
-/** Puts the start of a message about a reel on the clipboard, ready to paste into Claude. */
-async function copyRequest(file: ReelFile) {
-  const text = `In my SwoReel reel "${fullName(file)}" (titled "${titleOf(file)}"), `
+/** Puts text for Claude on the clipboard, or shows it to be copied by hand where that is not allowed. */
+async function copyText(text: string, said: string) {
   try {
     await navigator.clipboard.writeText(text)
-    say('Copied. Paste it into Claude and finish the sentence.')
+    say(said)
   } catch {
     question({ title: 'Copy This Into Claude', message: 'Copying was not allowed here, so select and copy it yourself.', input: text, confirmLabel: 'Done', run: async () => {} })
   }
 }
+
+/** Puts the start of a message about a reel on the clipboard, ready to paste into Claude. */
+const copyRequest = (file: ReelFile) =>
+  copyText(`In my SwoReel reel "${fullName(file)}" (titled "${titleOf(file)}"), `, 'Copied. Paste it into Claude and finish the sentence.')
 
 /** How many setting changes are on their way to being saved. */
 let saving = 0
@@ -412,7 +416,26 @@ function deleteFolder(target: string) {
   })
 }
 
+/** The request that has Claude Code install the plugin; the website gives the same one. */
+const SETUP = 'Set up SwoReel for me. Follow the steps at https://sworeel.com/setup.md'
+/** Whether the plugin's command is there. Without it the app can show reels but change nothing. */
+const plugin = ref(true)
+
+async function lookForPlugin() {
+  plugin.value = (await backend.value?.pluginFound().catch(() => true)) ?? true
+}
+
+// A newer version of the app, once it has been fetched in the background.
+const update = ref<string | null>(null)
+
+async function lookForUpdate() {
+  update.value = (await backend.value?.updateReady().catch(() => null)) ?? null
+  if (update.value) clearInterval(updates)
+}
+
 let poll = 0
+let updates = 0
+let plugins = 0
 
 onMounted(async () => {
   try {
@@ -420,6 +443,10 @@ onMounted(async () => {
     paths.value = await backend.value.paths()
     await refresh()
     poll = window.setInterval(() => refresh(), 1000)
+    updates = window.setInterval(lookForUpdate, 15_000)
+    void lookForPlugin()
+    // Often enough that the welcome screen changes soon after Claude has installed the plugin.
+    plugins = window.setInterval(lookForPlugin, 3000)
   } catch (error) {
     failure.value = String(error)
   }
@@ -431,6 +458,8 @@ const forget = () => void backend.value?.setShowing(null, 0).catch(() => {})
 
 onUnmounted(() => {
   clearInterval(poll)
+  clearInterval(updates)
+  clearInterval(plugins)
   window.removeEventListener('pagehide', forget)
 })
 </script>
@@ -470,6 +499,14 @@ onUnmounted(() => {
       <button v-if="follow" class="following" title="The app is showing whichever reel changed last. Click to stop." @click="toggleFollow">
         ● Following Claude
       </button>
+      <button
+        v-if="update"
+        class="update"
+        :title="`SwoReel ${update} has been downloaded. Restart to use it now; otherwise it opens next time.`"
+        @click="attempt(() => backend!.restartToUpdate())"
+      >
+        Version {{ update }} Is Ready · Restart
+      </button>
       <button class="settings" @click="((settingsError = null), (settingsOpen = true))">
         <AppIcon name="settings" />
         Settings
@@ -503,9 +540,12 @@ onUnmounted(() => {
       </select>
     </header>
 
-    <p v-if="library.reels.length === 0" class="empty">
-      No reels yet. Ask Claude to explain something as a reel and it will appear here.
+    <p v-if="!plugin && library.reels.length > 0" class="missing" role="status">
+      <span>The SwoReel plugin for Claude Code was not found, so exporting, organising and settings will not work until it is set up.</span>
+      <button @click="copyText(SETUP, 'Copied. Paste it into Claude Code.')">Copy Setup Request</button>
     </p>
+
+    <WelcomePanel v-if="library.reels.length === 0" :plugin="plugin" @copy="copyText($event, 'Copied. Paste it into Claude Code.')" />
     <p v-else-if="shown.length === 0" class="empty">
       {{ query ? 'No reels match that search.' : 'This folder is empty. Drag a reel here, or use Move to… in its ⋯ menu.' }}
     </p>
@@ -617,7 +657,8 @@ onUnmounted(() => {
   gap: 0.5rem;
 }
 
-.foot .following {
+.foot .following,
+.foot .update {
   border-color: transparent;
   color: var(--accent);
   font-size: 0.85rem;
@@ -682,6 +723,23 @@ input[type='search'] {
   grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
   gap: 1rem;
   padding: 1rem;
+}
+
+/* Said once at the top when there are reels to show but nothing can be done with them. */
+.missing {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1rem 1rem 0;
+  padding: 0.5rem 0.6rem 0.5rem 0.9rem;
+  border: 1px solid var(--accent);
+  border-radius: 0.5rem;
+  background: var(--surface);
+}
+
+.missing button {
+  flex: none;
 }
 
 .empty {

@@ -22,6 +22,12 @@
 # secrets are set, and unsigned otherwise: AZURE_TENANT_ID, AZURE_CLIENT_ID and AZURE_CLIENT_SECRET
 # (an app registration allowed to sign with the certificate profile). Which signing account and
 # profile it uses is written in src-tauri/tauri.signing.conf.json.
+#
+# Installed apps update themselves from the newest release. Each build is signed for that with
+# the repository secrets TAURI_SIGNING_PRIVATE_KEY and TAURI_SIGNING_PRIVATE_KEY_PASSWORD, and
+# apps accept only what that key signed (its public half is in src-tauri/tauri.conf.json). The
+# build fails without them. Losing the key means installed apps can no longer be updated, so a
+# copy is kept outside GitHub.
 name: Release
 
 on:
@@ -139,8 +145,12 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ needs.release.outputs.tag }}
+          # The setup program is what the site offers on Windows, so it is what updates use too.
+          updaterJsonPreferNsis: true
           args: ${{ matrix.args }} ${{ env.SIGNING }}
 
       - name: Keep the installers from a run by hand

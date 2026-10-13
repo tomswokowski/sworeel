@@ -14,6 +14,11 @@ for (const [file, text] of Object.entries(fixtures)) {
   files.set(`${ROOT}/${name === 'two-addresses.json' ? 'web/' : ''}${name}`, { text, modified: Date.now() })
 }
 files.set(`${ROOT}/drafts/broken.json`, { text: '{ "title": "Half-written" }', modified: Date.now() - 60_000 })
+// `?empty` shows the app as it is before any reel has been made.
+if (new URLSearchParams(location.search).has('empty')) {
+  files.clear()
+  folders.clear()
+}
 
 const folderOf = (path: string) => path.slice(ROOT.length + 1).split('/').slice(0, -1).join('/')
 const nameOf = (path: string) => path.split('/').pop()!.replace(/\.json$/, '')
@@ -121,4 +126,8 @@ export const mockBackend: Backend = {
     return added.length ? `Imported ${added.length === 1 ? '1 reel' : `${added.length} reels`}: ${added.map((each) => each.name).join(', ')}` : ''
   },
   open: async (path) => console.log('open', path),
+  // `?noplugin` shows the app as it is before the plugin has been installed.
+  pluginFound: async () => !new URLSearchParams(location.search).has('noplugin'),
+  updateReady: async () => null,
+  restartToUpdate: async () => {},
 }

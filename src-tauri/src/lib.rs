@@ -1,5 +1,6 @@
 mod library;
 mod paths;
+mod update;
 
 use library::Library;
 use serde::Serialize;
@@ -36,7 +37,7 @@ async fn sworeel<const N: usize>(args: [&str; N]) -> Result<String> {
             if error.kind() == std::io::ErrorKind::NotFound {
                 // The app is a window onto the plugin's command; without it nothing can be changed or exported.
                 "SwoReel could not find the sworeel command, which comes with its Claude Code plugin. \
-                 Install the plugin (see https://github.com/tomswokowski/sworeel), then start the app again. \
+                 Set it up from https://sworeel.com, then try again. \
                  If it is installed somewhere unusual, set SWOREEL_CLI to its path."
                     .to_string()
             } else {
@@ -304,9 +305,22 @@ async fn open_path(path: String) -> Result<()> {
     sworeel(["open", "--", &path]).await.map(|_| ())
 }
 
+/// Whether the `sworeel` command is there to run. It is looked for afresh each time, so the app
+/// notices when Claude Code installs the plugin while it is open.
+#[tauri::command]
+fn plugin_found() -> bool {
+    paths::cli().is_file()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .manage(update::Ready::default())
+        .setup(|app| {
+            update::watch(app.handle());
+            Ok(())
+        })
         // Once the window is gone the app is showing nothing, however it was closed.
         .on_window_event(|_window, event| {
             if let tauri::WindowEvent::Destroyed = event {
@@ -333,8 +347,16 @@ pub fn run() {
             export_reel,
             bundle,
             import_bundle,
-            open_path
+            open_path,
+            plugin_found,
+            update::update_ready,
+            update::restart_to_update
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running sworeel");
+        .build(tauri::generate_context!())
+        .expect("error while running sworeel")
+        .run(|app, event| {
+            if let tauri::RunEvent::Exit = event {
+                update::install_on_close(app);
+            }
+        });
 }

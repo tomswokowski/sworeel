@@ -83,6 +83,12 @@ export interface Backend {
   /** Adds the reels in a bundle file's text to the library, and returns what happened in words. */
   importBundle(text: string): Promise<string>
   open(path: string): Promise<void>
+  /** Whether the `sworeel` command, which comes with the Claude Code plugin, can be found. */
+  pluginFound(): Promise<boolean>
+  /** The newer version of the app that has been fetched and opens after a restart, if there is one. */
+  updateReady(): Promise<string | null>
+  /** Closes the app and opens the newer version. */
+  restartToUpdate(): Promise<void>
 }
 
 const tauri: Backend = {
@@ -106,6 +112,9 @@ const tauri: Backend = {
   bundle: (name) => invoke('bundle', { name }),
   importBundle: (text) => invoke('import_bundle', { text }),
   open: (path) => invoke('open_path', { path }),
+  pluginFound: () => invoke('plugin_found'),
+  updateReady: () => invoke('update_ready'),
+  restartToUpdate: () => invoke('restart_to_update'),
 }
 
 export async function loadBackend(): Promise<Backend> {
