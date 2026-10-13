@@ -9,7 +9,9 @@ description: >
   screenshots, UI mock-ups and free sketches. Use for three kinds of request. (1) Making or
   changing a reel: the user asks to diagram, chart, visualize, illustrate, animate or walk
   through how something works, to turn an explanation, some code or some screenshots into
-  something they can share, or to change a reel they are looking at ("make this step shorter").
+  something they can share, to make a reel of a source they give you (a blog post, a link, a
+  document, a ticket, a pull request, a repository), or to change a reel they are looking at
+  ("make this step shorter").
   (2) Making reels look their way: brand colours, a light or dark look for all reels or one,
   the watermark, or a lasting preference for how their reels are made. (3) Managing SwoReel:
   anything about the user's library, reels, folders or exports, such as listing, finding,
@@ -187,6 +189,37 @@ Both show structure and order, not the finished look. Check stills as well befor
 reel done. `sworeel play` is the same animation for a terminal of the user's own; you cannot
 watch it yourself.
 
+## Making a reel from something the user gives you
+
+Often the request points at a source: a blog post or a web page, a chapter or a document, a
+ticket, a pull request, a repository, a transcript, or text pasted into the chat. The user
+wants its point as a reel, without being asked questions they have already answered by
+handing it over.
+
+- **Read it first, all of what matters.** Open the link, the file or the code before
+  deciding anything; do not work from a title or from what you remember of the subject. For
+  something long (a book, a large repository), read the part the request is about, and
+  enough around it to be sure what it says.
+- **Make the reel of its point, not a summary of its sections.** Ask what the source is
+  trying to get across, or what the user asked of it, and build the one picture that shows
+  that. A reel that gives every heading a step explains nothing.
+- **Stay inside the source.** Use its own names, terms, numbers, code and examples, and
+  claim nothing it does not say. Where you work something out from it (a percentage, a
+  total), say so in your reply. If the source is wrong or out of date, make the reel it
+  supports and tell the user what you noticed; do not quietly correct it.
+- **Say what you read.** In your reply, name the source and the part you used in a line, so
+  the user knows what the reel stands on.
+- **Let the request choose the length and the shape.** "For standup" or "for the team" is
+  a short reel that leads with what matters to them; "to post" or "for my phone" is `tall`.
+  Keep a ticket's key or a document's name in the title when the audience knows it by that.
+- **When one reel cannot hold it, make the best one and offer the rest.** A chapter or a
+  repository usually has several reels in it. Do not ask which to make: make the one the
+  request points at most, then name two or three others it could become, in a line. If they
+  want a set, put them in a folder named after the source.
+- **Ask only when you cannot get at the source.** A link that will not open, a file that is
+  not there, a ticket in a system you have no access to: say so and ask them to paste it.
+  A broad request is not a reason to ask; choose, and say what you chose.
+
 ## Offering a reel
 
 Where this plugin's hooks run, you are told at the start of a session that you may end an
@@ -348,6 +381,9 @@ For every kind:
 
 - **Captions carry the lesson.** One plain sentence per step, under about 90 characters. Say
   why the step matters, not only what changed. The last caption should state the takeaway.
+  Each caption is a whole sentence that makes sense alone: never run one sentence across
+  several steps with ellipses, since a still or a paused video shows one caption with no
+  neighbours.
 - **Keep it short.** 4 to 10 steps is a 20 to 40 second video. Split a longer story in two.
   There is no limit, and `sworeel validate` adds a note above 20 steps: offer to split it,
   but make the long reel if that is what the user wants. 
