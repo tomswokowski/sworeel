@@ -23,7 +23,7 @@ export const within = (candidate: string, parent: string) => candidate === paren
 export const baseName = (path: string) => path.split(/[/\\]/).pop() ?? path
 
 /** The settings the app can change. */
-export type SettingKey = 'watermark' | 'progress' | 'formats' | 'fps' | 'exports'
+export type SettingKey = 'watermark' | 'progress' | 'suggest' | 'formats' | 'fps' | 'exports'
 
 export interface Library {
   reels: ReelFile[]
@@ -40,6 +40,8 @@ export interface Settings {
   watermark: string
   /** Whether the row of step dots is drawn on every frame. */
   progress: boolean
+  /** Whether Claude may offer a reel nobody asked for. */
+  suggest: boolean
   /** Colours that replace the default ones on every reel; set by Claude with `sworeel config theme`. */
   theme: Partial<Theme>
   /** The formats a video is rendered in when none is asked for. */

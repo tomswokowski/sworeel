@@ -40,7 +40,7 @@ function relocate(from: string, to: string) {
 }
 
 let exports = '/mock/Documents/SwoReel'
-const settings = { watermark: '', progress: false, theme: {}, formats: ['wide'] as Format[], fps: 30 }
+const settings = { watermark: '', progress: false, suggest: true, theme: {}, formats: ['wide'] as Format[], fps: 30 }
 // With `?request` in the address, the mock asks for one reel at once, as `sworeel app` would.
 let request: { reel: string | null } | null = new URLSearchParams(location.search).has('request') ? { reel: 'web/two-addresses' } : null
 
@@ -64,6 +64,7 @@ export const mockBackend: Backend = {
   setSetting: async (key, value) => {
     if (key === 'watermark') settings.watermark = value.trim()
     else if (key === 'progress') settings.progress = value === 'on'
+    else if (key === 'suggest') settings.suggest = value === 'on'
     else if (key === 'formats') settings.formats = value.split(',') as Format[]
     else if (key === 'fps') settings.fps = Number(value)
     else if (key === 'exports') exports = value
