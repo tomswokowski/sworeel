@@ -185,19 +185,19 @@ test('a reel shown without being saved plays, but has no file to export', async 
 
 test('the model can ask what is showing, and show an edit where it was made', async ($, on) => {
   const { opened } = world(on)
-  expect((await $.tool.call({ tool: 'mcp__sworeel__play', input: { control: 'status' } })).result).toMatch(/on the reel library/)
+  expect((await $.tool.call({ tool: 'mcp__sworeel__play', control: 'status' })).result).toMatch(/on the reel library/)
 
   // Opened at a step, the reel waits there, paused, without taking the keyboard.
-  expect((await $.tool.call({ tool: 'mcp__sworeel__play', input: { reel: 'tiny', step: 2 } })).result).toBe('Showing "Tiny" in the SwoReel pane, paused at step 2 of 2.')
+  expect((await $.tool.call({ tool: 'mcp__sworeel__play', reel: 'tiny', step: 2 })).result).toBe('Showing "Tiny" in the SwoReel pane, paused at step 2 of 2.')
   expect(opened).toEqual([{ id: 'sworeel', title: 'SwoReel · Tiny' }])
   const ui = await $.ui.mount(PANE)
   expect(await ui.find({ type: 'Text', text: /The gateway answers\./ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Step 2 of 2/ })).toBeDefined()
 
-  expect((await $.tool.call({ tool: 'mcp__sworeel__play', input: { control: 'status' } })).result).toBe(
+  expect((await $.tool.call({ tool: 'mcp__sworeel__play', control: 'status' })).result).toBe(
     'The SwoReel pane last showed the reel "tiny", titled "Tiny", paused at step 2 of 2: "The gateway answers."',
   )
-  expect((await $.tool.call({ tool: 'mcp__sworeel__play', input: { control: 'reload' } })).result).toBe('Reloaded "Tiny", paused at step 2 of 2.')
+  expect((await $.tool.call({ tool: 'mcp__sworeel__play', control: 'reload' })).result).toBe('Reloaded "Tiny", paused at step 2 of 2.')
   expect(await ui.find({ type: 'Text', text: /The gateway answers\./ })).toBeDefined()
   await ui.unmount()
 })
