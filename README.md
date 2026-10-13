@@ -150,38 +150,63 @@ npx tauri icon brand/icon-macos.png -o /tmp/mac-icons  # then copy its icon.icns
 
 ## Developing
 
-```bash
-claude plugin validate ./plugin      # check the plugin manifest
-claude --plugin-dir ./plugin         # try the plugin without installing it
+Working on SwoReel is kept apart from using it. A computer can have SwoReel installed and in daily use while its code is being changed in this folder, and neither touches the other:
 
-npm install                          # desktop app dependencies
-(cd plugin && npm install)           # the command's own, which the app's maths typesetting shares
-npm run dev                          # work on the interface in a browser, against a mock library
+| | The SwoReel you use | The SwoReel you are changing |
+|---|---|---|
+| Start Claude Code with | `claude` | `npm run dev:claude` |
+| Plugin | The installed release | This folder's `plugin/`, for that session only |
+| Reels, settings, exports | Your own | A sandbox, `.dev-home/` in this folder |
+| Desktop app | SwoReel | "SwoReel Dev", from `npm run dev:app` |
+
+Nothing is installed, linked or changed in your Claude Code settings to develop. Closing the development session is all it takes to be back on the release. This is the same on Linux, macOS and Windows.
+
+### Setting up
+
+You need Node.js 22.18 or newer, `ffmpeg`, and Claude Code. The desktop app also needs [Rust and Tauri's system packages](https://tauri.app/start/prerequisites/); skip them if you are only working on the plugin.
+
+```bash
+git clone https://github.com/tomswokowski/sworeel && cd sworeel
+npm install                          # the desktop app's and the tests' dependencies
+(cd plugin && npm install)           # the command's own
+npm run dev:claude                   # Claude Code with this folder's plugin, in the sandbox
+```
+
+### The plugin
+
+`npm run dev:claude` starts Claude Code with this folder's skill, in-session pane and `sworeel` command in place of an installed SwoReel's, reading and writing only the sandbox. From another folder, run `node <this folder>/scripts/dev.mjs claude`. Anything after the command is passed to `claude`.
+
+There is nothing to build. An edit to the command or a reel kind is used the next time the command runs, an edit to the pane's hooks reloads when the file is saved, and an edit to the skill is read the next time Claude loads it (a new session is the sure way).
+
+```bash
+npm run sworeel -- list              # the command from this folder, in the sandbox
 npm test                             # test the reel kinds, the library, bundles and themes
 claude plugin test ./plugin          # test the in-session pane
-(cd src-tauri && cargo test)         # test the app's reading of the library
-npm run sworeel -- list              # the command from this folder, in the sandbox
+claude plugin validate ./plugin      # check the plugin manifest
+```
+
+The sandbox starts with a few sample reels. Delete `.dev-home/` to start it afresh; it is never committed.
+
+### The desktop app
+
+```bash
+npm run dev                          # the interface in a browser, against a mock library
 npm run dev:app                      # the app from this folder with live reload, in the sandbox
-npm run dev:claude                   # Claude Code with this folder's plugin, in the sandbox
+(cd src-tauri && cargo test)         # test the app's reading of the library
 npx tauri build --no-bundle          # build it to src-tauri/target/release/sworeel-app
 ```
 
-### Developing beside an installed SwoReel
-
-`npm run sworeel`, `npm run dev:app` and `npm run dev:claude` keep development apart from the SwoReel you actually use:
-
-- They read and write a sandbox, `.dev-home/` in this folder, with its own reels, pictures, settings and exports. It starts with a few sample reels. Your real library is never touched.
-- The app runs as "SwoReel Dev", with its own window, remembered state and name, and it runs this folder's command instead of the installed one.
-
-To work on the plugin itself, start Claude Code with this folder's copy and the same sandbox:
-
-```bash
-npm run dev:claude                   # or, from any folder: node <this folder>/scripts/dev.mjs claude
-```
-
-That session uses this folder's skill, pane and `sworeel` command in place of an installed SwoReel's. An edit to the skill or the command is there the next time Claude uses it, and an edit to the pane's hooks reloads by itself, so there is nothing to rebuild or reinstall.
+`npm run dev:app` runs as "SwoReel Dev", with its own window, remembered state and name, and it runs this folder's command, so it can sit beside an installed SwoReel.
 
 When you build the app yourself, put the built `sworeel-app` on your PATH (or tell the command where it is with `sworeel config app <path>`) so that `sworeel app` can start it. An installed package does this for you.
+
+### From a change to a release
+
+1. Make the change on a branch, and try it with `npm run dev:claude`.
+2. Run the tests above, and open a pull request whose title starts with the kind of change (see the table below). The same tests run there on Linux, macOS and Windows.
+3. Merge it. `main` is what the next release will be; nobody's installed SwoReel has changed yet.
+4. When it should reach people, merge the open "chore(main): release …" pull request (see Releasing).
+5. Installed copies then move to it: the desktop app updates itself, and the plugin with `claude plugin marketplace update tomswokowski` followed by `claude plugin update sworeel@tomswokowski`, or by itself where the marketplace is set to update automatically.
 
 ### Releasing
 
