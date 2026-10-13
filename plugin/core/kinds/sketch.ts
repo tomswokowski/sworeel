@@ -38,6 +38,43 @@ function edge(shape: Shape | undefined, centre: [number, number], target: [numbe
   return [centre[0] + dx * scale, centre[1] + dy * scale]
 }
 
+/**
+ * The part of the drawing space the shapes ever occupy, as [left, top, right, bottom]. The
+ * picture is fitted to this, not to the declared size, so a sketch drawn in one corner of its
+ * space still fills the frame. It covers every position a shape moves to, so it never changes
+ * while the reel plays.
+ */
+function boundsOf(reel: SketchReel): [number, number, number, number] {
+  const byId = new Map(reel.shapes.map((shape) => [shape.id, shape]))
+  const box = [Infinity, Infinity, -Infinity, -Infinity] as [number, number, number, number]
+  const take = (x: number, y: number, rx = 0, ry = 0) => {
+    box[0] = Math.min(box[0], x - rx)
+    box[1] = Math.min(box[1], y - ry)
+    box[2] = Math.max(box[2], x + rx)
+    box[3] = Math.max(box[3], y + ry)
+  }
+  for (const shape of reel.shapes) {
+    if (isLine(shape)) {
+      for (const end of [shape.from, shape.to]) if (Array.isArray(end)) take(end[0], end[1])
+    } else {
+      // A label under an icon needs room below it.
+      const [rx, ry] = reach(shape)
+      take(shape.x ?? 0, shape.y ?? 0, rx, shape.type === 'icon' && shape.label ? ry + 3 : ry)
+    }
+  }
+  for (const step of reel.steps) {
+    for (const [id, to] of Object.entries(step.move ?? {})) {
+      const shape = byId.get(id)
+      if (shape) take(to[0], to[1], ...reach(shape))
+    }
+  }
+  const [w, h] = sizeOf(reel)
+  if (box[0] === Infinity) return [0, 0, w, h]
+  // A little air around it, and never a space so small that a single shape is blown up to fill the frame.
+  const [padX, padY] = [Math.max(2, (w * 0.3 - (box[2] - box[0])) / 2), Math.max(2, (h * 0.3 - (box[3] - box[1])) / 2)]
+  return [box[0] - padX, box[1] - padY, box[2] + padX, box[3] + padY]
+}
+
 function stateAt(reel: SketchReel, playhead: Playhead | null) {
   const staged = stage(reel.shapes, reel.steps, 'sketch', playhead)
   const centres = centresAt(reel, playhead?.index ?? reel.steps.length - 1, playhead ? staged.change : 1)
@@ -52,12 +89,13 @@ function stateAt(reel: SketchReel, playhead: Playhead | null) {
 
 export function draw(ctx: Context2D, reel: SketchReel, f: Sizes, area: Area, playhead: Playhead, assets: Assets = {}) {
   const { shown, emphasis, centres, ends } = stateAt(reel, playhead)
-  const [w, h] = sizeOf(reel)
-  // The drawing space keeps its proportions and is centred in the area.
+  const [left, top, right, bottom] = boundsOf(reel)
+  const [w, h] = [right - left, bottom - top]
+  // What the shapes occupy keeps its proportions and is centred in the area.
   const unit = Math.min(area.w / w, area.h / h)
-  const px = (x: number) => area.x + (area.w - w * unit) / 2 + x * unit
-  const py = (y: number) => area.y + (area.h - h * unit) / 2 + y * unit
-  const type = Math.min(f.label, unit * 3)
+  const px = (x: number) => area.x + (area.w - w * unit) / 2 + (x - left) * unit
+  const py = (y: number) => area.y + (area.h - h * unit) / 2 + (y - top) * unit
+  const type = Math.min(f.label * 1.5, unit * 3)
 
   const look = (shape: Shape) => {
     const level = emphasis(shape.id)
