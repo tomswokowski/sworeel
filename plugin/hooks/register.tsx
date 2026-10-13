@@ -348,7 +348,10 @@ export const register: Register = on => {
   })
 
   on('tool.call', { tool: TOOL }, ($, e) => {
-    const { reel, control: action, step } = e.input as { reel?: unknown; control?: unknown; step?: unknown }
+    // A tool's arguments arrive beside the tool's name on the event itself. Earlier versions of
+    // Claude Code put them under `input`, so that is still read where it is there.
+    type Asked = { reel?: unknown; control?: unknown; step?: unknown }
+    const { reel, control: action, step } = ((e as { input?: Asked }).input ?? e) as Asked
     const answer = async () => {
       if (isControl(action)) return { result: await control($, action) }
       if (typeof reel !== 'string' && (typeof reel !== 'object' || reel === null)) {
