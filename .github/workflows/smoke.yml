@@ -181,7 +181,7 @@ jobs:
       - name: The command, as installed
         run: node scripts/smoke.mjs
 
-      - name: 'setup.md step 4: install the desktop app'
+      - name: 'setup.md step 5: install the desktop app'
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
