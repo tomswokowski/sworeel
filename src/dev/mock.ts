@@ -76,10 +76,14 @@ export const mockBackend: Backend = {
     return taken
   },
   paths: async () => ({ reels: ROOT, exports }),
-  list: async () => ({
-    reels: [...files].map(([path, file]) => ({ path, name: nameOf(path), folder: folderOf(path), modified: file.modified })),
-    folders: [...folders].sort(),
-  }),
+  list: async () => {
+    // `?slow` makes the library take a moment to arrive, as it can on a real disk, to see what shows meanwhile.
+    if (new URLSearchParams(location.search).has('slow')) await new Promise((done) => setTimeout(done, 1500))
+    return {
+      reels: [...files].map(([path, file]) => ({ path, name: nameOf(path), folder: folderOf(path), modified: file.modified })),
+      folders: [...folders].sort(),
+    }
+  },
   read: async (path) => files.get(path)!.text,
   readPicture: async () => {
     throw 'The mock library has no pictures.'
