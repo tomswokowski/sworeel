@@ -18,6 +18,12 @@
 # APPLE_ID, APPLE_PASSWORD (an app-specific password) and APPLE_TEAM_ID. The app is signed as
 # whoever the certificate names, so there is no separate identity to keep in step with it.
 # The Windows build is unsigned.
+#
+# Installed apps update themselves from the newest release. Each build is signed for that with
+# the repository secrets TAURI_SIGNING_PRIVATE_KEY and TAURI_SIGNING_PRIVATE_KEY_PASSWORD, and
+# apps accept only what that key signed (its public half is in src-tauri/tauri.conf.json). The
+# build fails without them. Losing the key means installed apps can no longer be updated, so a
+# copy is kept outside GitHub.
 name: Release
 
 on:
@@ -117,8 +123,12 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ needs.release.outputs.tag }}
+          # The setup program is what the site offers on Windows, so it is what updates use too.
+          updaterJsonPreferNsis: true
           args: ${{ matrix.args }}
 
       - name: Keep the installers from a run by hand

@@ -412,7 +412,16 @@ function deleteFolder(target: string) {
   })
 }
 
+// A newer version of the app, once it has been fetched in the background.
+const update = ref<string | null>(null)
+
+async function lookForUpdate() {
+  update.value = (await backend.value?.updateReady().catch(() => null)) ?? null
+  if (update.value) clearInterval(updates)
+}
+
 let poll = 0
+let updates = 0
 
 onMounted(async () => {
   try {
@@ -420,6 +429,7 @@ onMounted(async () => {
     paths.value = await backend.value.paths()
     await refresh()
     poll = window.setInterval(() => refresh(), 1000)
+    updates = window.setInterval(lookForUpdate, 15_000)
   } catch (error) {
     failure.value = String(error)
   }
@@ -431,6 +441,7 @@ const forget = () => void backend.value?.setShowing(null, 0).catch(() => {})
 
 onUnmounted(() => {
   clearInterval(poll)
+  clearInterval(updates)
   window.removeEventListener('pagehide', forget)
 })
 </script>
@@ -469,6 +480,14 @@ onUnmounted(() => {
     <div class="foot">
       <button v-if="follow" class="following" title="The app is showing whichever reel changed last. Click to stop." @click="toggleFollow">
         ● Following Claude
+      </button>
+      <button
+        v-if="update"
+        class="update"
+        :title="`SwoReel ${update} has been downloaded. Restart to use it; otherwise it opens next time.`"
+        @click="attempt(() => backend!.restartToUpdate())"
+      >
+        Version {{ update }} Is Ready · Restart
       </button>
       <button class="settings" @click="((settingsError = null), (settingsOpen = true))">
         <AppIcon name="settings" />
@@ -617,7 +636,8 @@ onUnmounted(() => {
   gap: 0.5rem;
 }
 
-.foot .following {
+.foot .following,
+.foot .update {
   border-color: transparent;
   color: var(--accent);
   font-size: 0.85rem;

@@ -1,5 +1,6 @@
 mod library;
 mod paths;
+mod update;
 
 use library::Library;
 use serde::Serialize;
@@ -307,6 +308,12 @@ async fn open_path(path: String) -> Result<()> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .manage(update::Ready::default())
+        .setup(|app| {
+            update::watch(app.handle());
+            Ok(())
+        })
         // Once the window is gone the app is showing nothing, however it was closed.
         .on_window_event(|_window, event| {
             if let tauri::WindowEvent::Destroyed = event {
@@ -333,7 +340,9 @@ pub fn run() {
             export_reel,
             bundle,
             import_bundle,
-            open_path
+            open_path,
+            update::update_ready,
+            update::restart_to_update
         ])
         .run(tauri::generate_context!())
         .expect("error while running sworeel");
