@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/tomswokowski/sworeel/compare/v0.5.0...v0.6.0) (2026-10-14)
+
+
+### Features
+
+* the plugin carries its icon, and its README says what its hooks do ([#64](https://github.com/tomswokowski/sworeel/issues/64)) ([077b342](https://github.com/tomswokowski/sworeel/commit/077b3424e7f825a2575e581b2584feff893b0c15))
+
 ## [0.5.0](https://github.com/tomswokowski/sworeel/compare/v0.4.1...v0.5.0) (2026-10-14)
 
 
