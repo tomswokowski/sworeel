@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/tomswokowski/sworeel/compare/v0.4.0...v0.4.1) (2026-10-14)
+
+
+### Bug Fixes
+
+* an app that starts while a release is being built still updates within minutes ([#58](https://github.com/tomswokowski/sworeel/issues/58)) ([ee4236a](https://github.com/tomswokowski/sworeel/commit/ee4236ab239fb664db2e7710c7d7e813e568ee68))
+
 ## [0.4.0](https://github.com/tomswokowski/sworeel/compare/v0.3.0...v0.4.0) (2026-10-14)
 
 
