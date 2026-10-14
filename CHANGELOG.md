@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.3](https://github.com/tomswokowski/sworeel/compare/v0.6.2...v0.6.3) (2026-10-14)
+
+
+### Bug Fixes
+
+* nothing in the command reads like a credential to the directory's scanner ([#72](https://github.com/tomswokowski/sworeel/issues/72)) ([193dac0](https://github.com/tomswokowski/sworeel/commit/193dac0f13213e0b521edeec20c2b257e3611401))
+* SwoReel reads only the settings it names from the environment ([#74](https://github.com/tomswokowski/sworeel/issues/74)) ([060f259](https://github.com/tomswokowski/sworeel/commit/060f25968c38325e59f40c9fa18ff41ed8957bb0))
+
 ## [0.6.2](https://github.com/tomswokowski/sworeel/compare/v0.6.1...v0.6.2) (2026-10-14)
 
 
