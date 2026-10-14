@@ -9,6 +9,8 @@
   "license": "MIT",
   "repository": "https://github.com/tomswokowski/sworeel",
   "homepage": "https://sworeel.com",
+  "supportUrl": "https://github.com/tomswokowski/sworeel/issues",
+  "privacyPolicyUrl": "https://sworeel.com/privacy",
   "keywords": [
     "reels",
     "explainer",
