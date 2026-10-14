@@ -38,8 +38,8 @@ The pane beside the chat is a hooks module (`hooks/register.tsx`). It runs insid
 - **When a session starts,** it registers the `/sworeel` command and one tool for Claude, `play`, which shows a reel in the pane. It answers that tool itself, because the tool is its own; it stands in for no other tool and changes no other tool's calls.
 - **It adds one short section to Claude's instructions** (the `prompt.compose` hook): a note that Claude may end an explanation with a one-line offer to show it as a reel. It changes nothing else in the instructions, and leaves the note out when the user has turned offers off with `sworeel config suggest off`, or when the session is scripted.
 - **It draws the pane** (`ui.render`) and closes it when asked (`ui.close`), and runs a timer while a reel plays.
-- **It reads reel files** from the user's SwoReel library, at the location `sworeel paths` gives.
-- **It runs one program: the plugin's own `sworeel` command**, in `bin/`, to do what the user or Claude asked. The calls it makes are `sworeel list`, `sworeel paths`, `sworeel config` (to read the offer setting), `sworeel render` and `sworeel still` (to export), `sworeel app` (to open the desktop app) and `sworeel delete` (to move a reel to the trash, only when the user confirms in the pane).
+- **It reads no files itself.** To show a reel it asks the `sworeel` command for it (`sworeel show --json`), which reads and checks the file.
+- **It runs one program: the plugin's own `sworeel` command**, in `bin/`, to do what the user or Claude asked. The calls it makes are `sworeel list` (the reels to pick from), `sworeel show --json` (one reel, to play), `sworeel config` (to read the offer setting), `sworeel render` and `sworeel still` (to export), `sworeel app` (to open the desktop app) and `sworeel delete` (to move a reel to the trash, only when the user confirms in the pane).
 
 ## Environment
 

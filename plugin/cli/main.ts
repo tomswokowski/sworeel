@@ -48,7 +48,8 @@ const USAGE = `Usage:
                                             With no --format, renders each of your default formats
 
   Watch
-    sworeel show <reel> [--step N] [--color]  The reel and its steps as text; --color for a terminal
+    sworeel show <reel> [--step N] [--color]  The reel and its steps as text; --color for a terminal,
+                                            or --json for the reel itself
     sworeel play [reel]                     Play it, animated, in the terminal; with no reel, pick one
     sworeel app [reel]                      Show it in the desktop app, starting the app if needed
     sworeel showing [--json]                Which reel and step the desktop app is on
@@ -460,6 +461,11 @@ try {
 
     case 'show': {
       const { reel } = await load(arg(0, 'show <reel> [--step N]'))
+      // The reel itself, checked, for a program to read: the in-session pane uses this.
+      if (values.json) {
+        console.log(JSON.stringify(reel))
+        break
+      }
       const step = stepOption()
       if (step !== undefined && (!Number.isInteger(step) || step < 1 || step > reel.steps.length)) {
         fail(`--step must be between 1 and ${reel.steps.length}.`)
