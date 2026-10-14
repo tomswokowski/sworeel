@@ -31,6 +31,29 @@ Everything happens on your computer. SwoReel has no account and no server, and c
 
 When you ask for a reel of a web page, it is Claude Code that opens the page, with its own tools and permissions; the plugin does not.
 
+## What the pane's hooks do
+
+The pane beside the chat is a hooks module (`hooks/register.tsx`). It runs inside Claude Code and sends nothing over the network. Here is everything it does:
+
+- **When a session starts,** it registers the `/sworeel` command and one tool for Claude, `play`, which shows a reel in the pane. It answers that tool itself, because the tool is its own; it stands in for no other tool and changes no other tool's calls.
+- **It adds one short section to Claude's instructions** (the `prompt.compose` hook): a note that Claude may end an explanation with a one-line offer to show it as a reel. It changes nothing else in the instructions, and leaves the note out when the user has turned offers off with `sworeel config suggest off`, or when the session is scripted.
+- **It draws the pane** (`ui.render`) and closes it when asked (`ui.close`), and runs a timer while a reel plays.
+- **It reads reel files** from the user's SwoReel library, at the location `sworeel paths` gives.
+- **It runs one program: the plugin's own `sworeel` command**, in `bin/`, to do what the user or Claude asked. The calls it makes are `sworeel list`, `sworeel paths`, `sworeel config` (to read the offer setting), `sworeel render` and `sworeel still` (to export), `sworeel app` (to open the desktop app) and `sworeel delete` (to move a reel to the trash, only when the user confirms in the pane).
+
+## Environment
+
+SwoReel reads no credentials and needs no keys or accounts. The only environment variables it reads are where to keep its files and where to find programs: `HOME`, `XDG_DATA_HOME`, `XDG_CONFIG_HOME`, `APPDATA` and `LOCALAPPDATA` (the system's folders for app data and settings), `PATH` (to find Node.js, ffmpeg and the desktop app), and `SWOREEL_HOME`, `SWOREEL_FFMPEG` and `SWOREEL_DEV`, which only its own tests and development setup set.
+
+## Where the bundled data comes from
+
+Two files in `core/data/` are generated, not written by hand, and say so at the top:
+
+- `icons.ts` holds a subset of the [Lucide](https://lucide.dev) icons (ISC licence), made by [`scripts/build-icons.mjs`](https://github.com/tomswokowski/sworeel/blob/main/scripts/build-icons.mjs).
+- `land.ts` holds the land outlines from [Natural Earth](https://www.naturalearthdata.com) (public domain), made by [`scripts/build-land.mjs`](https://github.com/tomswokowski/sworeel/blob/main/scripts/build-land.mjs).
+
+Everything else in the plugin is the source itself: TypeScript that Node.js runs directly, with no build step. Dependencies come from the public npm registry, at the versions in `package-lock.json`.
+
 ## More
 
 - Website and setup: https://sworeel.com
