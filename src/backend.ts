@@ -23,7 +23,7 @@ export const within = (candidate: string, parent: string) => candidate === paren
 export const baseName = (path: string) => path.split(/[/\\]/).pop() ?? path
 
 /** The settings the app can change. */
-export type SettingKey = 'watermark' | 'progress' | 'formats' | 'fps' | 'exports'
+export type SettingKey = 'watermark' | 'progress' | 'suggest' | 'formats' | 'fps' | 'exports'
 
 export interface Library {
   reels: ReelFile[]
@@ -40,6 +40,8 @@ export interface Settings {
   watermark: string
   /** Whether the row of step dots is drawn on every frame. */
   progress: boolean
+  /** Whether Claude may offer a reel nobody asked for. */
+  suggest: boolean
   /** Colours that replace the default ones on every reel; set by Claude with `sworeel config theme`. */
   theme: Partial<Theme>
   /** The formats a video is rendered in when none is asked for. */
@@ -50,6 +52,9 @@ export interface Settings {
 
 /** What an export makes: one video, a video per default format, one still, or every step as a still. */
 export type ExportKind = 'video' | 'videos' | 'still' | 'stills'
+
+/** The web pages the app can open, by name. */
+export type Site = 'claude-code' | 'sworeel'
 
 export interface Backend {
   paths(): Promise<Paths>
@@ -85,6 +90,8 @@ export interface Backend {
   open(path: string): Promise<void>
   /** Whether the `sworeel` command, which comes with the Claude Code plugin, can be found. */
   pluginFound(): Promise<boolean>
+  /** Opens one of the web pages the welcome screen names in the browser. */
+  openSite(site: Site): Promise<void>
   /** The newer version of the app that has been fetched and opens after a restart, if there is one. */
   updateReady(): Promise<string | null>
   /** Closes the app and opens the newer version. */
@@ -113,6 +120,7 @@ const tauri: Backend = {
   importBundle: (text) => invoke('import_bundle', { text }),
   open: (path) => invoke('open_path', { path }),
   pluginFound: () => invoke('plugin_found'),
+  openSite: (site) => invoke('open_site', { site }),
   updateReady: () => invoke('update_ready'),
   restartToUpdate: () => invoke('restart_to_update'),
 }

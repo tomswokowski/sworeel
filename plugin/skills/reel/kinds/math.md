@@ -31,7 +31,9 @@ definitions side by side.
 ## Making it read well
 
 - **Up to about 5 lines**, each short enough to read at a glance. One long formula is better
-  split into steps.
+  split into steps. Lines share the height of the frame, so in `wide` every line past the
+  fourth makes all of them smaller: split a longer derivation into two reels, or make it for
+  `tall`.
 - **Reveal one line per step**, and let the caption say in words what the line does.
 - **Use `\\text{...}` for words inside a formula**, and `note` for a label under it.
 - **Check the maths.** Work the derivation through before writing it; a typeset mistake

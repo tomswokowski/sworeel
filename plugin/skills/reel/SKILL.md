@@ -9,7 +9,9 @@ description: >
   screenshots, UI mock-ups and free sketches. Use for three kinds of request. (1) Making or
   changing a reel: the user asks to diagram, chart, visualize, illustrate, animate or walk
   through how something works, to turn an explanation, some code or some screenshots into
-  something they can share, or to change a reel they are looking at ("make this step shorter").
+  something they can share, to make a reel of a source they give you (a blog post, a link, a
+  document, a ticket, a pull request, a repository), or to change a reel they are looking at
+  ("make this step shorter").
   (2) Making reels look their way: brand colours, a light or dark look for all reels or one,
   the watermark, or a lasting preference for how their reels are made. (3) Managing SwoReel:
   anything about the user's library, reels, folders or exports, such as listing, finding,
@@ -54,8 +56,8 @@ this file before writing. If no kind fits, say so and offer a table or a paragra
 forcing one (see "What SwoReel cannot draw").
 
 - The `sworeel` command comes with this plugin and is on PATH. Its first run installs its
-  dependencies, which takes a few seconds. It needs Node.js 22.18 or newer, and `ffmpeg` for
-  video.
+  dependencies, which can take a minute. It needs Node.js 22.18 or newer and nothing else: the
+  ffmpeg that makes video comes with those dependencies, so never ask the user to install one.
 - Reels are JSON files in SwoReel's library folder, and renders go to its exports folder.
   Both differ by operating system and can be changed, so run `sworeel paths` to find them;
   never assume a location. `sworeel list` shows the reels already there.
@@ -75,7 +77,11 @@ forcing one (see "What SwoReel cannot draw").
 4. Look at your own work before showing it: render stills of two or three steps and Read the
    PNGs. Always check the `tall` format, since it is the tightest.
    `sworeel still <name> --format tall --step 3 --out <scratch>/check.png`
-5. Fix overlaps, clipped text and awkward wording.
+5. Fix overlaps, clipped text and awkward wording. Then ask of each still: does the picture
+   fill the frame, and could its smallest text be read on a phone? A picture that sits small
+   in an empty frame is a layout to fix (fewer columns, shorter labels, a sketch space shaped
+   for the format), not a detail. Check the format the user will actually use as well as
+   `tall`.
 6. Give the user something to look at. Play it in the pane, or paste the text version (see
    "Showing a reel in the chat"), so they see it at once. Render the video only if they
    asked for one, and tell them the path the command printed.
@@ -130,6 +136,7 @@ sworeel paths [--json]                                 # where reels, pictures, 
 sworeel config                                         # print the settings
 sworeel config watermark [text]                        # credit on every export; no text removes it
 sworeel config progress <on|off>                       # step dots on every export; off by default
+sworeel config suggest <on|off>                        # whether you may offer a reel unasked; on by default
 sworeel config formats <list>                          # default video formats, e.g. wide,tall
 sworeel config fps <N>                                 # frames per second for video
 sworeel config theme [colour #hex|reset]               # the colours every reel is drawn in
@@ -181,6 +188,61 @@ result immediately and can ask for changes before any video is rendered.
 Both show structure and order, not the finished look. Check stills as well before calling a
 reel done. `sworeel play` is the same animation for a terminal of the user's own; you cannot
 watch it yourself.
+
+## Making a reel from something the user gives you
+
+Often the request points at a source: a blog post or a web page, a chapter or a document, a
+ticket, a pull request, a repository, a transcript, or text pasted into the chat. The user
+wants its point as a reel, without being asked questions they have already answered by
+handing it over.
+
+- **Read it first, all of what matters.** Open the link, the file or the code before
+  deciding anything; do not work from a title or from what you remember of the subject. For
+  something long (a book, a large repository), read the part the request is about, and
+  enough around it to be sure what it says.
+- **Make the reel of its point, not a summary of its sections.** Ask what the source is
+  trying to get across, or what the user asked of it, and build the one picture that shows
+  that. A reel that gives every heading a step explains nothing.
+- **Stay inside the source.** Use its own names, terms, numbers, code and examples, and
+  claim nothing it does not say. Where you work something out from it (a percentage, a
+  total), say so in your reply. If the source is wrong or out of date, make the reel it
+  supports and tell the user what you noticed; do not quietly correct it.
+- **Say what you read.** In your reply, name the source and the part you used in a line, so
+  the user knows what the reel stands on.
+- **Let the request choose the length and the shape.** "For standup" or "for the team" is
+  a short reel that leads with what matters to them; "to post" or "for my phone" is `tall`.
+  Keep a ticket's key or a document's name in the title when the audience knows it by that.
+- **When one reel cannot hold it, make the best one and offer the rest.** A chapter or a
+  repository usually has several reels in it. Do not ask which to make: make the one the
+  request points at most, then name two or three others it could become, in a line. If they
+  want a set, put them in a folder named after the source.
+- **Ask only when you cannot get at the source.** A link that will not open, a file that is
+  not there, a ticket in a system you have no access to: say so and ask them to paste it.
+  A broad request is not a reason to ask; choose, and say what you chose.
+
+## Offering a reel
+
+Where this plugin's hooks run, you are told at the start of a session that you may end an
+explanation with a one-line offer to show it as a reel. That note says when to offer; this is
+what to do when the user says yes. If `sworeel config` shows `"suggest": false`, do not
+offer at all.
+
+An accepted offer is a look, not a request for a file, so show it first and save it only if
+they want it:
+
+1. Write the reel as usual (style, kind, `kinds/<kind>.md`), but to a scratch folder, not the
+   library. Take the content from the explanation you gave; do not add claims it did not make.
+2. `sworeel validate <path>.json` and check a still or two with `--out` into the same scratch
+   folder, as in the workflow.
+3. Show it with the `play` tool, passing the whole reel object as `reel`. Nothing is added to
+   the library. Where there is no `play` tool, paste `sworeel show <path>.json`.
+4. Say in one line that it is not saved, and that they can keep it, change it or export it.
+   When they ask for any of those, copy it into the library under a name that fits and carry
+   on from there; it is then a reel like any other.
+
+If the user asks you to stop offering, run `sworeel config suggest off`, tell them it is off
+and how to turn it back on, and make no more offers in this session either: the note you were
+given at the start does not change until the next session.
 
 ## Changing a reel together
 
@@ -242,6 +304,8 @@ share. Change one when the user asks for it:
 - `sworeel config progress on` adds a row of step dots to the bottom of every video and image,
   showing how far along it is (a bar past 30 steps). They are off unless the user asks; `off`
   removes them again.
+- `sworeel config suggest off` stops you offering reels nobody asked for (see "Offering a
+  reel"); `on` allows it again. Reels the user asks for are made either way.
 - `sworeel config formats wide,tall` sets which formats a plain `sworeel render` makes.
 - `sworeel config fps 60` sets the frame rate for video (30 unless changed).
 
@@ -317,6 +381,9 @@ For every kind:
 
 - **Captions carry the lesson.** One plain sentence per step, under about 90 characters. Say
   why the step matters, not only what changed. The last caption should state the takeaway.
+  Each caption is a whole sentence that makes sense alone: never run one sentence across
+  several steps with ellipses, since a still or a paused video shows one caption with no
+  neighbours.
 - **Keep it short.** 4 to 10 steps is a 20 to 40 second video. Split a longer story in two.
   There is no limit, and `sworeel validate` adds a note above 20 steps: offer to split it,
   but make the long reel if that is what the user wants. 

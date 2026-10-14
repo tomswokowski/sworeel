@@ -35,15 +35,6 @@ jobs:
         with:
           node-version: 24
 
-      - name: Install ffmpeg
-        shell: bash
-        run: |
-          case "$RUNNER_OS" in
-            Linux) sudo apt-get update && sudo apt-get install -y ffmpeg ;;
-            macOS) brew install ffmpeg ;;
-            Windows) choco install ffmpeg -y --no-progress ;;
-          esac
-
       # The first run of the launcher installs the command's own dependencies, as it does for a
       # person who has just installed the plugin.
       - name: The command, end to end
@@ -55,7 +46,10 @@ jobs:
           mkdir -p "$RUNNER_TEMP/app" && cd "$RUNNER_TEMP/app"
           case "$RUNNER_OS" in
             Linux)
-              sudo apt-get install -y xvfb libwebkit2gtk-4.1-0 libfuse2t64 || sudo apt-get install -y xvfb libwebkit2gtk-4.1-0 libfuse2
+              # The AppImage brings everything but the graphics libraries every Linux desktop has,
+              # which a build machine with no screen lacks. xvfb stands in for the screen.
+              sudo apt-get update
+              sudo apt-get install -y xvfb libegl1 libgles2
               gh release download --repo "$GITHUB_REPOSITORY" --pattern '*.AppImage'
               mkdir -p "$HOME/.local/bin" && mv ./*.AppImage "$HOME/.local/bin/sworeel-app" && chmod +x "$HOME/.local/bin/sworeel-app"
               ;;
@@ -129,28 +123,26 @@ jobs:
         with:
           node-version: 24
 
-      - name: 'setup.md step 2: install Node.js and ffmpeg'
+      - name: 'setup.md step 2: install Node.js'
         shell: bash
         timeout-minutes: 15
         # No keyboard is attached, as when Claude runs a command, so a question would stop it here.
         run: |
           case "$RUNNER_OS" in
-            Linux) sudo apt-get update && sudo apt install -y ffmpeg < /dev/null ;;
-            macOS) brew install node ffmpeg < /dev/null ;;
+            Linux) echo "Node.js is already there" ;;
+            macOS) brew install node < /dev/null ;;
             Windows)
               winget install OpenJS.NodeJS --accept-source-agreements --accept-package-agreements < /dev/null
-              winget install Gyan.FFmpeg --accept-source-agreements --accept-package-agreements < /dev/null
               # A new terminal would find these; this one was opened before they were installed.
               cygpath -w "$LOCALAPPDATA/Microsoft/WinGet/Links" >> "$GITHUB_PATH"
               ;;
           esac
 
-      - name: 'setup.md step 2: check both again'
+      - name: 'setup.md step 2: check again'
         shell: bash
         run: |
           node --version
           node -e 'const [a, b] = process.versions.node.split(".").map(Number); if (a < 22 || (a === 22 && b < 18)) { console.error("Node.js is older than 22.18"); process.exit(1) }'
-          ffmpeg -version | head -1
 
       - name: Install Claude Code
         run: npm install -g @anthropic-ai/claude-code
@@ -181,7 +173,7 @@ jobs:
       - name: The command, as installed
         run: node scripts/smoke.mjs
 
-      - name: 'setup.md step 4: install the desktop app'
+      - name: 'setup.md step 5: install the desktop app'
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -192,7 +184,8 @@ jobs:
           asset() { node -e 'const found = require("./latest.json").assets.find((a) => a.name.endsWith(process.argv[1])); if (!found) process.exit(1); console.log(found.browser_download_url)' -- "$1"; }
           case "$RUNNER_OS" in
             Linux)
-              sudo apt-get install -y xvfb libwebkit2gtk-4.1-0 libfuse2t64
+              sudo apt-get update
+              sudo apt-get install -y xvfb libegl1 libgles2
               [ "$(uname -m)" = x86_64 ]
               mkdir -p "$HOME/.local/bin"
               curl -fsSL -o "$HOME/.local/bin/sworeel-app" "$(asset .AppImage)"

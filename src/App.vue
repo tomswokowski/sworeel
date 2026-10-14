@@ -7,7 +7,7 @@ import WelcomePanel from '@/components/WelcomePanel.vue'
 import SettingsDialog from '@/components/SettingsDialog.vue'
 import ReelCard from '@/components/ReelCard.vue'
 import ReelPlayer from '@/components/ReelPlayer.vue'
-import { baseName, fullName, loadBackend, within, type Backend, type Library, type Paths, type ReelFile, type SettingKey, type Settings } from '@/backend.ts'
+import { baseName, fullName, loadBackend, within, type Backend, type Library, type Paths, type ReelFile, type SettingKey, type Settings, type Site } from '@/backend.ts'
 import { BASE, prepare } from '@/assets.ts'
 import type { Assets } from '../plugin/core/canvas.ts'
 import { kindOf, parseReel, type Reel } from '../plugin/core/reel.ts'
@@ -35,13 +35,15 @@ interface Ask {
 
 const backend = ref<Backend | null>(null)
 const paths = ref<Paths | null>(null)
-const settings = ref<Settings>({ watermark: '', progress: false, theme: {}, formats: ['wide'], fps: 30 })
+const settings = ref<Settings>({ watermark: '', progress: false, suggest: true, theme: {}, formats: ['wide'], fps: 30 })
 const settingsOpen = ref(false)
 const settingsError = ref<string | null>(null)
 
 /** The reel or folder being dragged, from the explorer or the grid. */
 const dragging = ref<Dragged | null>(null)
 const library = ref<Library>({ reels: [], folders: [] })
+/** Whether the library has been read once. Until then it is unknown, not empty. */
+const ready = ref(false)
 const loaded = reactive(new Map<string, Loaded>())
 
 /** The folder being browsed; null shows every reel. */
@@ -183,6 +185,7 @@ async function readLibrary(ownChange: boolean) {
   }
 
   library.value = next
+  ready.value = true
   if (carry) {
     const { openPath: path, openName: name, folder: chosen } = carry
     carry = null
@@ -347,6 +350,7 @@ async function setSetting(key: SettingKey, value: string) {
   // Show the change at once; saving goes through the sworeel command, which takes a moment.
   const before = settings.value
   if (key === 'progress') settings.value = { ...before, progress: value === 'on' }
+  else if (key === 'suggest') settings.value = { ...before, suggest: value === 'on' }
   else if (key === 'watermark') settings.value = { ...before, watermark: value }
   else if (key === 'fps') settings.value = { ...before, fps: Number(value) }
   else if (key === 'formats') settings.value = { ...before, formats: value.split(',') as Settings['formats'] }
@@ -421,6 +425,8 @@ const SETUP = 'Set up SwoReel for me. Follow the steps at https://sworeel.com/se
 /** Whether the plugin's command is there. Without it the app can show reels but change nothing. */
 const plugin = ref(true)
 
+const openSite = (site: Site) => backend.value?.openSite(site).catch((error) => (failure.value = String(error)))
+
 async function lookForPlugin() {
   plugin.value = (await backend.value?.pluginFound().catch(() => true)) ?? true
 }
@@ -449,6 +455,7 @@ onMounted(async () => {
     plugins = window.setInterval(lookForPlugin, 3000)
   } catch (error) {
     failure.value = String(error)
+    ready.value = true
   }
   // Once the window is gone it is showing nothing.
   window.addEventListener('pagehide', forget)
@@ -473,6 +480,7 @@ onUnmounted(() => {
 
     <ExplorerTree
       :library="library"
+      :ready="ready"
       :open-path="openPath"
       :folder="folder"
       :dragging="dragging"
@@ -545,8 +553,8 @@ onUnmounted(() => {
       <button @click="copyText(SETUP, 'Copied. Paste it into Claude Code.')">Copy Setup Request</button>
     </p>
 
-    <WelcomePanel v-if="library.reels.length === 0" :plugin="plugin" @copy="copyText($event, 'Copied. Paste it into Claude Code.')" />
-    <p v-else-if="shown.length === 0" class="empty">
+    <WelcomePanel v-if="ready && library.reels.length === 0" :plugin="plugin" @copy="copyText($event, 'Copied. Paste it into Claude Code.')" @open="openSite" />
+    <p v-else-if="ready && shown.length === 0" class="empty">
       {{ query ? 'No reels match that search.' : 'This folder is empty. Drag a reel here, or use Move to… in its ⋯ menu.' }}
     </p>
 

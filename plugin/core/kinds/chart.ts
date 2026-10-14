@@ -38,18 +38,23 @@ function barsAt(reel: ChartReel, playhead: Playhead | null) {
 
 export function draw(ctx: Context2D, reel: ChartReel, f: Sizes, area: Area, playhead: Playhead) {
   const bars = barsAt(reel, playhead)
-  const rowH = Math.min(area.h / bars.length, f.label * 4.2)
+  const rowH = Math.min(area.h / bars.length, f.label * 6.5)
+  // With few bars the rows are tall, and the words and numbers grow with them.
+  const roomy = Math.max(f.label, Math.min(f.label * 1.45, rowH * 0.3))
+  // ...but never so large that the longest label no longer fits beside its bar.
+  ctx.font = `600 ${roomy}px ${SANS}`
+  const type = Math.max(f.label, roomy * Math.min((area.w * 0.34) / Math.max(...bars.map((bar) => ctx.measureText(bar.label).width)), 1))
   const thickness = rowH * 0.56
   const top = area.y + (area.h - rowH * bars.length) / 2
 
-  ctx.font = `600 ${f.label}px ${SANS}`
+  ctx.font = `600 ${type}px ${SANS}`
   const labelW = Math.min(Math.max(...bars.map((bar) => ctx.measureText(bar.label).width)), area.w * 0.34)
-  ctx.font = `400 ${f.label}px ${SANS}`
+  ctx.font = `400 ${type}px ${SANS}`
   // Room for the widest value any bar shows, at the start or after a step changes it.
   const values = [...reel.bars.map((bar) => bar.value), ...reel.steps.flatMap((s) => Object.values(s.set ?? {}))]
-  const valueW = Math.max(...values.map((value) => ctx.measureText(amount(reel, value)).width)) + f.label
-  const trackX = area.x + labelW + f.label
-  const trackW = area.w - labelW - f.label - valueW
+  const valueW = Math.max(...values.map((value) => ctx.measureText(amount(reel, value)).width)) + type
+  const trackX = area.x + labelW + type
+  const trackW = area.w - labelW - type - valueW
 
   bars.forEach((bar, i) => {
     const y = top + rowH * i + rowH / 2
@@ -65,8 +70,8 @@ export function draw(ctx: Context2D, reel: ChartReel, f: Sizes, area: Area, play
     ctx.globalAlpha = bar.shown * (bar.emphasis === 'low' ? 0.6 : 1)
     ctx.textAlign = 'right'
     ctx.fillStyle = bar.emphasis === 'low' ? COLORS.muted : COLORS.text
-    ctx.font = `600 ${f.label}px ${SANS}`
-    ctx.fillText(bar.label, trackX - f.label * 0.6, y)
+    ctx.font = `600 ${type}px ${SANS}`
+    ctx.fillText(bar.label, trackX - type * 0.6, y)
 
     const width = Math.max(trackW * bar.length, bar.shown ? 6 : 0)
     ctx.fillStyle = color
@@ -76,8 +81,8 @@ export function draw(ctx: Context2D, reel: ChartReel, f: Sizes, area: Area, play
 
     ctx.textAlign = 'left'
     ctx.fillStyle = bar.emphasis === 'high' ? COLORS.request : bar.emphasis === 'low' ? COLORS.muted : COLORS.text
-    ctx.font = `400 ${f.label}px ${SANS}`
-    ctx.fillText(amount(reel, bar.value), trackX + width + f.label * 0.5, y)
+    ctx.font = `400 ${type}px ${SANS}`
+    ctx.fillText(amount(reel, bar.value), trackX + width + type * 0.5, y)
   })
   ctx.globalAlpha = 1
 }

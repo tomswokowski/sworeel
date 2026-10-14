@@ -3,15 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SwoReel: explain anything as a short animated reel</title>
+<title>SwoReel: Explain Anything as a Short Animated Reel</title>
 <meta name="description" content="Ask Claude to explain anything as a short animated reel: diagrams, charts, code walkthroughs, maths, maps and annotated screenshots. Export a video or images you can share anywhere.">
-<meta property="og:title" content="SwoReel">
+<meta property="og:title" content="SwoReel: Explain Anything as a Short Animated Reel">
 <meta property="og:description" content="Short animated explanations, made by talking to Claude.">
 <meta property="og:image" content="https://sworeel.com/assets/demo-poster.webp">
 <meta property="og:url" content="https://sworeel.com/">
 <link rel="canonical" href="https://sworeel.com/">
 <meta name="theme-color" content="#020a11">
+<!-- The app's own icon: the .ico for browsers that look for one, the SVG for those that take it
+     (sharp at every size), and a larger picture for phone home screens. -->
+<link rel="icon" href="favicon.ico" sizes="32x32">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preload" href="assets/fonts/noto-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/noto-sans-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
@@ -36,7 +40,6 @@
   }
 
   *, *::before, *::after { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
   /* Phones otherwise enlarge some text on their own when turned sideways. */
   html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   body { margin: 0; background: var(--page); color: var(--text); font: 17px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
@@ -86,9 +89,7 @@
   nav .links .btn .icon { width: 16px; height: 16px; stroke-width: 2.5; }
 
   .hero { padding: 64px 0 0; text-align: center; }
-  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 999px; background: rgb(10 30 44 / 70%); color: var(--muted); font-size: 0.85rem; }
-  .pill i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
-  .hero h1 { margin-top: 22px; font-size: clamp(2.3rem, 6.4vw, 4.4rem); font-weight: 700; }
+  .hero h1 { font-size: clamp(2.3rem, 6.4vw, 4.4rem); font-weight: 700; }
   /* The coloured half always starts its own line, so the heading breaks in the same place at every width. */
   .hero h1 em { display: block; font-style: normal; color: var(--accent); }
   .hero .lede { max-width: 36rem; margin: 22px auto 0; color: var(--muted); font-size: clamp(1.05rem, 2.1vw, 1.25rem); }
@@ -155,6 +156,7 @@
 
   /* ---- sections ---- */
   section { padding: 96px 0 0; }
+  section:focus { outline: none; }
   .eyebrow { color: var(--accent); font: 400 0.8rem/1 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; }
   .title { margin-top: 14px; font-size: clamp(1.7rem, 4.2vw, 2.6rem); font-weight: 700; }
   .intro { max-width: 42rem; margin-top: 14px; color: var(--muted); font-size: 1.05rem; }
@@ -162,7 +164,10 @@
   .panel { border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
 
   .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr)); gap: 16px; margin-top: 32px; }
-  .card { padding: 24px; }
+  /* A card's parts sit on rows the whole line of cards shares, so headings, text and the
+     example request each start level across the line, whatever their lengths. */
+  .card { display: grid; grid-template-rows: subgrid; grid-row: span 4; row-gap: 0; padding: 24px; }
+  .cards.plain .card { grid-row: span 3; }
   .card .num { color: var(--accent); font: 400 0.8rem var(--mono); letter-spacing: 0.1em; }
   .card h3 { margin-top: 10px; font-size: 1.2rem; }
   .card p { margin-top: 8px; color: var(--muted); font-size: 0.97rem; }
@@ -215,22 +220,22 @@
   .manual .intro { margin-top: 8px; font-size: 1rem; }
   .manual .steps { margin-top: 22px; }
 
-  .systems { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 14px; margin-top: 18px; }
-  .system { display: flex; flex-direction: column; padding: 18px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+  .systems { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 16px; margin-top: 32px; }
+  .system { display: flex; flex-direction: column; padding: 22px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
   .system.yours { border-color: var(--accent); box-shadow: 0 0 0 3px rgb(26 206 227 / 12%); }
-  .system h4 { display: flex; align-items: center; justify-content: space-between; font-size: 1.05rem; }
-  .system h4 small { display: none; color: var(--accent); font: 400 0.7rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
-  .system.yours h4 small { display: inline; }
+  .system h3 { display: flex; align-items: center; justify-content: space-between; font-size: 1.15rem; }
+  .system h3 small { display: none; color: var(--accent); font: 400 0.7rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+  .system.yours h3 small { display: inline; }
   .system .files { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
-  .system .files a { display: inline-flex; align-items: center; gap: 7px; height: 2.2rem; padding: 0 0.8rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font: 400 0.86rem var(--mono); }
-  .system .files a:first-child { border-color: var(--accent); background: var(--accent); color: #04202a; }
+  .system .files a { display: inline-flex; align-items: center; gap: 7px; height: 2.4rem; padding: 0 0.9rem; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); font: 400 0.86rem var(--mono); }
+  .system .files a:first-child { border-color: var(--accent); background: var(--accent); color: #04202a; font-weight: 600; }
   .system .files a:hover { border-color: var(--accent); text-decoration: none; }
+  .system .soon { display: inline-flex; align-items: center; height: 2.4rem; padding: 0 0.9rem; border: 1px dashed var(--border); border-radius: 6px; color: var(--muted); font: 400 0.86rem var(--mono); }
   .system p { color: var(--muted); font-size: 0.9rem; }
   .system p strong { color: var(--text); }
-  .system code { background: var(--bg); }
-  .version { margin-top: 14px; color: var(--muted); font-size: 0.9rem; }
+  .version { margin-top: 16px; color: var(--muted); font-size: 0.9rem; }
 
-  .faq { display: grid; gap: 10px; margin-top: 28px; }
+  .faq { display: grid; gap: 10px; max-width: 52rem; margin-top: 32px; }
   .faq details { padding: 16px 20px; }
   .faq summary { cursor: pointer; font-weight: 600; }
   .faq summary::marker { color: var(--accent); }
@@ -274,7 +279,7 @@
   }
   /* The narrowest phones have no room for the last button on that line. */
   @media (max-width: 350px) { .bar .export { display: none; } }
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
 <body>
@@ -282,21 +287,20 @@
 <div class="top">
   <div class="wrap">
     <nav>
-      <a class="brand" href="#top" id="top"><img src="assets/icon.svg" alt="" width="30" height="30"><span>Swo<b>Reel</b></span></a>
+      <a class="brand" href="./" id="brand"><img src="assets/icon.svg" alt="" width="30" height="30"><span>Swo<b>Reel</b></span></a>
       <div class="links">
         <a class="btn primary" href="#install"><svg class="icon" data-icon="download"></svg>Install</a>
       </div>
     </nav>
 
     <header class="hero">
-      <span class="pill"><i></i>Made exclusively for Claude Code</span>
       <h1>Explain anything as a <em>short animated reel</em></h1>
       <p class="lede">Turn any explanation into a shareable diagram, chart or code walkthrough that plays step by step.</p>
       <div class="cta">
         <a class="btn primary big" href="#install"><svg class="icon" data-icon="download"></svg>Install SwoReel</a>
         <a class="btn" href="#makes">See what it makes</a>
       </div>
-      <p class="note">One line in Claude Code. Free and open source.</p>
+      <p class="note">A plugin for Claude Code. One line to install, free and open source.</p>
 
       <!-- The desktop app as it looks, with a real reel playing in it. The controls work. -->
       <div class="app" aria-label="The SwoReel desktop app, playing a reel">
@@ -390,7 +394,7 @@
   <section id="makes">
     <div class="wrap">
       <p class="eyebrow">What it makes</p>
-      <h2 class="title">Sixteen kinds of reel</h2>
+      <h2 class="title">Sixteen kinds of reels</h2>
       <p class="intro">Each one builds up a step at a time, with a caption for every step. These are stills from real reels, exactly as they export.</p>
       <div class="gallery">
         <figure class="panel"><img src="assets/one-request.webp" alt="A sequence diagram of a request passing through four services" loading="lazy" width="800" height="450"><figcaption><svg class="icon" data-icon="list"></svg>Sequences <span>who talks to whom</span></figcaption></figure>
@@ -423,9 +427,9 @@
         <div class="does">
           <h4>What happens on your computer</h4>
           <ul>
-            <li><svg class="icon" data-icon="check"></svg><span><strong>Checks for Node.js and ffmpeg</strong>, which SwoReel runs on, and installs whichever is missing with your system's own package manager.</span></li>
+            <li><svg class="icon" data-icon="check"></svg><span><strong>Checks for Node.js</strong>, the one thing SwoReel needs, and installs it with your system's own package manager if it is missing.</span></li>
             <li><svg class="icon" data-icon="check"></svg><span><strong>Adds the SwoReel plugin</strong> to Claude Code.</span></li>
-            <li><svg class="icon" data-icon="check"></svg><span><strong>Asks if you want the desktop app</strong>, and installs it only if you say yes.</span></li>
+            <li><svg class="icon" data-icon="check"></svg><span><strong>Asks if you want automatic updates</strong> and the desktop app, and sets up only what you say yes to.</span></li>
             <li><svg class="icon" data-icon="check"></svg><span><strong>Changes nothing else.</strong> SwoReel has no account and collects no data, and you approve each command before it runs.</span></li>
           </ul>
           <p>You can read <a href="setup.md">exactly what Claude is told to do</a>.</p>
@@ -434,19 +438,19 @@
 
       <div class="manual">
         <p class="choice"><span>Or</span> do it by hand</p>
-        <p class="intro">The same setup as three steps, if you would rather run it yourself. About five minutes.</p>
+        <p class="intro">The same setup as two steps, if you would rather run it yourself. About five minutes.</p>
         <div class="steps">
         <div class="step panel">
-          <h3>Check you have Node and ffmpeg</h3>
-          <p>SwoReel needs <strong>Node.js 22.18 or newer</strong> to run, and <strong>ffmpeg</strong> to make video. Images work without ffmpeg.</p>
+          <h3>Check you have Node.js</h3>
+          <p>SwoReel needs <strong>Node.js 22.18 or newer</strong>, and nothing else. Check with <code>node --version</code>; if it is missing or older, install it:</p>
           <div class="code"><pre><span class="dim"># macOS</span>
-brew install node ffmpeg
+brew install node
 
 <span class="dim"># Windows</span>
-winget install OpenJS.NodeJS Gyan.FFmpeg
+winget install OpenJS.NodeJS
 
 <span class="dim"># Linux: use your package manager, for example</span>
-sudo apt install nodejs ffmpeg</pre><button type="button">Copy</button></div>
+sudo apt install nodejs</pre><button type="button">Copy</button></div>
         </div>
 
         <div class="step panel">
@@ -455,32 +459,36 @@ sudo apt install nodejs ffmpeg</pre><button type="button">Copy</button></div>
           <div class="code"><pre>/plugin marketplace add tomswokowski/sworeel
 /plugin install sworeel@tomswokowski</pre><button type="button">Copy</button></div>
           <p>Then ask for a reel: <em>"make a reel of how a request reaches the database."</em> Type <code>/sworeel</code> any time to browse and play what you have made.</p>
+          <p>To get new versions by themselves, type <code>/plugin</code>, open <strong>Marketplaces</strong>, choose <strong>tomswokowski</strong> and select <strong>Enable auto-update</strong>. Claude Code leaves that off unless you turn it on.</p>
         </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-        <div class="step panel" id="download">
-          <h3>Get the desktop app <span class="optional">optional</span></h3>
-          <p>The window shown at the top of this page: browse, play, organise and export your reels. It works with the plugin from the step above, so install that first.</p>
-          <div class="systems">
-            <div class="system" data-os="mac">
-              <h4>macOS <small>Your system</small></h4>
-              <div class="files"><a data-asset=".dmg" href="https://github.com/tomswokowski/sworeel/releases/latest"><svg class="icon" data-icon="download"></svg>Download .dmg</a></div>
-              <p>Open the file and drag SwoReel to Applications. One download for Apple silicon and Intel Macs.</p>
-            </div>
-            <div class="system" data-os="windows">
-              <h4>Windows <small>Your system</small></h4>
-              <div class="files"><a data-asset="-setup.exe" href="https://github.com/tomswokowski/sworeel/releases/latest"><svg class="icon" data-icon="download"></svg>Download .exe</a><a data-asset=".msi" href="https://github.com/tomswokowski/sworeel/releases/latest">.msi</a></div>
-              <p>The installer is not signed yet, so Windows shows a warning. Choose <strong>More info</strong>, then <strong>Run anyway</strong>.</p>
-            </div>
-            <div class="system" data-os="linux">
-              <h4>Linux <small>Your system</small></h4>
-              <div class="files"><a data-asset=".AppImage" href="https://github.com/tomswokowski/sworeel/releases/latest"><svg class="icon" data-icon="download"></svg>AppImage</a><a data-asset=".deb" href="https://github.com/tomswokowski/sworeel/releases/latest">.deb</a><a data-asset=".rpm" href="https://github.com/tomswokowski/sworeel/releases/latest">.rpm</a></div>
-              <p>The AppImage runs on any distribution: make it executable with <code>chmod +x</code> and open it.</p>
-            </div>
-          </div>
-          <p class="version" id="version">These are always the newest version.</p>
+  <section id="download">
+    <div class="wrap">
+      <p class="eyebrow">Desktop app</p>
+      <h2 class="title">A window for your reels</h2>
+      <p class="intro">Optional, and free like the rest. The app at the top of this page: browse, play, organise and export what Claude has made. It works alongside the plugin, so set that up first. If you let Claude set SwoReel up, it offers to install the app for you. Once installed, the app keeps itself up to date.</p>
+      <div class="systems">
+        <div class="system" data-os="mac">
+          <h3>macOS <small>Your system</small></h3>
+          <div class="files"><a data-asset=".dmg" href="https://github.com/tomswokowski/sworeel/releases/latest"><svg class="icon" data-icon="download"></svg>Download .dmg</a></div>
+          <p>Open the file and drag SwoReel to Applications. One download for Apple silicon and Intel Macs.</p>
+        </div>
+        <div class="system" data-os="windows">
+          <h3>Windows <small>Your system</small></h3>
+          <div class="files"><a data-asset="-setup.exe" href="https://github.com/tomswokowski/sworeel/releases/latest"><svg class="icon" data-icon="download"></svg>Download .exe</a></div>
+          <p>Run the installer. It is signed by Desoto Labs LLC.</p>
+        </div>
+        <div class="system" data-os="linux">
+          <h3>Linux <small>Your system</small></h3>
+          <div class="files"><a data-asset=".AppImage" href="https://github.com/tomswokowski/sworeel/releases/latest"><svg class="icon" data-icon="download"></svg>Download AppImage</a></div>
+          <p>Runs on any distribution and updates itself: make it executable with <code>chmod +x</code> and open it. For 64-bit Intel and AMD computers.</p>
         </div>
       </div>
-      </div>
+      <p class="version" id="version">These are always the newest version.</p>
     </div>
   </section>
 
@@ -490,7 +498,7 @@ sudo apt install nodejs ffmpeg</pre><button type="button">Copy</button></div>
       <h2 class="title">Nothing to configure. Just say what you want.</h2>
       <p class="intro">The defaults are ready to share as they are. When you want something different, there is no settings maze: tell Claude and it changes.</p>
 
-      <div class="cards">
+      <div class="cards plain">
         <div class="card panel">
           <h3>Your credit</h3>
           <p>A small watermark, such as your handle, in the corner of everything you export.</p>
@@ -507,37 +515,54 @@ sudo apt install nodejs ffmpeg</pre><button type="button">Copy</button></div>
           <p class="said">Always keep captions under ten words.</p>
         </div>
       </div>
+    </div>
+  </section>
 
+  <section id="faq">
+    <div class="wrap">
+      <p class="eyebrow">Questions</p>
+      <h2 class="title">Good to know</h2>
       <div class="faq">
+        <details class="panel">
+          <summary>Does it work without Claude Code?</summary>
+          <p>No. SwoReel is a plugin for <a href="https://claude.com/claude-code">Claude Code</a>: Claude writes every reel, so there is nothing to make one with otherwise. The desktop app is a place to watch and export reels, and needs the plugin too.</p>
+        </details>
         <details class="panel">
           <summary>Do I need the desktop app?</summary>
           <p>No. Everything works from Claude Code: making reels, playing them beside the chat, exporting and organising. The app is for when you would like a window with thumbnails, a scrubber and drag and drop.</p>
         </details>
         <details class="panel">
-          <summary>The app says it cannot find the sworeel command</summary>
-          <p>That command comes with the plugin, so install the plugin in Claude Code first, then start the app again. If Node.js is missing or older than 22.18, the command cannot start; install or update it.</p>
+          <summary>Is it free?</summary>
+          <p>Yes. SwoReel is free and open source under the MIT licence, with no account. You need Claude Code to use it, which has its own plans.</p>
+        </details>
+        <details class="panel">
+          <summary>Does it send my reels or data anywhere?</summary>
+          <p>No. SwoReel has no account and no server, and collects no data. Reels are files on your computer and exports are rendered there. The only thing the desktop app fetches is its own updates. Your conversation with Claude is handled by Claude Code, as it always is.</p>
+        </details>
+        <details class="panel">
+          <summary>How do I update?</summary>
+          <p>If you said yes to automatic updates during setup, there is nothing to do: Claude Code fetches new versions of the plugin in the background, and the desktop app updates itself (from version 0.2.0 on). Otherwise, paste the setup line from <a href="#install">Install</a> into Claude Code again and Claude brings what you have up to date; you can turn automatic updates on then, or under <code>/plugin</code>, Marketplaces. An app older than 0.2.0 needs one last download from <a href="#download">this page</a>. Your reels and settings are kept either way.</p>
         </details>
         <details class="panel">
           <summary>How do I move my reels to another computer?</summary>
           <p>In the app, open Settings and choose <strong>Export All Reels</strong>, or ask Claude to bundle them. You get one <code>.sworeel</code> file holding your reels and their pictures. Import it on the other computer. Nothing already there is replaced.</p>
         </details>
         <details class="panel">
-          <summary>How do I update?</summary>
-          <p>The plugin updates through Claude Code: <code>/plugin update sworeel@tomswokowski</code>. For the app, download the newest version from this page and install it over the old one. Your reels and settings are kept.</p>
+          <summary>The app says it cannot find the sworeel command</summary>
+          <p>That command comes with the plugin, so set up the plugin in Claude Code first, then start the app again. If Node.js is missing or older than 22.18, the command cannot start; install or update it.</p>
         </details>
         <details class="panel">
-          <summary>Is it free?</summary>
-          <p>Yes. SwoReel is free and open source under the MIT licence. It is made exclusively for Claude Code, so you need Claude Code to use it.</p>
+          <summary>Do I need to install ffmpeg or anything else?</summary>
+          <p>No. Node.js is the only thing SwoReel needs that it does not bring, and setup installs it if it is missing. The ffmpeg that makes video comes with SwoReel; if you already have your own, that one is used.</p>
         </details>
       </div>
-
     </div>
   </section>
 </main>
 
 <footer>
   <div class="wrap">
-    <span>© 2026 Desoto Labs LLC</span>
+    <span>© 2026 Desoto Labs LLC · Free and open source under the MIT licence</span>
   </div>
 </footer>
 
@@ -620,6 +645,38 @@ sudo apt install nodejs ffmpeg</pre><button type="button">Copy</button></div>
     const box = track.getBoundingClientRect()
     video.currentTime = Math.min(Math.max((event.clientX - box.left) / box.width, 0), 1) * LENGTH
   })
+
+  // Links within the page scroll to their section without putting "#section" in the address,
+  // so a bookmark or a shared link is always just the page. The logo goes back to the top. A
+  // link that arrives with a section in it still lands there, and the address is then tidied.
+  const tidy = () => location.hash && history.replaceState(null, '', location.pathname + location.search)
+  const glide = () => (matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth')
+  document.getElementById('brand').addEventListener('click', (event) => {
+    event.preventDefault()
+    window.scrollTo({ top: 0, behavior: glide() })
+    tidy()
+  })
+  for (const link of document.querySelectorAll('a[href^="#"]')) {
+    const target = document.getElementById(link.getAttribute('href').slice(1))
+    if (!target) continue
+    link.addEventListener('click', (event) => {
+      event.preventDefault()
+      target.scrollIntoView({ behavior: glide(), block: 'start' })
+      // Keyboard users carry on from the section they jumped to.
+      target.setAttribute('tabindex', '-1')
+      target.focus({ preventScroll: true })
+      tidy()
+    })
+  }
+  // Once the browser has scrolled to it. A video still loading can hold back the load event, so
+  // this does not wait for that.
+  if (location.hash) {
+    const target = document.getElementById(location.hash.slice(1))
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      target?.scrollIntoView({ block: 'start' })
+      tidy()
+    }))
+  }
 
   // Copy buttons on the command blocks.
   for (const button of document.querySelectorAll('.code button')) {

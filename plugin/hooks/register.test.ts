@@ -1,5 +1,5 @@
-import { expect, mock, test } from 'claude-code/testing'
-import type { On } from 'claude-code'
+import { expect, mock, test, type TestBody } from 'claude-code/testing'
+import type { On, PromptComposeTrait } from 'claude-code'
 
 const REEL = {
   title: 'Tiny',
@@ -48,7 +48,8 @@ function world(on: On) {
     return { value: undefined }
   })
   on('fs.read', async (_, e) => {
-    if (e.path !== '/library/tiny.json') throw new Error('no such file')
+    // On Windows the path arrives as that system writes it, with a drive and backslashes.
+    if (!e.path.replaceAll('\\', '/').endsWith('/library/tiny.json')) throw new Error(`no such file: ${e.path}`)
     return { value: JSON.stringify(REEL) }
   })
   on('process.run', async (_, e) => {
@@ -184,19 +185,19 @@ test('a reel shown without being saved plays, but has no file to export', async 
 
 test('the model can ask what is showing, and show an edit where it was made', async ($, on) => {
   const { opened } = world(on)
-  expect((await $.tool.call({ tool: 'mcp__sworeel__play', input: { control: 'status' } })).result).toMatch(/on the reel library/)
+  expect((await $.tool.call({ tool: 'mcp__sworeel__play', control: 'status' })).result).toMatch(/on the reel library/)
 
   // Opened at a step, the reel waits there, paused, without taking the keyboard.
-  expect((await $.tool.call({ tool: 'mcp__sworeel__play', input: { reel: 'tiny', step: 2 } })).result).toBe('Showing "Tiny" in the SwoReel pane, paused at step 2 of 2.')
+  expect((await $.tool.call({ tool: 'mcp__sworeel__play', reel: 'tiny', step: 2 })).result).toBe('Showing "Tiny" in the SwoReel pane, paused at step 2 of 2.')
   expect(opened).toEqual([{ id: 'sworeel', title: 'SwoReel · Tiny' }])
   const ui = await $.ui.mount(PANE)
   expect(await ui.find({ type: 'Text', text: /The gateway answers\./ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Step 2 of 2/ })).toBeDefined()
 
-  expect((await $.tool.call({ tool: 'mcp__sworeel__play', input: { control: 'status' } })).result).toBe(
+  expect((await $.tool.call({ tool: 'mcp__sworeel__play', control: 'status' })).result).toBe(
     'The SwoReel pane last showed the reel "tiny", titled "Tiny", paused at step 2 of 2: "The gateway answers."',
   )
-  expect((await $.tool.call({ tool: 'mcp__sworeel__play', input: { control: 'reload' } })).result).toBe('Reloaded "Tiny", paused at step 2 of 2.')
+  expect((await $.tool.call({ tool: 'mcp__sworeel__play', control: 'reload' })).result).toBe('Reloaded "Tiny", paused at step 2 of 2.')
   expect(await ui.find({ type: 'Text', text: /The gateway answers\./ })).toBeDefined()
   await ui.unmount()
 })
@@ -240,4 +241,36 @@ test('a reel that does not exist, or is not valid, says what is wrong', async ($
   expect((await $.command.run(typed('nope'))).text).toMatch(/no reel called "nope"/)
   expect((await $.command.run(typed('{ "title": "Half-written" }'))).text).toMatch(/"nodes" must be a non-empty array/)
   expect((await $.command.run(typed('pause'))).text).toMatch(/Nothing is playing/)
+})
+
+/** The `sworeel` command answering `config` with offers allowed or not, or not answering at all. */
+function settings(on: On, suggest: boolean | 'broken') {
+  const now = { suggest }
+  on('prompt.compose', async () => ({ sections: [{ id: 'intro', text: 'You are Claude.', scope: 'shared' as const }] }))
+  on('process.run', async () => ({
+    value: { exitCode: now.suggest === 'broken' ? 1 : 0, stdout: JSON.stringify(now), stderr: '', isStdoutTruncated: false, isStderrTruncated: false },
+  }))
+  return now
+}
+
+const offer = async ($: Parameters<TestBody>[0], traits: PromptComposeTrait[] = []) =>
+  (await $.prompt.compose({ model: 'claude', promptModel: 'claude', surfaces: ['terminal'], tools: [], outputStyle: null, traits })).sections.some(section => section.id === 'sworeel:offer')
+
+test('Claude is told it may offer a reel, unless the person turned that off', async ($, on) => {
+  settings(on, true)
+  expect(await offer($)).toBe(true)
+  // Nobody is there to take up an offer in a scripted session.
+  expect(await offer($, ['print'])).toBe(false)
+})
+
+test('with offers turned off, Claude is told nothing', async ($, on) => {
+  settings(on, false)
+  expect(await offer($)).toBe(false)
+})
+
+test('settings that cannot be read are asked for again', async ($, on) => {
+  const now = settings(on, 'broken')
+  expect(await offer($)).toBe(false)
+  now.suggest = true
+  expect(await offer($)).toBe(true)
 })

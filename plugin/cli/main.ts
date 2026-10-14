@@ -1,5 +1,7 @@
 // sworeel: validate reel files and render them to PNG stills or MP4 video.
 import { spawn } from 'node:child_process'
+import { accessSync, constants } from 'node:fs'
+import { createRequire } from 'node:module'
 import { once } from 'node:events'
 import { cp, mkdir, readdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
@@ -81,6 +83,7 @@ const USAGE = `Usage:
     sworeel config                          Show the settings
     sworeel config watermark <text>         Credit every export, e.g. "@you"; leave the text out to remove it
     sworeel config progress <on|off>        Show or hide the step dots at the bottom of every export
+    sworeel config suggest <on|off>         Whether Claude may offer a reel when an explanation would suit one
     sworeel config formats <list>           Default video formats, e.g. wide,tall
     sworeel config fps <N>                  Frames per second for video
     sworeel config theme                    The colours every reel is drawn in
@@ -162,6 +165,34 @@ async function stills(name: string, format: Format) {
   console.log(folder)
 }
 
+/**
+ * The ffmpeg that makes video: the one on the person's PATH if they have one, otherwise the
+ * one that comes with SwoReel's own dependencies, so nobody has to install it to get a video.
+ */
+function ffmpegProgram(): string {
+  const names = process.platform === 'win32' ? ['ffmpeg.exe', 'ffmpeg.cmd'] : ['ffmpeg']
+  // SWOREEL_FFMPEG=bundled skips the person's own, which is how the tests prove the bundled one.
+  for (const folder of process.env.SWOREEL_FFMPEG === 'bundled' ? [] : (process.env.PATH ?? '').split(delimiter)) {
+    for (const name of names) {
+      const candidate = join(folder, name)
+      try {
+        accessSync(candidate, constants.X_OK)
+        return candidate
+      } catch {
+        // Not here; keep looking.
+      }
+    }
+  }
+  try {
+    const bundled = (createRequire(import.meta.url)('@ffmpeg-installer/ffmpeg') as { path: string }).path
+    accessSync(bundled, constants.X_OK)
+    return bundled
+  } catch {
+    // The package has no ffmpeg for this kind of computer, or it was not installed.
+    fail('SwoReel has no ffmpeg for this computer, which it needs to make video. Install ffmpeg (https://ffmpeg.org) and try again. Images work without it.')
+  }
+}
+
 async function render(name: string, format: Format, fps: number, out: string | undefined) {
   const { reel, id, draw } = await loadToDraw(name)
   const { w, h } = FORMATS[format]
@@ -173,12 +204,12 @@ async function render(name: string, format: Format, fps: number, out: string | u
   // broken file where a good one was expected.
   const draft = join(dirname(path), `.${basename(path, '.mp4')}.rendering.mp4`)
   const ffmpeg = spawn(
-    'ffmpeg',
+    ffmpegProgram(),
     ['-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgba', '-s', `${w}x${h}`, '-r', String(fps), '-i', '-',
       '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-movflags', '+faststart', draft],
     { stdio: ['pipe', 'inherit', 'inherit'] },
   )
-  ffmpeg.on('error', () => fail('Could not run ffmpeg. Is it installed?'))
+  ffmpeg.on('error', (error) => fail(`Could not run ffmpeg: ${error.message}`))
   const closed = once(ffmpeg, 'close')
   // If ffmpeg stops early, writing to it fails; its exit code below says why.
   let stopped = false
@@ -247,6 +278,13 @@ async function openInApp(name: string | undefined) {
   for (let waited = 0; waited < 1800; waited += 150) {
     if (await taken()) return console.log(name ? `Showing ${name} in the SwoReel app.` : 'The SwoReel app is open.')
     await new Promise((done) => setTimeout(done, 150))
+  }
+
+  // While SwoReel itself is being worked on, the app to show it in is the one run from the
+  // project, which only its developer can start; an installed app is someone's real one.
+  if (process.env.SWOREEL_DEV) {
+    await rm(requestFile, { force: true })
+    fail('The development app is not running. Start it in another terminal with: npm run dev:app')
   }
 
   // Where the app might be: where the settings say, on PATH, then where each system's
@@ -572,10 +610,10 @@ try {
       break
     }
     case 'config': {
-      const usage = 'config [reels|exports|app <path>] [watermark <text>] [progress <on|off>] [theme [colour #hex]] [formats <list>] [fps <N>]'
+      const usage = 'config [reels|exports|app <path>] [watermark <text>] [progress <on|off>] [suggest <on|off>] [theme [colour #hex]] [formats <list>] [fps <N>]'
       const [name, value] = args
       if (!name) {
-        console.log(JSON.stringify({ reels: LIBRARY, exports: exportsFolder(), watermark: CONFIG.watermark ?? '', progress: CONFIG.progress === true, theme: { ...DEFAULT_THEME, ...CONFIG.theme }, formats: defaultFormats, fps: CONFIG.fps ?? 30, app: CONFIG.app ?? '' }, null, 2))
+        console.log(JSON.stringify({ reels: LIBRARY, exports: exportsFolder(), watermark: CONFIG.watermark ?? '', progress: CONFIG.progress === true, suggest: CONFIG.suggest !== false, theme: { ...DEFAULT_THEME, ...CONFIG.theme }, formats: defaultFormats, fps: CONFIG.fps ?? 30, app: CONFIG.app ?? '' }, null, 2))
       } else if (name === 'formats') {
         const list = (value ?? '').split(/[\s,]+/).filter(Boolean)
         if (list.length === 0 || !list.every(isFormat)) fail(`Give one or more of: ${Object.keys(FORMATS).join(', ')}, separated by commas.`)
@@ -612,6 +650,11 @@ try {
         // Off is the default, so only "on" is written down.
         writeConfig({ progress: value === 'on' ? true : undefined })
         console.log(value === 'on' ? 'Step dots are shown on exports' : 'Step dots are hidden on exports')
+      } else if (name === 'suggest') {
+        if (value !== 'on' && value !== 'off') fail('Usage: sworeel config suggest <on|off>')
+        // On is the default, so only "off" is written down.
+        writeConfig({ suggest: value === 'off' ? false : undefined })
+        console.log(value === 'on' ? 'Claude may offer a reel when an explanation would suit one' : 'Claude makes a reel only when asked')
       } else if (name === 'watermark') {
         // An empty value, or none, removes it.
         writeConfig({ watermark: value?.trim() || undefined })

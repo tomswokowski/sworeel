@@ -55,6 +55,21 @@ test('a slip on the command line is answered in a sentence, not a stack trace', 
   assert.match((await sworeel('still', 'front-door', '--step', '')).err, /--step must be between 0/)
 })
 
+test('offering reels is on until it is turned off', async () => {
+  assert.equal(JSON.parse((await sworeel('config')).out).suggest, true)
+  assert.equal((await sworeel('config', 'suggest', 'off')).out, 'Claude makes a reel only when asked')
+  assert.equal(JSON.parse((await sworeel('config')).out).suggest, false)
+  await sworeel('config', 'suggest', 'on')
+  assert.equal(JSON.parse((await sworeel('config')).out).suggest, true)
+  assert.equal((await sworeel('config', 'suggest', 'maybe')).code, 1)
+})
+
+test('while developing, an installed app is never started in place of the one from the project', async () => {
+  const asked = run(process.execPath, [main, 'app', 'front-door'], { env: { ...process.env, SWOREEL_HOME: home, SWOREEL_DEV: '1' } })
+  await assert.rejects(asked, /The development app is not running\. Start it in another terminal with: npm run dev:app/)
+  await assert.rejects(readFile(join(home, 'open-request.json')), 'the request is withdrawn')
+})
+
 test('text that starts with a dash is taken as text after --', async () => {
   assert.equal((await sworeel('config', 'watermark', '--', '-tom')).out, 'Watermark set to -tom')
   assert.equal(JSON.parse(await readFile(join(home, 'config.json'), 'utf8')).watermark, '-tom')

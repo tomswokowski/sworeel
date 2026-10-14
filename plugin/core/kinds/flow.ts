@@ -40,8 +40,14 @@ export function draw(ctx: Context2D, reel: FlowReel, f: Sizes, area: Area, playh
   const rows = Math.max(...reel.nodes.map((n) => n.row)) + 1
   const cellW = area.w / cols
   const cellH = area.h / rows
-  const nodeW = Math.min(cellW * 0.8, 320)
-  const nodeH = Math.min(cellH * 0.52, 120)
+  const nodeW = Math.min(cellW * 0.8, f.label * 16)
+  const nodeH = Math.min(cellH * 0.52, f.label * 5.6)
+  // With few boxes they are large, and their words grow with them: one size for every box,
+  // the largest the longest label still fits at.
+  const longest = Math.max(...reel.nodes.map((n) => n.label.length + (n.icon ? 3 : 0)), 1)
+  const longestSub = Math.max(...reel.nodes.map((n) => (n.sub?.length ?? 0) + (n.icon ? 3 : 0)), 1)
+  const grow = Math.min(Math.max(Math.min(nodeH / (f.label * 3.9), (nodeW * 0.86) / (longest * 0.58 * f.label), (nodeW * 0.86) / (longestSub * 0.52 * f.sub)), 1), 1.45)
+  const [labelSize, subSize, edgeSize] = [f.label * grow, f.sub * grow, f.edge * Math.min(grow, 1.3)]
   const pad = Math.min(cellH * 0.17, (cellW - nodeW) / 2 + area.x * 0.4)
   const centers = new Map(reel.nodes.map((n) => [n.id, { x: area.x + cellW * (n.col + 0.5), y: area.y + cellH * (n.row + 0.5) }]))
   const center = (id: string) => centers.get(id)!
@@ -103,16 +109,22 @@ export function draw(ctx: Context2D, reel: FlowReel, f: Sizes, area: Area, playh
       if (isLoop) {
         x = loop(message.from).x + loopRadius + 14
         y = loop(message.from).y - loopRadius * 0.4
+      } else if (a.y === b.y) {
+        // Between two boxes side by side there is no room beside the line, so the label sits
+        // above the gap, clear of both boxes.
+        x = (a.x + b.x) / 2
+        y = a.y - nodeH / 2 - edgeSize * 0.75
+        align = 'center'
       } else {
         // The label sits beside the line, on the side the lower node leans towards.
         const [upper, lower] = a.y <= b.y ? [a, b] : [b, a]
         const side = lower.x < upper.x ? -1 : 1
         x = (a.x + b.x) / 2 + side * 20
         // On a diagonal, lift the label clear of the line.
-        y = (a.y + b.y) / 2 - (a.x === b.x ? 0 : f.edge)
+        y = (a.y + b.y) / 2 - (a.x === b.x ? 0 : edgeSize)
         align = side < 0 ? 'right' : 'left'
       }
-      ctx.font = `400 ${f.edge}px ${MONO}`
+      ctx.font = `400 ${edgeSize}px ${MONO}`
       ctx.textAlign = align
       ctx.lineJoin = 'round'
       ctx.lineWidth = 8
@@ -149,18 +161,21 @@ export function draw(ctx: Context2D, reel: FlowReel, f: Sizes, area: Area, playh
     ctx.stroke()
 
     // An icon sits at the left of the box, and the text centres in what is left.
-    const iconSize = node.icon && assets.makePath ? nodeH * 0.44 : 0
+    // Sized by the words beside it, not the box, so a tall box does not grow an icon into its label.
+    const iconSize = node.icon && assets.makePath ? Math.min(nodeH * 0.44, labelSize * 1.55) : 0
     const textX = x + (iconSize ? iconSize * 0.62 : 0)
-    drawIcon(ctx, assets, ICONS[node.icon ?? ''], x - nodeW / 2 + nodeH * 0.24, y - iconSize / 2, iconSize, active ? color : COLORS.muted)
+    drawIcon(ctx, assets, ICONS[node.icon ?? ''], x - nodeW / 2 + Math.min(nodeH * 0.24, labelSize * 0.85), y - iconSize / 2, iconSize, active ? color : COLORS.muted)
 
     ctx.textAlign = 'center'
     ctx.fillStyle = COLORS.text
-    ctx.font = `600 ${f.label}px ${SANS}`
-    ctx.fillText(node.label, textX, node.sub ? y - f.sub * 0.6 : y)
+    // A label that would run into its icon or the box's edge is set smaller, not left to collide.
+    const room = nodeW * 0.9 - (iconSize ? iconSize * 1.45 : 0)
+    ctx.font = `600 ${Math.min(labelSize, room / (node.label.length * 0.56))}px ${SANS}`
+    ctx.fillText(node.label, textX, node.sub ? y - subSize * 0.6 : y)
     if (node.sub) {
       ctx.fillStyle = COLORS.muted
-      ctx.font = `400 ${f.sub}px ${SANS}`
-      ctx.fillText(node.sub, textX, y + f.label * 0.7)
+      ctx.font = `400 ${Math.min(subSize, room / (node.sub.length * 0.5))}px ${SANS}`
+      ctx.fillText(node.sub, textX, y + labelSize * 0.7)
     }
   }
   ctx.globalAlpha = 1

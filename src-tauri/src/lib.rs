@@ -81,6 +81,8 @@ struct Settings {
     watermark: String,
     /// Whether the row of step dots is drawn on every frame.
     progress: bool,
+    /// Whether Claude may offer a reel nobody asked for.
+    suggest: bool,
     /// Colours that replace the default ones on every reel; an empty object when none are set.
     theme: serde_json::Value,
     /// The formats a video is rendered in when none is asked for.
@@ -100,6 +102,7 @@ fn get_settings() -> Settings {
     Settings {
         watermark: config.get("watermark").and_then(|value| value.as_str()).unwrap_or_default().to_owned(),
         progress: config.get("progress").and_then(|value| value.as_bool()).unwrap_or(false),
+        suggest: config.get("suggest").and_then(|value| value.as_bool()).unwrap_or(true),
         theme: config.get("theme").filter(|value| value.is_object()).cloned().unwrap_or_else(|| serde_json::json!({})),
         formats: if formats.is_empty() { vec!["wide".into()] } else { formats },
         fps: config.get("fps").and_then(|value| value.as_u64()).unwrap_or(30),
@@ -110,7 +113,7 @@ fn get_settings() -> Settings {
 /// both the command and the app read it.
 #[tauri::command]
 async fn set_setting(key: String, value: String) -> Result<()> {
-    if !["watermark", "progress", "formats", "fps", "exports"].contains(&key.as_str()) {
+    if !["watermark", "progress", "suggest", "formats", "fps", "exports"].contains(&key.as_str()) {
         return Err(format!("Unknown setting \"{key}\""));
     }
     sworeel(["config", "--", &key, &value]).await.map(|_| ())
@@ -312,6 +315,18 @@ fn plugin_found() -> bool {
     paths::cli().is_file()
 }
 
+/// Opens one of the web pages the welcome screen names in the person's browser.
+#[tauri::command]
+fn open_site(site: String) -> Result<()> {
+    // By name, not by address, so the window can send the browser nowhere else.
+    let address = match site.as_str() {
+        "claude-code" => "https://claude.com/claude-code",
+        "sworeel" => "https://sworeel.com",
+        _ => return Err(format!("{site} is not a page SwoReel opens.")),
+    };
+    open::that_detached(address).map_err(|error| format!("Could not open {address}: {error}"))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -349,6 +364,7 @@ pub fn run() {
             import_bundle,
             open_path,
             plugin_found,
+            open_site,
             update::update_ready,
             update::restart_to_update
         ])

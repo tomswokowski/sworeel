@@ -28,8 +28,11 @@ no coordinates. Reach for a sketch only when the idea really has no home among t
 ```
 
 - **size** is the width and height of the drawing space that positions are measured in;
-  `[100, 60]` if left out. The space keeps its proportions and is fitted into each format, so
-  a wide space is small in `tall` video. Something near `[100, 100]` suits `tall` and `square`.
+  `[100, 60]` if left out. The space keeps its proportions and is fitted into the room each
+  format has for the picture, so its shape decides how big the sketch is drawn. That room is
+  about `[100, 44]` in `wide`, `[100, 75]` in `square` and `[100, 128]` in `tall`. A space
+  shaped unlike it leaves most of the frame empty: a square space fills under half of a `wide`
+  frame.
 - **shapes** are drawn in the order listed, lines first. Every shape has an `id` and a `type`:
 
   | Type | Uses |
@@ -46,6 +49,14 @@ no coordinates. Reach for a sketch only when the idea really has no home among t
 - `sworeel icons` lists the icon names.
 
 ## Making it read well
+
+- **Shape the space for the format it will be shown in.** `sworeel config` lists the user's
+  default formats; go by the first, or by what they asked for ("for my phone", "to post" is
+  `tall`; a slide or a doc is `wide`). For `wide`, lay things out left to right: a comparison
+  is two halves side by side. For `tall`, stack them: one above the other. When it must work
+  in both, use about `[100, 75]` and say that it is a compromise.
+- **Use the whole space.** Spread the shapes to its edges and make them as large as the
+  spacing rules allow; small shapes in a large space are small on screen.
 
 - **Plan on a grid.** Pick a few x positions and a few y positions and put everything on
   them; a sketch placed by eye looks placed by eye.

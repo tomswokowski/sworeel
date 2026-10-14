@@ -74,6 +74,21 @@ function saveFolder() {
           </span>
           <button class="switch" role="switch" aria-label="Follow Claude" :aria-checked="follow" :class="{ on: follow }" @click="emit('toggleFollow')" />
         </label>
+
+        <label class="row">
+          <span>
+            <strong>Offer Reels</strong>
+            <small>Let Claude end an explanation by offering to show it as a reel. Off, it makes one only when asked.</small>
+          </span>
+          <button
+            class="switch"
+            role="switch"
+            :aria-checked="settings.suggest"
+            :class="{ on: settings.suggest }"
+            aria-label="Offer Reels"
+            @click="emit('set', 'suggest', settings.suggest ? 'off' : 'on')"
+          />
+        </label>
       </div>
 
       <div class="group">

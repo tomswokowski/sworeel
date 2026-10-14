@@ -44,6 +44,8 @@ export type Config = {
   theme?: Partial<Theme>
   /** True draws the row of step dots on every frame; they are off otherwise. */
   progress?: boolean
+  /** False stops Claude offering a reel nobody asked for; it offers otherwise. */
+  suggest?: boolean
   /** Where the desktop app is installed, if not on PATH. */
   app?: string
   /** The formats a video is rendered in when none is asked for: any of `wide`, `tall`, `square`. */

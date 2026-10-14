@@ -40,7 +40,7 @@ function relocate(from: string, to: string) {
 }
 
 let exports = '/mock/Documents/SwoReel'
-const settings = { watermark: '', progress: false, theme: {}, formats: ['wide'] as Format[], fps: 30 }
+const settings = { watermark: '', progress: false, suggest: true, theme: {}, formats: ['wide'] as Format[], fps: 30 }
 // With `?request` in the address, the mock asks for one reel at once, as `sworeel app` would.
 let request: { reel: string | null } | null = new URLSearchParams(location.search).has('request') ? { reel: 'web/two-addresses' } : null
 
@@ -64,6 +64,7 @@ export const mockBackend: Backend = {
   setSetting: async (key, value) => {
     if (key === 'watermark') settings.watermark = value.trim()
     else if (key === 'progress') settings.progress = value === 'on'
+    else if (key === 'suggest') settings.suggest = value === 'on'
     else if (key === 'formats') settings.formats = value.split(',') as Format[]
     else if (key === 'fps') settings.fps = Number(value)
     else if (key === 'exports') exports = value
@@ -75,10 +76,14 @@ export const mockBackend: Backend = {
     return taken
   },
   paths: async () => ({ reels: ROOT, exports }),
-  list: async () => ({
-    reels: [...files].map(([path, file]) => ({ path, name: nameOf(path), folder: folderOf(path), modified: file.modified })),
-    folders: [...folders].sort(),
-  }),
+  list: async () => {
+    // `?slow` makes the library take a moment to arrive, as it can on a real disk, to see what shows meanwhile.
+    if (new URLSearchParams(location.search).has('slow')) await new Promise((done) => setTimeout(done, 1500))
+    return {
+      reels: [...files].map(([path, file]) => ({ path, name: nameOf(path), folder: folderOf(path), modified: file.modified })),
+      folders: [...folders].sort(),
+    }
+  },
   read: async (path) => files.get(path)!.text,
   readPicture: async () => {
     throw 'The mock library has no pictures.'
@@ -128,6 +133,7 @@ export const mockBackend: Backend = {
   open: async (path) => console.log('open', path),
   // `?noplugin` shows the app as it is before the plugin has been installed.
   pluginFound: async () => !new URLSearchParams(location.search).has('noplugin'),
+  openSite: async (site) => console.log('open site', site),
   updateReady: async () => null,
   restartToUpdate: async () => {},
 }

@@ -49,7 +49,7 @@ Then ask Claude for one: "make a reel of how a request reaches the database", "c
 
 Or just ask: "show me the cors one", "pause that", "export it as a tall video". A banner in the pane always says whether your keys are going to the pane or to the chat.
 
-Requirements: Node.js 22.18 or newer, and `ffmpeg` for video. The first run of the `sworeel` command installs its npm dependencies. Developed and tested on Linux only so far.
+Requirements: Node.js 22.18 or newer. The first run of the `sworeel` command installs its npm dependencies, which include an ffmpeg for making video; your own is used if you have one. Developed and tested on Linux only so far.
 
 ## Install the desktop app (optional)
 
@@ -57,8 +57,13 @@ The app is a window onto your reels: browse, play, organise and export them. Dow
 
 It needs the plugin above, because it runs the plugin's `sworeel` command for every change and export. Without the plugin the app opens but tells you it can't find the command.
 
-- **Linux:** `.deb`, `.rpm` or `.AppImage`. This is the only system the app has been run on so far.
-- **macOS and Windows:** installers are built for both but have not been tested yet. The Windows installer is not signed, so Windows warns about an unknown publisher.
+There is one installer for each system that has an app, and each keeps itself up to date:
+
+- **Linux:** an `.AppImage`, for 64-bit Intel and AMD computers. This is the only system the app has been used on by hand so far.
+- **macOS:** a `.dmg`, for Apple silicon and Intel Macs.
+- **Windows:** a setup `.exe`, signed by Desoto Labs LLC.
+
+The automated tests install and start the app on all three.
 
 ## Where files live
 
@@ -150,35 +155,74 @@ npx tauri icon brand/icon-macos.png -o /tmp/mac-icons  # then copy its icon.icns
 
 ## Developing
 
-```bash
-claude plugin validate ./plugin      # check the plugin manifest
-claude --plugin-dir ./plugin         # try the plugin without installing it
+Working on SwoReel is kept apart from using it. A computer can have SwoReel installed and in daily use while its code is being changed in this folder, and neither touches the other:
 
-npm install                          # desktop app dependencies
-(cd plugin && npm install)           # the command's own, which the app's maths typesetting shares
-npm run dev                          # work on the interface in a browser, against a mock library
+| | The SwoReel you use | The SwoReel you are changing |
+|---|---|---|
+| Start Claude Code with | `claude` | `npm run dev:claude` |
+| Plugin | The installed release | This folder's `plugin/`, for that session only |
+| Reels, settings, exports | Your own | A sandbox, `.dev-home/` in this folder |
+| Desktop app | SwoReel | "SwoReel Dev", from `npm run dev:app` |
+
+Nothing is installed, linked or changed in your Claude Code settings to develop. Closing the development session is all it takes to be back on the release. This is the same on Linux, macOS and Windows.
+
+### Setting up
+
+You need Node.js 22.18 or newer and Claude Code. The desktop app also needs [Rust and Tauri's system packages](https://tauri.app/start/prerequisites/); skip them if you are only working on the plugin.
+
+```bash
+git clone https://github.com/tomswokowski/sworeel && cd sworeel
+npm install                          # the desktop app's and the tests' dependencies
+(cd plugin && npm install)           # the command's own
+npm run dev:claude                   # Claude Code with this folder's plugin, in the sandbox
+```
+
+### The plugin
+
+`npm run dev:claude` starts Claude Code with this folder's skill, in-session pane and `sworeel` command in place of an installed SwoReel's, reading and writing only the sandbox. From another folder, run `node <this folder>/scripts/dev.mjs claude`. Anything after the command is passed to `claude`.
+
+There is nothing to build. An edit to the command or a reel kind is used the next time the command runs, an edit to the pane's hooks reloads when the file is saved, and an edit to the skill is read the next time Claude loads it (a new session is the sure way).
+
+```bash
+npm run sworeel -- list              # the command from this folder, in the sandbox
 npm test                             # test the reel kinds, the library, bundles and themes
 claude plugin test ./plugin          # test the in-session pane
-(cd src-tauri && cargo test)         # test the app's reading of the library
-npm run sworeel -- list              # the command from this folder, in the sandbox
+claude plugin validate ./plugin      # check the plugin manifest
+```
+
+The sandbox starts with a few sample reels. Delete `.dev-home/` to start it afresh; it is never committed.
+
+### The desktop app
+
+```bash
+npm run dev                          # the interface in a browser, against a mock library
 npm run dev:app                      # the app from this folder with live reload, in the sandbox
+(cd src-tauri && cargo test)         # test the app's reading of the library
 npx tauri build --no-bundle          # build it to src-tauri/target/release/sworeel-app
 ```
 
-### Developing beside an installed SwoReel
-
-`npm run sworeel` and `npm run dev:app` keep development apart from the SwoReel you actually use:
-
-- They read and write a sandbox, `.dev-home/` in this folder, with its own reels, pictures, settings and exports. It starts with a few sample reels. Your real library is never touched.
-- The app runs as "SwoReel Dev", with its own window, remembered state and name, and it runs this folder's command instead of the installed one.
-
-To try the plugin itself in Claude Code without installing it, start a session with this folder's copy and the same sandbox:
-
-```bash
-SWOREEL_HOME="$PWD/.dev-home" claude --plugin-dir ./plugin
-```
+`npm run dev:app` runs as "SwoReel Dev", with its own window, remembered state and name, and it runs this folder's command, so it can sit beside an installed SwoReel.
 
 When you build the app yourself, put the built `sworeel-app` on your PATH (or tell the command where it is with `sworeel config app <path>`) so that `sworeel app` can start it. An installed package does this for you.
+
+### Everything at once
+
+To work with the plugin and the app together, run each in its own terminal, in this folder:
+
+```bash
+npm run dev:claude                   # terminal 1: Claude Code with this folder's plugin
+npm run dev:app                      # terminal 2: the app, as "SwoReel Dev"
+```
+
+Both use the sandbox, so they see the same reels and settings: a reel Claude writes appears in the app, "show it in the app" in the session opens it in SwoReel Dev, and the app's Follow Claude switch follows that session. Start them in either order and stop either one without affecting the other. If the session asks for the app while it is not running, the command says so; it never starts an installed SwoReel.
+
+### From a change to a release
+
+1. Make the change on a branch, and try it with `npm run dev:claude`.
+2. Run the tests above, and open a pull request whose title starts with the kind of change (see the table below). The same tests run there on Linux, macOS and Windows.
+3. Merge it. `main` is what the next release will be; nobody's installed SwoReel has changed yet.
+4. When it should reach people, merge the open "chore(main): release …" pull request (see Releasing).
+5. Installed copies then move to it: the desktop app updates itself, and the plugin with `claude plugin marketplace update tomswokowski` followed by `claude plugin update sworeel@tomswokowski`, or by itself where the marketplace is set to update automatically.
 
 ### Releasing
 
@@ -194,7 +238,9 @@ The version and the changelog come from commit messages on `main`, so each start
 
 Pull requests are squashed, so it is the pull request's title that needs the prefix.
 
-Installed apps update themselves: soon after starting, the app fetches the newest release in the background and it opens next time (on Windows it is installed as the app closes). Each build is signed for this with a key kept in the repository's secrets, and apps accept only what that key signed; see the top of `.github/workflows/release.yml`. On Linux only the AppImage updates itself.
+Each release also moves a tag named `stable` to itself. Anything that should follow releases and not `main`, such as a listing in Anthropic's plugin directory, follows that tag.
+
+Installed apps update themselves: soon after starting, the app fetches the newest release in the background and it opens next time (on Windows it is installed as the app closes). Each build is signed for this with a key kept in the repository's secrets, and apps accept only what that key signed; see the top of `.github/workflows/release.yml`.
 
 The macOS build is signed and notarized once the Apple secrets named at the top of `.github/workflows/release.yml` are set in the repository; without them it is unsigned. Running that workflow by hand from the Actions tab builds the installers without releasing, for trying a build.
 
