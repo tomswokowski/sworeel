@@ -631,25 +631,25 @@ try {
         writeConfig({ fps })
         console.log(`Frames per second set to ${fps}`)
       } else if (name === 'theme') {
-        const [, key, color] = args
+        const [, colorName, color] = args
         const current = CONFIG.theme ?? {}
-        if (!key) {
+        if (!colorName) {
           // Every colour, marking the ones that differ from the defaults.
           for (const each of THEME_COLOR_NAMES) console.log(`${each.padEnd(11)} ${current[each] ?? DEFAULT_THEME[each]}${current[each] ? '  (changed)' : ''}`)
-        } else if (key === 'reset') {
+        } else if (colorName === 'reset') {
           writeConfig({ theme: undefined })
           console.log('Theme put back to the default colours')
-        } else if (!THEME_COLOR_NAMES.includes(key as keyof Theme)) {
-          fail(`"${key}" is not a colour that can be set. Use one of: ${THEME_COLOR_NAMES.join(', ')}.`)
+        } else if (!THEME_COLOR_NAMES.includes(colorName as keyof Theme)) {
+          fail(`"${colorName}" is not a colour that can be set. Use one of: ${THEME_COLOR_NAMES.join(', ')}.`)
         } else if (color === 'reset' || color === undefined) {
-          if (color === undefined) fail(`Usage: sworeel config theme ${key} <#hex|reset>`)
-          const { [key as keyof Theme]: _dropped, ...rest } = current
+          if (color === undefined) fail(`Usage: sworeel config theme ${colorName} <#hex|reset>`)
+          const { [colorName as keyof Theme]: _dropped, ...rest } = current
           writeConfig({ theme: Object.keys(rest).length ? rest : undefined })
-          console.log(`${key} put back to ${DEFAULT_THEME[key as keyof Theme]}`)
+          console.log(`${colorName} put back to ${DEFAULT_THEME[colorName as keyof Theme]}`)
         } else {
           if (!isColor(color)) fail(`"${color}" is not a hex colour. Give one like "#1acee3".`)
-          writeConfig({ theme: { ...current, [key]: color.toLowerCase() } })
-          console.log(`${key} set to ${color.toLowerCase()}`)
+          writeConfig({ theme: { ...current, [colorName]: color.toLowerCase() } })
+          console.log(`${colorName} set to ${color.toLowerCase()}`)
         }
       } else if (name === 'progress') {
         if (value !== 'on' && value !== 'off') fail('Usage: sworeel config progress <on|off>')
