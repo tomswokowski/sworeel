@@ -57,8 +57,13 @@ The app is a window onto your reels: browse, play, organise and export them. Dow
 
 It needs the plugin above, because it runs the plugin's `sworeel` command for every change and export. Without the plugin the app opens but tells you it can't find the command.
 
-- **Linux:** `.deb`, `.rpm` or `.AppImage`. This is the only system the app has been run on so far.
-- **macOS and Windows:** installers are built for both but have not been tested yet. The Windows installer is not signed, so Windows warns about an unknown publisher.
+There is one installer for each system, and each keeps itself up to date:
+
+- **Linux:** an `.AppImage`, for 64-bit Intel and AMD computers. This is the only system the app has been used on by hand so far.
+- **macOS:** a `.dmg`, for Apple silicon and Intel Macs.
+- **Windows:** a setup `.exe`. It is not signed yet, so Windows warns about an unknown publisher.
+
+The automated tests install and start the app on all three.
 
 ## Where files live
 
@@ -235,7 +240,7 @@ Pull requests are squashed, so it is the pull request's title that needs the pre
 
 Each release also moves a tag named `stable` to itself. Anything that should follow releases and not `main`, such as a listing in Anthropic's plugin directory, follows that tag.
 
-Installed apps update themselves: soon after starting, the app fetches the newest release in the background and it opens next time (on Windows it is installed as the app closes). Each build is signed for this with a key kept in the repository's secrets, and apps accept only what that key signed; see the top of `.github/workflows/release.yml`. On Linux only the AppImage updates itself.
+Installed apps update themselves: soon after starting, the app fetches the newest release in the background and it opens next time (on Windows it is installed as the app closes). Each build is signed for this with a key kept in the repository's secrets, and apps accept only what that key signed; see the top of `.github/workflows/release.yml`.
 
 The macOS build is signed and notarized once the Apple secrets named at the top of `.github/workflows/release.yml` are set in the repository; without them it is unsigned. Running that workflow by hand from the Actions tab builds the installers without releasing, for trying a build.
 
