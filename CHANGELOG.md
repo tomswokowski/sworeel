@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/tomswokowski/sworeel/compare/v0.6.3...v0.7.0) (2026-10-14)
+
+
+### Features
+
+* a privacy policy, and the plugin's support and privacy links ([#76](https://github.com/tomswokowski/sworeel/issues/76)) ([b7a4b67](https://github.com/tomswokowski/sworeel/commit/b7a4b67685e3a65bdac8ace654f304a1c6a2a558))
+
 ## [0.6.3](https://github.com/tomswokowski/sworeel/compare/v0.6.2...v0.6.3) (2026-10-14)
 
 
