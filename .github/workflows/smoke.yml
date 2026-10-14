@@ -46,8 +46,10 @@ jobs:
           mkdir -p "$RUNNER_TEMP/app" && cd "$RUNNER_TEMP/app"
           case "$RUNNER_OS" in
             Linux)
+              # The AppImage brings everything but the graphics libraries every Linux desktop has,
+              # which a build machine with no screen lacks. xvfb stands in for the screen.
               sudo apt-get update
-              sudo apt-get install -y xvfb libwebkit2gtk-4.1-0 libfuse2t64 || sudo apt-get install -y xvfb libwebkit2gtk-4.1-0 libfuse2
+              sudo apt-get install -y xvfb libegl1 libgles2
               gh release download --repo "$GITHUB_REPOSITORY" --pattern '*.AppImage'
               mkdir -p "$HOME/.local/bin" && mv ./*.AppImage "$HOME/.local/bin/sworeel-app" && chmod +x "$HOME/.local/bin/sworeel-app"
               ;;
@@ -183,7 +185,7 @@ jobs:
           case "$RUNNER_OS" in
             Linux)
               sudo apt-get update
-              sudo apt-get install -y xvfb libwebkit2gtk-4.1-0 libfuse2t64
+              sudo apt-get install -y xvfb libegl1 libgles2
               [ "$(uname -m)" = x86_64 ]
               mkdir -p "$HOME/.local/bin"
               curl -fsSL -o "$HOME/.local/bin/sworeel-app" "$(asset .AppImage)"
