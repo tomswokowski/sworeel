@@ -38,7 +38,7 @@ export const DEFAULT_THEME: Theme = {
   error: '#ff5c7a',
 }
 
-export const THEME_KEYS = Object.keys(DEFAULT_THEME) as (keyof Theme)[]
+export const THEME_COLOR_NAMES = Object.keys(DEFAULT_THEME) as (keyof Theme)[]
 
 const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i
 
@@ -51,7 +51,7 @@ export function validateTheme(value: unknown, where: string): string[] {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return [`${where} must be an object of colours.`]
   const errors: string[] = []
   for (const [key, color] of Object.entries(value)) {
-    if (!THEME_KEYS.includes(key as keyof Theme)) errors.push(`${where}.${key} is not a colour that can be set. Use one of: ${THEME_KEYS.join(', ')}.`)
+    if (!THEME_COLOR_NAMES.includes(key as keyof Theme)) errors.push(`${where}.${key} is not a colour that can be set. Use one of: ${THEME_COLOR_NAMES.join(', ')}.`)
     else if (!isColor(color)) errors.push(`${where}.${key} must be a hex colour such as "#1acee3".`)
   }
   return errors

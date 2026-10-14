@@ -15,7 +15,7 @@ import { registerFonts } from './fonts.ts'
 import * as library from './library.ts'
 import { importBundle, makeBundle, reelsNamed } from './bundle.ts'
 import { assetsFolder, configFile, expandHome, exportsFolder, readConfig, requestFile, reelsFolder, showingFile, styleFile, writeConfig } from './paths.ts'
-import { DEFAULT_THEME, isColor, THEME_KEYS, type Theme } from '../core/theme.ts'
+import { DEFAULT_THEME, isColor, THEME_COLOR_NAMES, type Theme } from '../core/theme.ts'
 import { drawReel, FORMATS, type Context2D, type DrawOptions, type Format } from '../core/render.ts'
 import { ICON_NAMES } from '../core/data/icons.ts'
 import { parseReel, type Reel } from '../core/reel.ts'
@@ -189,7 +189,7 @@ function ffmpegProgram(): string {
     return bundled
   } catch {
     // The package has no ffmpeg for this kind of computer, or it was not installed.
-    fail('SwoReel has no ffmpeg for this computer, which it needs to make video. Install ffmpeg (https://ffmpeg.org) and try again. Images work without it.')
+    fail('SwoReel has no ffmpeg for this computer, which it needs to make video. Install ffmpeg and try again. Images work without it.')
   }
 }
 
@@ -629,12 +629,12 @@ try {
         const current = CONFIG.theme ?? {}
         if (!key) {
           // Every colour, marking the ones that differ from the defaults.
-          for (const each of THEME_KEYS) console.log(`${each.padEnd(11)} ${current[each] ?? DEFAULT_THEME[each]}${current[each] ? '  (changed)' : ''}`)
+          for (const each of THEME_COLOR_NAMES) console.log(`${each.padEnd(11)} ${current[each] ?? DEFAULT_THEME[each]}${current[each] ? '  (changed)' : ''}`)
         } else if (key === 'reset') {
           writeConfig({ theme: undefined })
           console.log('Theme put back to the default colours')
-        } else if (!THEME_KEYS.includes(key as keyof Theme)) {
-          fail(`"${key}" is not a colour that can be set. Use one of: ${THEME_KEYS.join(', ')}.`)
+        } else if (!THEME_COLOR_NAMES.includes(key as keyof Theme)) {
+          fail(`"${key}" is not a colour that can be set. Use one of: ${THEME_COLOR_NAMES.join(', ')}.`)
         } else if (color === 'reset' || color === undefined) {
           if (color === undefined) fail(`Usage: sworeel config theme ${key} <#hex|reset>`)
           const { [key as keyof Theme]: _dropped, ...rest } = current

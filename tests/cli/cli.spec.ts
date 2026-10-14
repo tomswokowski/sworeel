@@ -9,7 +9,7 @@ import { afterEach, beforeEach, test } from 'node:test'
 import { promisify } from 'node:util'
 
 const run = promisify(execFile)
-const main = join(import.meta.dirname, 'main.ts')
+const main = join(import.meta.dirname, '..', '..', 'plugin', 'cli', 'main.ts')
 const flow = { title: 'Front door', nodes: [{ id: 'a', label: 'A', col: 0, row: 0 }, { id: 'b', label: 'B', col: 1, row: 0 }], steps: [{ caption: 'A calls B.', from: 'a', to: 'b', label: 'GET /' }] }
 
 let home: string
