@@ -52,7 +52,7 @@ Two files in `core/data/` are generated, not written by hand, and say so at the 
 - `icons.ts` holds a subset of the [Lucide](https://lucide.dev) icons (ISC licence), made by [`scripts/build-icons.mjs`](https://github.com/tomswokowski/sworeel/blob/main/scripts/build-icons.mjs).
 - `land.ts` holds the land outlines from [Natural Earth](https://www.naturalearthdata.com) (public domain), made by [`scripts/build-land.mjs`](https://github.com/tomswokowski/sworeel/blob/main/scripts/build-land.mjs).
 
-Everything else in the plugin is the source itself: TypeScript that Node.js runs directly, with no build step. Dependencies come from the public npm registry, at the versions in `package-lock.json`.
+Everything else in the plugin is the source itself: TypeScript that Node.js runs directly, with no build step. Dependencies come from the public npm registry, at the versions in `package-lock.json`, installed once when the plugin is installed. The `package.json` and lockfile at the top of the repository, above this folder, belong to the optional desktop app; the plugin's install does not use them. The tests for the command live outside this folder, in the repository's `tests` folder, so they are not part of the plugin.
 
 ## More
 
