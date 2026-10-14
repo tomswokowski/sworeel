@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/tomswokowski/sworeel/compare/v0.4.1...v0.5.0) (2026-10-14)
+
+
+### Features
+
+* the Windows app is coming soon, held back until it can be signed ([#61](https://github.com/tomswokowski/sworeel/issues/61)) ([a020186](https://github.com/tomswokowski/sworeel/commit/a020186b79e5b5e9e889beb276c8f9162ce9e568))
+
 ## [0.4.1](https://github.com/tomswokowski/sworeel/compare/v0.4.0...v0.4.1) (2026-10-14)
 
 

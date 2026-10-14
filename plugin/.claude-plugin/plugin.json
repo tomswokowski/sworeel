@@ -1,6 +1,6 @@
 {
   "name": "sworeel",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Ask Claude to explain anything as a short animated reel: system diagrams, charts, code walkthroughs, maths, maps, annotated screenshots and more. Watch it play in the chat, refine it by talking, and export it as a video or images that are easy to share anywhere.",
   "author": {
     "name": "Desoto Labs LLC"
