@@ -17,6 +17,10 @@ use tauri::{AppHandle, Manager, State};
 use tauri_plugin_updater::{Update, UpdaterExt};
 
 const CHECK_EVERY: Duration = Duration::from_secs(6 * 60 * 60);
+/// After a check that failed. Being offline is one reason; another is starting while a release
+/// is still being built, when it is already the newest release but its list of downloads is not
+/// there yet. That lasts about fifteen minutes, so waiting the full six hours would be too long.
+const RETRY_AFTER: Duration = Duration::from_secs(10 * 60);
 
 struct Fetched {
     version: String,
@@ -40,13 +44,16 @@ pub fn watch(app: &AppHandle) {
     let app = app.clone();
     std::thread::spawn(move || {
         loop {
-            match tauri::async_runtime::block_on(fetch(&app)) {
+            let wait = match tauri::async_runtime::block_on(fetch(&app)) {
                 Ok(true) => break,
-                Ok(false) => {}
-                // Being offline is the usual reason, and no reason to bother anyone.
-                Err(error) => eprintln!("SwoReel could not check for a newer version: {error}"),
-            }
-            std::thread::sleep(CHECK_EVERY);
+                Ok(false) => CHECK_EVERY,
+                // Nothing to bother anyone with; try again soon.
+                Err(error) => {
+                    eprintln!("SwoReel could not check for a newer version: {error}");
+                    RETRY_AFTER
+                }
+            };
+            std::thread::sleep(wait);
         }
     });
 }
