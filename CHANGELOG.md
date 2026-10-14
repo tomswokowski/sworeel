@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/tomswokowski/sworeel/compare/v0.6.0...v0.6.1) (2026-10-14)
+
+
+### Bug Fixes
+
+* answer the plugin directory's review findings ([#66](https://github.com/tomswokowski/sworeel/issues/66)) ([0a2d385](https://github.com/tomswokowski/sworeel/commit/0a2d385c9f6f7d122cae645418a632baff271ca2))
+
 ## [0.6.0](https://github.com/tomswokowski/sworeel/compare/v0.5.0...v0.6.0) (2026-10-14)
 
 
