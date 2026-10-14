@@ -47,22 +47,6 @@ jobs:
       - id: release
         uses: googleapis/release-please-action@v4
 
-  # `stable` is a tag that always points at the newest release. Anthropic's plugin directory
-  # follows it, so a listing gets each release and never the work in between that sits on main.
-  # It is a tag and not a branch because this workflow's own sign-in may not push a branch whose
-  # history changes workflow files, which a release often does.
-  stable:
-    name: Point stable at the release
-    needs: release
-    if: needs.release.outputs.created == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh api -X PATCH "repos/${{ github.repository }}/git/refs/tags/stable" -f sha="${{ github.sha }}" -F force=true \
-            || gh api -X POST "repos/${{ github.repository }}/git/refs" -f ref=refs/tags/stable -f sha="${{ github.sha }}"
-
   installers:
     name: Installers (${{ matrix.name }})
     needs: release
@@ -154,3 +138,33 @@ jobs:
           name: installers-${{ matrix.name }}
           path: ${{ join(fromJSON(steps.build.outputs.artifactPaths), fromJSON('"\n"')) }}
           if-no-files-found: error
+
+  # A release is made as a pre-release, which GitHub does not count as the newest one, so apps,
+  # the website and setup keep using the previous release while the installers are built and
+  # attached. Only when every installer is there does it become the newest release. If any build
+  # fails, it stays a pre-release and nothing points at it.
+  publish:
+    name: Publish the release
+    needs: [release, installers]
+    if: needs.release.outputs.created == 'true' && needs.installers.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "${{ needs.release.outputs.tag }}" --repo "${{ github.repository }}" --prerelease=false --latest
+
+  # `stable` is a tag that always points at the newest release. Anthropic's plugin directory
+  # follows it, so a listing gets each release and never the work in between that sits on main.
+  # It is a tag and not a branch because this workflow's own sign-in may not push a branch whose
+  # history changes workflow files, which a release often does.
+  stable:
+    name: Point stable at the release
+    needs: [release, publish]
+    if: needs.release.outputs.created == 'true' && needs.publish.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X PATCH "repos/${{ github.repository }}/git/refs/tags/stable" -f sha="${{ github.sha }}" -F force=true \
+            || gh api -X POST "repos/${{ github.repository }}/git/refs" -f ref=refs/tags/stable -f sha="${{ github.sha }}"
