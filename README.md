@@ -57,13 +57,13 @@ The app is a window onto your reels: browse, play, organise and export them. Dow
 
 It needs the plugin above, because it runs the plugin's `sworeel` command for every change and export. Without the plugin the app opens but tells you it can't find the command.
 
-There is one installer for each system, and each keeps itself up to date:
+There is one installer for each system that has an app, and each keeps itself up to date:
 
 - **Linux:** an `.AppImage`, for 64-bit Intel and AMD computers. This is the only system the app has been used on by hand so far.
 - **macOS:** a `.dmg`, for Apple silicon and Intel Macs.
-- **Windows:** a setup `.exe`. It is not signed yet, so Windows warns about an unknown publisher.
+- **Windows:** coming soon, once the installer can be signed. The plugin works on Windows today.
 
-The automated tests install and start the app on all three.
+The automated tests install and start the app on Linux and macOS, and test the plugin on all three.
 
 ## Where files live
 

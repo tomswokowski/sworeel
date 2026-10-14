@@ -230,6 +230,7 @@
   .system .files a { display: inline-flex; align-items: center; gap: 7px; height: 2.4rem; padding: 0 0.9rem; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); font: 400 0.86rem var(--mono); }
   .system .files a:first-child { border-color: var(--accent); background: var(--accent); color: #04202a; font-weight: 600; }
   .system .files a:hover { border-color: var(--accent); text-decoration: none; }
+  .system .soon { display: inline-flex; align-items: center; height: 2.4rem; padding: 0 0.9rem; border: 1px dashed var(--border); border-radius: 6px; color: var(--muted); font: 400 0.86rem var(--mono); }
   .system p { color: var(--muted); font-size: 0.9rem; }
   .system p strong { color: var(--text); }
   .version { margin-top: 16px; color: var(--muted); font-size: 0.9rem; }
@@ -478,8 +479,8 @@ sudo apt install nodejs</pre><button type="button">Copy</button></div>
         </div>
         <div class="system" data-os="windows">
           <h3>Windows <small>Your system</small></h3>
-          <div class="files"><a data-asset="-setup.exe" href="https://github.com/tomswokowski/sworeel/releases/latest"><svg class="icon" data-icon="download"></svg>Download .exe</a></div>
-          <p>The installer is not signed yet, so Windows shows a warning. Choose <strong>More info</strong>, then <strong>Run anyway</strong>.</p>
+          <div class="files"><span class="soon">Coming soon</span></div>
+          <p>The Windows app is on its way. Everything else works on Windows today: make, watch, change and export reels in Claude Code.</p>
         </div>
         <div class="system" data-os="linux">
           <h3>Linux <small>Your system</small></h3>
