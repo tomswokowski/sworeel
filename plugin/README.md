@@ -33,11 +33,12 @@ When you ask for a reel of a web page, it is Claude Code that opens the page, wi
 
 ## What the pane's hooks do
 
-The pane beside the chat is a hooks module (`hooks/register.tsx`). It runs inside Claude Code and sends nothing over the network. Here is everything it does:
+The pane beside the chat is a hooks module (`hooks/register.tsx`). It runs inside Claude Code and sends nothing over the network: it has no network calls of its own, and the one program it runs, the plugin's `sworeel` command, makes none either. Here is everything it does:
 
 - **When a session starts,** it registers the `/sworeel` command and one tool for Claude, `play`, which shows a reel in the pane. It answers that tool itself, because the tool is its own; it stands in for no other tool and changes no other tool's calls.
 - **It adds one short section to Claude's instructions** (the `prompt.compose` hook): a note that Claude may end an explanation with a one-line offer to show it as a reel. It changes nothing else in the instructions, and leaves the note out when the user has turned offers off with `sworeel config suggest off`, or when the session is scripted.
 - **It draws the pane** (`ui.render`) and closes it when asked (`ui.close`), and runs a timer while a reel plays.
+- **It keeps the player's state** in Claude Code's session state (`state.get` and `state.set`): which reel is open, its contents, the step and time it is at, whether it is playing, and the list of reels to pick from. That state stays in the session. None of it is passed to the `sworeel` command except the name of the reel being exported, opened in the app or deleted.
 - **It reads no files itself.** To show a reel it asks the `sworeel` command for it (`sworeel show --json`), which reads and checks the file.
 - **It runs one program: the plugin's own `sworeel` command**, in `bin/`, to do what the user or Claude asked. The calls it makes are `sworeel list` (the reels to pick from), `sworeel show --json` (one reel, to play), `sworeel config` (to read the offer setting), `sworeel render` and `sworeel still` (to export), `sworeel app` (to open the desktop app) and `sworeel delete` (to move a reel to the trash, only when the user confirms in the pane).
 
