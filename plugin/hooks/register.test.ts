@@ -47,16 +47,16 @@ function world(on: On) {
     closed.push(e.id)
     return { value: undefined }
   })
-  on('fs.read', async (_, e) => {
-    // On Windows the path arrives as that system writes it, with a drive and backslashes.
-    if (!e.path.replaceAll('\\', '/').endsWith('/library/tiny.json')) throw new Error(`no such file: ${e.path}`)
-    return { value: JSON.stringify(REEL) }
-  })
   on('process.run', async (_, e) => {
     const args = e.argv.slice(1).join(' ')
     commands.push(args)
+    // The command reads reels for the pane; only `tiny` is in this library.
+    if (args.startsWith('show --json -- ') && args !== 'show --json -- tiny') {
+      return { value: { exitCode: 1, stdout: '', stderr: `No reel file at /library/${args.slice(15)}.json`, isStdoutTruncated: false, isStderrTruncated: false } }
+    }
     const stdout =
-      args === 'list --json' ? JSON.stringify(LIST)
+      args === 'show --json -- tiny' ? JSON.stringify(REEL)
+      : args === 'list --json' ? JSON.stringify(LIST)
       : args === 'paths --json' ? JSON.stringify({ reels: '/library' })
       : args.startsWith('render') ? '/exports/tiny-tall.mp4'
       : args.startsWith('still') ? '/exports/tiny-wide-step1.png'
