@@ -41,6 +41,8 @@ jobs:
         run: node scripts/smoke.mjs
 
       - name: Install the desktop app from the latest release
+        # No Windows app until it can be signed (pull request #29); the command is still tested there.
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           mkdir -p "$RUNNER_TEMP/app" && cd "$RUNNER_TEMP/app"
@@ -74,6 +76,8 @@ jobs:
           esac
 
       - name: The desktop app, as installed
+        # No Windows app until it can be signed (pull request #29); the command is still tested there.
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           if [ "$RUNNER_OS" = Linux ]; then
@@ -85,7 +89,7 @@ jobs:
           fi
 
       - name: Take a picture of the screen
-        if: always() && runner.os != 'Linux'
+        if: always() && runner.os == 'macOS'
         shell: bash
         run: |
           mkdir -p "$RUNNER_TEMP/shots"
@@ -96,7 +100,7 @@ jobs:
           fi
 
       - uses: actions/upload-artifact@v4
-        if: always() && runner.os != 'Linux'
+        if: always() && runner.os == 'macOS'
         with:
           name: screen-${{ matrix.name }}
           path: ${{ runner.temp }}/shots
@@ -174,6 +178,8 @@ jobs:
         run: node scripts/smoke.mjs
 
       - name: 'setup.md step 5: install the desktop app'
+        # No Windows app until it can be signed (pull request #29); the command is still tested there.
+        if: runner.os != 'Windows'
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -204,6 +210,8 @@ jobs:
           esac
 
       - name: The desktop app, as installed
+        # No Windows app until it can be signed (pull request #29); the command is still tested there.
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           if [ "$RUNNER_OS" = Linux ]; then
@@ -214,7 +222,7 @@ jobs:
           fi
 
       - name: Take a picture of the screen
-        if: always() && runner.os != 'Linux'
+        if: always() && runner.os == 'macOS'
         shell: bash
         run: |
           mkdir -p "$RUNNER_TEMP/shots"
@@ -225,7 +233,7 @@ jobs:
           fi
 
       - uses: actions/upload-artifact@v4
-        if: always() && runner.os != 'Linux'
+        if: always() && runner.os == 'macOS'
         with:
           name: screen-setup-${{ matrix.name }}
           path: ${{ runner.temp }}/shots

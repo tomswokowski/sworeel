@@ -17,7 +17,7 @@
 # otherwise: APPLE_CERTIFICATE (the Developer ID certificate as base64), APPLE_CERTIFICATE_PASSWORD,
 # APPLE_ID, APPLE_PASSWORD (an app-specific password) and APPLE_TEAM_ID. The app is signed as
 # whoever the certificate names, so there is no separate identity to keep in step with it.
-# The Windows build is unsigned.
+# There is no Windows app for now: it waits on code signing, in pull request #29.
 #
 # Installed apps update themselves from the newest release. Each build is signed for that with
 # the repository secrets TAURI_SIGNING_PRIVATE_KEY and TAURI_SIGNING_PRIVATE_KEY_PASSWORD, and
@@ -68,9 +68,7 @@ jobs:
           - name: macOS
             os: macos-latest
             args: --target universal-apple-darwin
-          - name: Windows
-            os: windows-latest
-            args: ''
+          # The Windows app is held back until it can be signed; pull request #29 brings it back.
     steps:
       - uses: actions/checkout@v4
 
