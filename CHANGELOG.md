@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/tomswokowski/sworeel/compare/v0.6.1...v0.6.2) (2026-10-14)
+
+
+### Bug Fixes
+
+* the pane reads reels through the sworeel command, not from disk itself ([#68](https://github.com/tomswokowski/sworeel/issues/68)) ([cfa7e0e](https://github.com/tomswokowski/sworeel/commit/cfa7e0ed4645927577d49ec2aa8ab8ba390dce6e))
+
 ## [0.6.1](https://github.com/tomswokowski/sworeel/compare/v0.6.0...v0.6.1) (2026-10-14)
 
 
