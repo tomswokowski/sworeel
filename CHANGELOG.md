@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/tomswokowski/sworeel/compare/v0.3.0...v0.4.0) (2026-10-14)
+
+
+### Features
+
+* one installer for each system, each of which updates itself ([#54](https://github.com/tomswokowski/sworeel/issues/54)) ([24e1b16](https://github.com/tomswokowski/sworeel/commit/24e1b160d5ec67dc68cf1d73017662c8df38b292))
+
 ## [0.3.0](https://github.com/tomswokowski/sworeel/compare/v0.2.0...v0.3.0) (2026-10-13)
 
 
