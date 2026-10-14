@@ -40,7 +40,6 @@
   }
 
   *, *::before, *::after { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
   /* Phones otherwise enlarge some text on their own when turned sideways. */
   html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   body { margin: 0; background: var(--page); color: var(--text); font: 17px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
@@ -157,6 +156,7 @@
 
   /* ---- sections ---- */
   section { padding: 96px 0 0; }
+  section:focus { outline: none; }
   .eyebrow { color: var(--accent); font: 400 0.8rem/1 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; }
   .title { margin-top: 14px; font-size: clamp(1.7rem, 4.2vw, 2.6rem); font-weight: 700; }
   .intro { max-width: 42rem; margin-top: 14px; color: var(--muted); font-size: 1.05rem; }
@@ -278,7 +278,7 @@
   }
   /* The narrowest phones have no room for the last button on that line. */
   @media (max-width: 350px) { .bar .export { display: none; } }
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
 <body>
@@ -645,12 +645,37 @@ sudo apt install nodejs</pre><button type="button">Copy</button></div>
     video.currentTime = Math.min(Math.max((event.clientX - box.left) / box.width, 0), 1) * LENGTH
   })
 
-  // The logo goes back to the top of the page, without reloading it or changing the address.
+  // Links within the page scroll to their section without putting "#section" in the address,
+  // so a bookmark or a shared link is always just the page. The logo goes back to the top. A
+  // link that arrives with a section in it still lands there, and the address is then tidied.
+  const tidy = () => location.hash && history.replaceState(null, '', location.pathname + location.search)
+  const glide = () => (matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth')
   document.getElementById('brand').addEventListener('click', (event) => {
     event.preventDefault()
-    window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
-    if (location.hash) history.replaceState(null, '', location.pathname + location.search)
+    window.scrollTo({ top: 0, behavior: glide() })
+    tidy()
   })
+  for (const link of document.querySelectorAll('a[href^="#"]')) {
+    const target = document.getElementById(link.getAttribute('href').slice(1))
+    if (!target) continue
+    link.addEventListener('click', (event) => {
+      event.preventDefault()
+      target.scrollIntoView({ behavior: glide(), block: 'start' })
+      // Keyboard users carry on from the section they jumped to.
+      target.setAttribute('tabindex', '-1')
+      target.focus({ preventScroll: true })
+      tidy()
+    })
+  }
+  // Once the browser has scrolled to it. A video still loading can hold back the load event, so
+  // this does not wait for that.
+  if (location.hash) {
+    const target = document.getElementById(location.hash.slice(1))
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      target?.scrollIntoView({ block: 'start' })
+      tidy()
+    }))
+  }
 
   // Copy buttons on the command blocks.
   for (const button of document.querySelectorAll('.code button')) {
