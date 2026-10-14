@@ -34,10 +34,12 @@ async function trashOne(path: string) {
     )
   } else if (process.platform === 'win32') {
     const method = (await stat(path)).isDirectory() ? 'DeleteDirectory' : 'DeleteFile'
-    // The path goes in through the environment: PowerShell would read one given on the command
-    // line as more script.
-    const script = `Add-Type -AssemblyName Microsoft.VisualBasic; [Microsoft.VisualBasic.FileIO.FileSystem]::${method}($env:SWOREEL_TRASH, 'OnlyErrorDialogs', 'SendToRecycleBin')`
-    await run('powershell', ['-NoProfile', '-NonInteractive', '-Command', script], { env: { ...process.env, SWOREEL_TRASH: path } })
+    // The path goes in as a single-quoted PowerShell string, in which nothing is read as script
+    // and only a quote needs doubling. The whole script is passed encoded, as PowerShell expects
+    // of -EncodedCommand, so no part of it is taken apart on the command line.
+    const quoted = `'${path.replaceAll("'", "''")}'`
+    const script = `Add-Type -AssemblyName Microsoft.VisualBasic; [Microsoft.VisualBasic.FileIO.FileSystem]::${method}(${quoted}, 'OnlyErrorDialogs', 'SendToRecycleBin')`
+    await run('powershell', ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')])
   } else {
     await run('gio', ['trash', '--', path])
       .catch(() => run('trash-put', ['--', path]))

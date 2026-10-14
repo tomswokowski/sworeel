@@ -22,18 +22,17 @@ import { dirname, join, resolve } from 'node:path'
 import type { Theme } from '../core/theme.ts'
 
 const home = homedir()
-const env = process.env
 
 function appFolder(linuxBase: string) {
-  if (process.platform === 'win32') return join(env.APPDATA || join(home, 'AppData', 'Roaming'), 'SwoReel')
+  if (process.platform === 'win32') return join(process.env.APPDATA || join(home, 'AppData', 'Roaming'), 'SwoReel')
   if (process.platform === 'darwin') return join(home, 'Library', 'Application Support', 'SwoReel')
   return join(linuxBase, 'sworeel')
 }
 
 /** The one folder everything lives in when SWOREEL_HOME is set. */
-const sandbox = env.SWOREEL_HOME ? resolve(env.SWOREEL_HOME) : null
+const sandbox = process.env.SWOREEL_HOME ? resolve(process.env.SWOREEL_HOME) : null
 
-export const configFile = join(sandbox ?? appFolder(env.XDG_CONFIG_HOME || join(home, '.config')), 'config.json')
+export const configFile = join(sandbox ?? appFolder(process.env.XDG_CONFIG_HOME || join(home, '.config')), 'config.json')
 
 export type Config = {
   reels?: string
@@ -101,7 +100,7 @@ export function expandHome(path: string) {
 function documentsFolder() {
   if (process.platform === 'linux') {
     try {
-      const dirs = readFileSync(join(env.XDG_CONFIG_HOME || join(home, '.config'), 'user-dirs.dirs'), 'utf8')
+      const dirs = readFileSync(join(process.env.XDG_CONFIG_HOME || join(home, '.config'), 'user-dirs.dirs'), 'utf8')
       const match = dirs.match(/^XDG_DOCUMENTS_DIR="(.+)"$/m)
       if (match) return match[1]!.replace(/^\$HOME/, home)
     } catch {
@@ -113,7 +112,7 @@ function documentsFolder() {
 
 export function reelsFolder() {
   if (sandbox) return join(sandbox, 'reels')
-  return readConfig().reels || join(appFolder(env.XDG_DATA_HOME || join(home, '.local', 'share')), 'reels')
+  return readConfig().reels || join(appFolder(process.env.XDG_DATA_HOME || join(home, '.local', 'share')), 'reels')
 }
 
 /**

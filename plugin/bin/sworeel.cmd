@@ -3,7 +3,7 @@ rem Runs the sworeel CLI on Windows. Node executes the TypeScript source directl
 setlocal
 set "root=%~dp0.."
 
-node -e "const [a, b] = process.versions.node.split('.').map(Number); process.exit(a > 22 || (a === 22 && b >= 18) ? 0 : 1)" 2>nul
+node "%root%\cli\check-node.mjs" 2>nul
 if errorlevel 1 (
   echo sworeel needs Node.js 22.18 or newer. 1>&2
   exit /b 1
