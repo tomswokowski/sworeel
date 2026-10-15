@@ -1,6 +1,7 @@
 // Everything the interface asks of the outside world. The desktop app answers through Tauri;
 // in a plain browser during development an in-memory stand-in answers instead.
 import type { Theme } from '../plugin/core/theme.ts'
+import { getVersion } from '@tauri-apps/api/app'
 import { invoke } from '@tauri-apps/api/core'
 import type { Format } from '../plugin/core/render.ts'
 
@@ -92,6 +93,8 @@ export interface Backend {
   pluginFound(): Promise<boolean>
   /** Opens one of the web pages the welcome screen names in the browser. */
   openSite(site: Site): Promise<void>
+  /** The version of the app that is running. */
+  version(): Promise<string>
   /** The newer version of the app that has been fetched and opens after a restart, if there is one. */
   updateReady(): Promise<string | null>
   /** Closes the app and opens the newer version. */
@@ -121,6 +124,7 @@ const tauri: Backend = {
   open: (path) => invoke('open_path', { path }),
   pluginFound: () => invoke('plugin_found'),
   openSite: (site) => invoke('open_site', { site }),
+  version: getVersion,
   updateReady: () => invoke('update_ready'),
   restartToUpdate: () => invoke('restart_to_update'),
 }

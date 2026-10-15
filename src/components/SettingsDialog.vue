@@ -9,6 +9,10 @@ const props = defineProps<{
   settings: Settings
   paths: Paths
   follow: boolean
+  /** The version that is running, once known. */
+  version: string | null
+  /** A newer version that has been fetched and opens after a restart, if there is one. */
+  update: string | null
   /** What went wrong saving the last change, if anything. */
   error: string | null
 }>()
@@ -187,6 +191,10 @@ function saveFolder() {
           </span>
         </div>
       </div>
+
+      <p v-if="version" class="version">
+        SwoReel {{ version }}<template v-if="update"> · {{ update }} opens after a restart</template>
+      </p>
     </section>
   </div>
 </template>
@@ -326,6 +334,13 @@ button.on {
 .switch.on::after {
   left: calc(100% - 1.2rem);
   background: var(--bg);
+}
+
+.version {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: center;
 }
 
 .error {

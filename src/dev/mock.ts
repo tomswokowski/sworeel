@@ -134,6 +134,8 @@ export const mockBackend: Backend = {
   // `?noplugin` shows the app as it is before the plugin has been installed.
   pluginFound: async () => !new URLSearchParams(location.search).has('noplugin'),
   openSite: async (site) => console.log('open site', site),
-  updateReady: async () => null,
+  version: async () => '0.0.0-dev',
+  // `?update` shows the notice for a newer version that has been fetched.
+  updateReady: async () => (new URLSearchParams(location.search).has('update') ? '9.9.9' : null),
   restartToUpdate: async () => {},
 }
