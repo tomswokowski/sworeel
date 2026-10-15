@@ -433,6 +433,8 @@ async function lookForPlugin() {
 
 // A newer version of the app, once it has been fetched in the background.
 const update = ref<string | null>(null)
+/** The version that is running, shown in Settings. */
+const version = ref<string | null>(null)
 
 async function lookForUpdate() {
   update.value = (await backend.value?.updateReady().catch(() => null)) ?? null
@@ -447,6 +449,7 @@ onMounted(async () => {
   try {
     backend.value = await loadBackend()
     paths.value = await backend.value.paths()
+    version.value = await backend.value.version().catch(() => null)
     await refresh()
     poll = window.setInterval(() => refresh(), 1000)
     updates = window.setInterval(lookForUpdate, 15_000)
@@ -513,7 +516,7 @@ onUnmounted(() => {
         :title="`SwoReel ${update} has been downloaded. Restart to use it now; otherwise it opens next time.`"
         @click="attempt(() => backend!.restartToUpdate())"
       >
-        Version {{ update }} Is Ready · Restart
+        Restart to Update
       </button>
       <button class="settings" @click="((settingsError = null), (settingsOpen = true))">
         <AppIcon name="settings" />
@@ -593,6 +596,8 @@ onUnmounted(() => {
     :settings="settings"
     :paths="paths"
     :follow="follow"
+    :version="version"
+    :update="update"
     :error="settingsError"
     @set="setSetting"
     @toggle-follow="toggleFollow"
