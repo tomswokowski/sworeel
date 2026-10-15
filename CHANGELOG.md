@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/tomswokowski/sworeel/compare/v0.8.0...v0.9.0) (2026-10-15)
+
+
+### Features
+
+* the app's version in Settings, and a shorter update notice ([#82](https://github.com/tomswokowski/sworeel/issues/82)) ([d269c56](https://github.com/tomswokowski/sworeel/commit/d269c56001ce2bf068d9b0802a6c96446461a75c))
+
 ## [0.8.0](https://github.com/tomswokowski/sworeel/compare/v0.7.0...v0.8.0) (2026-10-15)
 
 
