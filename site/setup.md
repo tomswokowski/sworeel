@@ -94,8 +94,8 @@ Find the newest files at https://api.github.com/repos/tomswokowski/sworeel/relea
 download the one for their system from its `assets` list:
 
 - macOS: the file ending `.dmg`. Open it, copy `SwoReel.app` into `/Applications`, and eject it.
-- Windows: there is no Windows app yet; it is coming soon. Tell them so, and that SwoReel works
-  fully in Claude Code without it, then skip this step.
+- Windows: the file ending `-setup.exe`. Run it. It is signed by Desoto Labs LLC, so Windows
+  installs it without an "unknown publisher" warning.
 - Linux: the file ending `.AppImage`. Save it as `~/.local/bin/sworeel-app` and make it
   executable with `chmod +x`. That is the name and place the `sworeel app` command looks for.
   It is built for 64-bit Intel and AMD computers (`uname -m` prints `x86_64`); on anything

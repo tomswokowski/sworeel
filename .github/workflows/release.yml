@@ -17,7 +17,11 @@
 # otherwise: APPLE_CERTIFICATE (the Developer ID certificate as base64), APPLE_CERTIFICATE_PASSWORD,
 # APPLE_ID, APPLE_PASSWORD (an app-specific password) and APPLE_TEAM_ID. The app is signed as
 # whoever the certificate names, so there is no separate identity to keep in step with it.
-# There is no Windows app for now: it waits on code signing, in pull request #29.
+#
+# The Windows build is signed as Desoto Labs LLC with Azure Artifact Signing when these repository
+# secrets are set, and unsigned otherwise: AZURE_TENANT_ID, AZURE_CLIENT_ID and AZURE_CLIENT_SECRET
+# (an app registration allowed to sign with the certificate profile). Which signing account and
+# profile it uses is written in src-tauri/tauri.signing.conf.json.
 #
 # Installed apps update themselves from the newest release. Each build is signed for that with
 # the repository secrets TAURI_SIGNING_PRIVATE_KEY and TAURI_SIGNING_PRIVATE_KEY_PASSWORD, and
@@ -68,7 +72,9 @@ jobs:
           - name: macOS
             os: macos-latest
             args: --target universal-apple-darwin
-          # The Windows app is held back until it can be signed; pull request #29 brings it back.
+          - name: Windows
+            os: windows-latest
+            args: ''
     steps:
       - uses: actions/checkout@v4
 
@@ -116,6 +122,24 @@ jobs:
             echo "APPLE_TEAM_ID=$APPLE_TEAM_ID"
           } >> "$GITHUB_ENV"
 
+      # As with macOS, only when the sign-in is there. The extra settings file tells the build to
+      # sign the app and its installers with the tool installed here.
+      - name: Set up Windows signing
+        if: runner.os == 'Windows' && env.AZURE_CLIENT_ID != ''
+        env:
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        shell: bash
+        run: |
+          cargo install trusted-signing-cli --locked
+          {
+            echo "AZURE_TENANT_ID=$AZURE_TENANT_ID"
+            echo "AZURE_CLIENT_ID=$AZURE_CLIENT_ID"
+            echo "AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET"
+            echo "SIGNING=--config src-tauri/tauri.signing.conf.json"
+          } >> "$GITHUB_ENV"
+
       # With a tag, the installers are attached to that release; without one they are only built.
       - id: build
         uses: tauri-apps/tauri-action@v0
@@ -127,7 +151,19 @@ jobs:
           tagName: ${{ needs.release.outputs.tag }}
           # The setup program is what the site offers on Windows, so it is what updates use too.
           updaterJsonPreferNsis: true
-          args: ${{ matrix.args }}
+          args: ${{ matrix.args }} ${{ env.SIGNING }}
+
+      # An unsigned Windows installer must never go out: Windows would warn about an unknown
+      # publisher. If signing was skipped or did not take, this fails the build, and the release
+      # stays a pre-release that nothing points at.
+      - name: Check the Windows installer is signed
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $installer = ('${{ steps.build.outputs.artifactPaths }}' | ConvertFrom-Json) | Where-Object { $_ -like '*-setup.exe' }
+          $signature = Get-AuthenticodeSignature $installer
+          "$($signature.Status): $($signature.SignerCertificate.Subject)"
+          if ($signature.Status -ne 'Valid') { exit 1 }
 
       - name: Keep the installers from a run by hand
         if: github.event_name == 'workflow_dispatch'
