@@ -153,6 +153,18 @@ jobs:
           updaterJsonPreferNsis: true
           args: ${{ matrix.args }} ${{ env.SIGNING }}
 
+      # An unsigned Windows installer must never go out: Windows would warn about an unknown
+      # publisher. If signing was skipped or did not take, this fails the build, and the release
+      # stays a pre-release that nothing points at.
+      - name: Check the Windows installer is signed
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $installer = ('${{ steps.build.outputs.artifactPaths }}' | ConvertFrom-Json) | Where-Object { $_ -like '*-setup.exe' }
+          $signature = Get-AuthenticodeSignature $installer
+          "$($signature.Status): $($signature.SignerCertificate.Subject)"
+          if ($signature.Status -ne 'Valid') { exit 1 }
+
       - name: Keep the installers from a run by hand
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
