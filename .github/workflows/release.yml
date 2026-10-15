@@ -151,6 +151,10 @@ jobs:
           tagName: ${{ needs.release.outputs.tag }}
           # The setup program is what the site offers on Windows, so it is what updates use too.
           updaterJsonPreferNsis: true
+          # Installers are named without the version (SwoReel.AppImage, SwoReel.dmg,
+          # SwoReel-setup.exe). An AppImage is the app itself and updates in place, so a version in
+          # its name would be wrong after the first update. The update list uses the same names.
+          assetNamePattern: '[name][setup][ext]'
           args: ${{ matrix.args }} ${{ env.SIGNING }}
 
       # An unsigned Windows installer must never go out: Windows would warn about an unknown
