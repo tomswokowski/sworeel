@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { validateReel } from '../core/reel.ts'
-import { describeStep, drawText, gridToLines } from '../core/text.ts'
-import { playheadAt, stepRestTime, timeline } from '../core/timing.ts'
-import type { Reel } from '../core/reel.ts'
+import { validateReel } from '../../plugin/core/reel.ts'
+import { describeStep, drawText, gridToLines } from '../../plugin/core/text.ts'
+import { playheadAt, stepRestTime, timeline } from '../../plugin/core/timing.ts'
+import type { Reel } from '../../plugin/core/reel.ts'
 
 const flow = {
   title: 'Flow',
@@ -352,7 +352,7 @@ test('a step is checked against what the reel can show', () => {
 })
 
 test('numbers keep the decimals their size makes worth reading', async () => {
-  const { formatNumber } = await import('../core/canvas.ts')
+  const { formatNumber } = await import('../../plugin/core/canvas.ts')
   assert.deepEqual([0, 0.02, 1.875, 3.75, 18.75, 187.5, 1250, 1234567.5, -2.5, 100].map(formatNumber), ['0', '0.02', '1.875', '3.75', '18.75', '187.5', '1,250', '1,234,567.5', '-2.5', '100'])
 })
 
@@ -366,8 +366,8 @@ test('a formula that cannot be typeset still reads correctly as text', async () 
 })
 
 test('a line grows one point at a time, reaching its last point only at the end', async () => {
-  const { draw } = await import('../core/kinds/line.ts')
-  const { FORMATS } = await import('../core/canvas.ts')
+  const { draw } = await import('../../plugin/core/kinds/line.ts')
+  const { FORMATS } = await import('../../plugin/core/canvas.ts')
   const reel = { kind: 'line', title: 'L', x: ['a', 'b', 'c', 'd', 'e'], series: [{ id: 's', label: 'S', values: [1, 2, 3, 4, 5] }], steps: [{ caption: 'It grows.', upTo: 5 }] }
   assert.equal(problems(reel), '')
   // Count the dots (full circles of radius 7) drawn at a moment in the step.

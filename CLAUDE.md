@@ -28,7 +28,21 @@ The pull request's checks run all of these except the hooks' type check (the `ts
 ## Changes and releases
 
 - Every change goes through a branch and a pull request; `main` is protected. Pull requests are squashed, so the title needs a prefix: `fix:`, `feat:`, `docs:`, `ci:`, `chore:`, `test:` or `refactor:`. It decides the next version and the changelog.
-- Merging to `main` releases nothing. A release is made by merging the open "chore(main): release …" pull request, and only when the person asks.
+- Merging to `main` releases nothing. A release is made by merging the open "chore(main): release …" pull request, and only when the person asks. The workflow does the rest: pre-release, installers, publish, then the `stable` tag. Never move `stable` by hand unless a release workflow failed partway and the person asks.
+- There is no Windows app until it can be signed (pull request #29). Do not add it back to releases, the site or setup outside that pull request. The plugin itself must keep working on Windows.
+
+## Keeping the plugin acceptable to Anthropic's plugin directory
+
+The directory follows the `stable` tag and scans every release (see the README's section on it). A version that fails the scan does not go live. When changing anything under `plugin/`:
+
+- **Describe behaviour in `plugin/README.md`.** Anything new the plugin runs, reads, writes, fetches or sends, and anything new a hook does or changes, goes in its README in the same change. The scan checks the plugin against that README.
+- **Keep the pane free of file reads.** It gets reels through the `sworeel` command (`sworeel show --json`), not `$.fs`, and makes no network calls.
+- **Read environment variables by name** (`process.env.PATH`), never the whole environment, and never hand the whole environment to a child process.
+- **No inline code in launchers or commands** (`node -e`, `python -c`): put it in a file and run the file.
+- **Avoid names that look like credentials** next to web addresses (`key`, `token`, `secret`, `password`).
+- **Only source belongs in `plugin/`.** Tests go in `tests/`. Generated data must stay readable, with short lines, as `scripts/build-land.mjs` writes it.
+- **Keep the `types` field in `plugin.json`.** The directory warns that it does not know it, but `claude plugin validate` fails without it.
+- **Dependencies come from the public npm registry**, pinned by `plugin/package-lock.json`. Add one only when it is needed, and name it in the plugin README.
 
 ## Conventions
 

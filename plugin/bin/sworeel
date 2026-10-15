@@ -18,15 +18,14 @@ if [ ! -f "$root/cli/main.ts" ]; then
   exit 1
 fi
 
-# Desktop launchers may not have a version manager's Node on PATH.
-node=(node)
-npm=(npm)
-if ! command -v node >/dev/null && command -v mise >/dev/null; then
-  node=(mise exec node -- node)
-  npm=(mise exec node -- npm)
-fi
+# Desktop launchers may not have a version manager's Node on PATH. Then, if mise is there, Node
+# is run through it. Each command is written out in full, so it is plain what runs.
+use_mise=
+if ! command -v node >/dev/null && command -v mise >/dev/null; then use_mise=1; fi
+run_node() { if [ -n "$use_mise" ]; then mise exec node -- node "$@"; else node "$@"; fi; }
+run_npm() { if [ -n "$use_mise" ]; then mise exec node -- npm "$@"; else npm "$@"; fi; }
 
-if ! "${node[@]}" -e 'const [a, b] = process.versions.node.split(".").map(Number); process.exit(a > 22 || (a === 22 && b >= 18) ? 0 : 1)' 2>/dev/null; then
+if ! run_node "$root/cli/check-node.mjs" 2>/dev/null; then
   echo "sworeel needs Node.js 22.18 or newer." >&2
   exit 1
 fi
@@ -35,8 +34,11 @@ fi
 # only when the install finishes, so one cut short is tried again next time.
 if [ ! -f "$root/node_modules/.sworeel-installed" ]; then
   echo "sworeel: installing dependencies (first run only)..." >&2
-  (cd "$root" && "${npm[@]}" install --omit=dev --no-audit --no-fund --loglevel=error) >&2
+  (cd "$root" && run_npm install --omit=dev --no-audit --no-fund --loglevel=error) >&2
   touch "$root/node_modules/.sworeel-installed"
 fi
 
-exec "${node[@]}" "$root/cli/main.ts" "$@"
+if [ -n "$use_mise" ]; then
+  exec mise exec node -- node "$root/cli/main.ts" "$@"
+fi
+exec node "$root/cli/main.ts" "$@"

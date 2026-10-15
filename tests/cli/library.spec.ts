@@ -4,7 +4,7 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, test } from 'node:test'
-import { addAsset, createFolder, duplicateReel, existingFolder, moveFolder, moveReel, renameFolder, renameReel, reelPath } from './library.ts'
+import { addAsset, createFolder, duplicateReel, existingFolder, moveFolder, moveReel, renameFolder, renameReel, reelPath } from '../../plugin/cli/library.ts'
 
 let root: string
 const has = (relative: string) => existsSync(join(root, relative))

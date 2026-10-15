@@ -31,6 +31,30 @@ Everything happens on your computer. SwoReel has no account and no server, and c
 
 When you ask for a reel of a web page, it is Claude Code that opens the page, with its own tools and permissions; the plugin does not.
 
+## What the pane's hooks do
+
+The pane beside the chat is a hooks module (`hooks/register.tsx`). It runs inside Claude Code and sends nothing over the network: it has no network calls of its own, and the one program it runs, the plugin's `sworeel` command, makes none either. Here is everything it does:
+
+- **When a session starts,** it registers the `/sworeel` command and one tool for Claude, `play` (known to Claude Code as `mcp__sworeel__play`), which shows a reel in the pane. It answers that tool itself, every time it is called, because the tool is its own and has nothing else behind it; it stands in for no other tool and changes no other tool's calls. Its `tool.call` hook is attached to that one tool only, so the only part of the conversation it sees is what Claude passes to `play`: a reel's name or a reel to show, a step number, or a control such as pause. Of that, only a reel's name ever reaches the `sworeel` command, when the user exports, opens or deletes that reel.
+- **It adds one short section to Claude's instructions** (the `prompt.compose` hook): a note that Claude may end an explanation with a one-line offer to show it as a reel. It changes nothing else in the instructions, and leaves the note out when the user has turned offers off with `sworeel config suggest off`, or when the session is scripted.
+- **It draws the pane** (`ui.render`) and closes it when asked (`ui.close`), and runs a timer while a reel plays.
+- **It keeps the player's state** in Claude Code's session state (`state.get` and `state.set`): which reel is open, its contents, the step and time it is at, whether it is playing, and the list of reels to pick from. That state stays in the session. None of it is passed to the `sworeel` command except the name of the reel being exported, opened in the app or deleted.
+- **It reads no files itself.** To show a reel it asks the `sworeel` command for it (`sworeel show --json`), which reads and checks the file.
+- **It runs one program: the plugin's own `sworeel` command**, in `bin/`, to do what the user or Claude asked. The calls it makes are `sworeel list` (the reels to pick from), `sworeel show --json` (one reel, to play), `sworeel config` (to read the offer setting), `sworeel render` and `sworeel still` (to export), `sworeel app` (to open the desktop app) and `sworeel delete` (to move a reel to the trash, only when the user confirms in the pane).
+
+## Environment
+
+SwoReel reads no credentials and needs no keys or accounts. The only environment variables it reads are where to keep its files and where to find programs: `HOME`, `XDG_DATA_HOME`, `XDG_CONFIG_HOME`, `APPDATA` and `LOCALAPPDATA` (the system's folders for app data and settings), `PATH` (to find Node.js, ffmpeg and the desktop app), and `SWOREEL_HOME`, `SWOREEL_FFMPEG` and `SWOREEL_DEV`, which only its own tests and development setup set.
+
+## Where the bundled data comes from
+
+Two files in `core/data/` are generated, not written by hand, and say so at the top:
+
+- `icons.ts` holds a subset of the [Lucide](https://lucide.dev) icons (ISC licence), made by [`scripts/build-icons.mjs`](https://github.com/tomswokowski/sworeel/blob/main/scripts/build-icons.mjs).
+- `land.ts` holds the land outlines from [Natural Earth](https://www.naturalearthdata.com) (public domain), made by [`scripts/build-land.mjs`](https://github.com/tomswokowski/sworeel/blob/main/scripts/build-land.mjs).
+
+Everything else in the plugin is the source itself: TypeScript that Node.js runs directly, with no build step. Dependencies come from the public npm registry, at the versions in `package-lock.json`, installed once when the plugin is installed. The `package.json` and lockfile at the top of the repository, above this folder, belong to the optional desktop app; the plugin's install does not use them. The tests for the command live outside this folder, in the repository's `tests` folder, so they are not part of the plugin.
+
 ## More
 
 - Website and setup: https://sworeel.com

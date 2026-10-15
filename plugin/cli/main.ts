@@ -15,7 +15,7 @@ import { registerFonts } from './fonts.ts'
 import * as library from './library.ts'
 import { importBundle, makeBundle, reelsNamed } from './bundle.ts'
 import { assetsFolder, configFile, expandHome, exportsFolder, readConfig, requestFile, reelsFolder, showingFile, styleFile, writeConfig } from './paths.ts'
-import { DEFAULT_THEME, isColor, THEME_KEYS, type Theme } from '../core/theme.ts'
+import { DEFAULT_THEME, isColor, THEME_COLOR_NAMES, type Theme } from '../core/theme.ts'
 import { drawReel, FORMATS, type Context2D, type DrawOptions, type Format } from '../core/render.ts'
 import { ICON_NAMES } from '../core/data/icons.ts'
 import { parseReel, type Reel } from '../core/reel.ts'
@@ -48,7 +48,8 @@ const USAGE = `Usage:
                                             With no --format, renders each of your default formats
 
   Watch
-    sworeel show <reel> [--step N] [--color]  The reel and its steps as text; --color for a terminal
+    sworeel show <reel> [--step N] [--color]  The reel and its steps as text; --color for a terminal,
+                                            or --json for the reel itself
     sworeel play [reel]                     Play it, animated, in the terminal; with no reel, pick one
     sworeel app [reel]                      Show it in the desktop app, starting the app if needed
     sworeel showing [--json]                Which reel and step the desktop app is on
@@ -189,7 +190,7 @@ function ffmpegProgram(): string {
     return bundled
   } catch {
     // The package has no ffmpeg for this kind of computer, or it was not installed.
-    fail('SwoReel has no ffmpeg for this computer, which it needs to make video. Install ffmpeg (https://ffmpeg.org) and try again. Images work without it.')
+    fail('SwoReel has no ffmpeg for this computer, which it needs to make video. Install ffmpeg and try again. Images work without it.')
   }
 }
 
@@ -460,6 +461,11 @@ try {
 
     case 'show': {
       const { reel } = await load(arg(0, 'show <reel> [--step N]'))
+      // The reel itself, checked, for a program to read: the in-session pane uses this.
+      if (values.json) {
+        console.log(JSON.stringify(reel))
+        break
+      }
       const step = stepOption()
       if (step !== undefined && (!Number.isInteger(step) || step < 1 || step > reel.steps.length)) {
         fail(`--step must be between 1 and ${reel.steps.length}.`)
@@ -625,25 +631,25 @@ try {
         writeConfig({ fps })
         console.log(`Frames per second set to ${fps}`)
       } else if (name === 'theme') {
-        const [, key, color] = args
+        const [, colorName, color] = args
         const current = CONFIG.theme ?? {}
-        if (!key) {
+        if (!colorName) {
           // Every colour, marking the ones that differ from the defaults.
-          for (const each of THEME_KEYS) console.log(`${each.padEnd(11)} ${current[each] ?? DEFAULT_THEME[each]}${current[each] ? '  (changed)' : ''}`)
-        } else if (key === 'reset') {
+          for (const each of THEME_COLOR_NAMES) console.log(`${each.padEnd(11)} ${current[each] ?? DEFAULT_THEME[each]}${current[each] ? '  (changed)' : ''}`)
+        } else if (colorName === 'reset') {
           writeConfig({ theme: undefined })
           console.log('Theme put back to the default colours')
-        } else if (!THEME_KEYS.includes(key as keyof Theme)) {
-          fail(`"${key}" is not a colour that can be set. Use one of: ${THEME_KEYS.join(', ')}.`)
+        } else if (!THEME_COLOR_NAMES.includes(colorName as keyof Theme)) {
+          fail(`"${colorName}" is not a colour that can be set. Use one of: ${THEME_COLOR_NAMES.join(', ')}.`)
         } else if (color === 'reset' || color === undefined) {
-          if (color === undefined) fail(`Usage: sworeel config theme ${key} <#hex|reset>`)
-          const { [key as keyof Theme]: _dropped, ...rest } = current
+          if (color === undefined) fail(`Usage: sworeel config theme ${colorName} <#hex|reset>`)
+          const { [colorName as keyof Theme]: _dropped, ...rest } = current
           writeConfig({ theme: Object.keys(rest).length ? rest : undefined })
-          console.log(`${key} put back to ${DEFAULT_THEME[key as keyof Theme]}`)
+          console.log(`${colorName} put back to ${DEFAULT_THEME[colorName as keyof Theme]}`)
         } else {
           if (!isColor(color)) fail(`"${color}" is not a hex colour. Give one like "#1acee3".`)
-          writeConfig({ theme: { ...current, [key]: color.toLowerCase() } })
-          console.log(`${key} set to ${color.toLowerCase()}`)
+          writeConfig({ theme: { ...current, [colorName]: color.toLowerCase() } })
+          console.log(`${colorName} set to ${color.toLowerCase()}`)
         }
       } else if (name === 'progress') {
         if (value !== 'on' && value !== 'off') fail('Usage: sworeel config progress <on|off>')

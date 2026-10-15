@@ -4,7 +4,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, test } from 'node:test'
-import { importBundle, makeBundle, reelsNamed } from './bundle.ts'
+import { importBundle, makeBundle, reelsNamed } from '../../plugin/cli/bundle.ts'
 
 const flow = { title: 'Front door', nodes: [{ id: 'a', label: 'A', col: 0, row: 0 }, { id: 'b', label: 'B', col: 1, row: 0 }], steps: [{ caption: 'A calls B.', from: 'a', to: 'b', label: 'GET /' }] }
 const picture = (src: string) => ({ title: 'A page', kind: 'picture', src, steps: [{ caption: 'The whole page.' }, { caption: 'Another page.', src: 'second.png' }] })

@@ -69,7 +69,8 @@ function startTimer($: EngineInterface) {
  */
 async function sworeel($: EngineInterface, args: string[], timeoutMs = 20_000): Promise<string> {
   const ran = await $.process.run(['sworeel', ...args], { timeoutMs })
-  if (ran.exitCode !== 0) throw new Error(ran.stderr.trim().split('\n')[0] || 'The sworeel command failed.')
+  // A few lines, so that what is wrong with a reel comes through, not only that something is.
+  if (ran.exitCode !== 0) throw new Error(ran.stderr.trim().split('\n').slice(0, 4).join('\n') || 'The sworeel command failed.')
   return ran.stdout.trim()
 }
 
@@ -83,13 +84,16 @@ async function readLibrary($: EngineInterface): Promise<Entry[]> {
   )
 }
 
-/** Finds a reel by its library name, by asking the sworeel command where the library is. */
+/**
+ * Finds a reel by its library name. The sworeel command reads and checks it, so the pane never
+ * reads the person's files itself.
+ */
 async function loadByName($: EngineInterface, name: string): Promise<Reel> {
-  const { reels } = JSON.parse(await sworeel($, ['paths', '--json'])) as { reels: string }
-  const text = await $.fs.read(`${reels}/${name}.json`).catch(() => {
-    throw new Error(`There is no reel called "${name}". Type /sworeel to pick from the library.`)
+  const printed = await sworeel($, ['show', '--json', '--', name]).catch((error: unknown) => {
+    const said = error instanceof Error ? error.message : String(error)
+    throw new Error(said.startsWith('No reel file') ? `There is no reel called "${name}". Type /sworeel to pick from the library.` : said)
   })
-  return parseReel(text)
+  return parseReel(printed)
 }
 
 const openPane = ($: EngineInterface, title: string, takeKeys: boolean) =>

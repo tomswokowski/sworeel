@@ -1,6 +1,6 @@
 {
   "name": "sworeel",
-  "version": "0.4.1",
+  "version": "0.7.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,7 +8,7 @@
     "build": "run-p type-check \"build-only {@}\" --",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
-    "test": "node --test \"plugin/cli/*.spec.ts\"",
+    "test": "node --test \"tests/cli/*.spec.ts\"",
     "tauri": "tauri",
     "sworeel": "node scripts/dev.mjs sworeel",
     "dev:app": "node scripts/dev.mjs app",

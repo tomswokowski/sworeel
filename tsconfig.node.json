@@ -4,6 +4,7 @@
   "include": [
     "vite.config.*",
     "plugin/cli/**/*",
+    "tests/**/*",
     "plugin/core/**/*"
   ],
   "compilerOptions": {

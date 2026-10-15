@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { applyTheme, COLORS, PALETTE, TINTS } from '../core/canvas.ts'
-import { validateReel } from '../core/reel.ts'
-import { DEFAULT_THEME, mix, validateTheme } from '../core/theme.ts'
+import { applyTheme, COLORS, PALETTE, TINTS } from '../../plugin/core/canvas.ts'
+import { validateReel } from '../../plugin/core/reel.ts'
+import { DEFAULT_THEME, mix, validateTheme } from '../../plugin/core/theme.ts'
 
 test('a theme replaces only the colours it names, and the next frame starts clean', () => {
   applyTheme({ primary: '#ff6600', background: '#ffffff' })

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { typeset } from '../host/typeset.ts'
+import { typeset } from '../../plugin/host/typeset.ts'
 
 test('a formula becomes shapes with a size in ems', () => {
   const formula = typeset('x = \\frac{a}{b}', (d) => d)

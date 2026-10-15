@@ -226,7 +226,16 @@ Both use the sandbox, so they see the same reels and settings: a reel Claude wri
 
 ### Releasing
 
-Releases are made by merging one pull request. Every push to `main` updates an open pull request titled "chore(main): release …", kept by [release-please](https://github.com/googleapis/release-please), with the next version number and a changelog of what has been merged since the last release. Merging it bumps the version everywhere it is written, tags it, publishes the release notes, and builds the installers for Linux, macOS and Windows onto the release (about ten minutes).
+Releases are made by merging one pull request. Every push to `main` updates an open pull request titled "chore(main): release …", kept by [release-please](https://github.com/googleapis/release-please), with the next version number and a changelog of what has been merged since the last release. Merging it bumps the version everywhere it is written, tags it, and makes a release, which is published in stages (about fifteen minutes in all):
+
+1. The release is made as a pre-release. GitHub does not count a pre-release as the newest release, so the website, setup and installed apps keep using the previous one meanwhile.
+2. The installers for Linux and macOS are built and attached, with the update file installed apps read.
+3. Once every installer is there, the release becomes the newest one.
+4. Then the tag `stable` is moved to it.
+
+If a build fails, the release stays a pre-release and nothing points at it. Re-running the failed jobs from the Actions tab finishes it.
+
+There is no Windows app for now. It is held back until it can be signed, and pull request #29 brings it back together with signing, the site's download button, the setup step and its tests. The plugin works on Windows and is tested there on every change.
 
 The version and the changelog come from commit messages on `main`, so each starts with the kind of change:
 
@@ -240,9 +249,22 @@ Pull requests are squashed, so it is the pull request's title that needs the pre
 
 Each release also moves a tag named `stable` to itself. Anything that should follow releases and not `main`, such as a listing in Anthropic's plugin directory, follows that tag.
 
+Installed plugins update themselves only where the person has turned that on: Claude Code leaves it off for marketplaces other than Anthropic's. Setup offers to turn it on, and the landing page says how. A plugin update is picked up only when the plugin's `version` changes, which every release does.
+
 Installed apps update themselves: soon after starting, the app fetches the newest release in the background and it opens next time (on Windows it is installed as the app closes). Each build is signed for this with a key kept in the repository's secrets, and apps accept only what that key signed; see the top of `.github/workflows/release.yml`.
 
 The macOS build is signed and notarized once the Apple secrets named at the top of `.github/workflows/release.yml` are set in the repository; without them it is unsigned. Running that workflow by hand from the Actions tab builds the installers without releasing, for trying a build.
+
+### Anthropic's plugin directory
+
+The plugin is submitted to Anthropic's plugin directory, which lists it for Claude Code. It is managed in the developer portal at [claude.ai/directory/manage](https://claude.ai/directory/manage), from the maintainer's claude.ai account.
+
+- **What the directory reads:** the `plugin` folder of this repository, at the tag `stable`. So the listing changes only when a release moves `stable`, never from work merged to `main` in between.
+- **How it hears about a release:** a webhook in this repository's settings tells it when `stable` moves, and it also checks every six hours. If the webhook's secret is rotated in the portal, the webhook here needs the new one.
+- **What happens then:** each version is scanned for security and policy. One that passes goes live by itself while auto-publish is on; one that is held waits for an Anthropic reviewer, and the listing keeps the previous version until then.
+- **What the scan checks a version against:** `plugin/README.md`, which must describe everything the plugin runs, reads, writes, fetches and sends, and what its hooks do. Behaviour the README does not mention can fail the scan. `CLAUDE.md` lists the rules that keep a version passing.
+- **To check a change before releasing it:** in the portal, set the plugin's tracked branch to `main` for a moment and validate, then set it back to `stable`.
+- **Listing details** (name, description, icon, links) come from `plugin/.claude-plugin/plugin.json` and `plugin/README.md`. The icon, `plugin/.claude-plugin/icon.png`, was fixed when the plugin was first submitted and cannot be changed.
 
 The app reads the library itself, and runs the `sworeel` command (found on PATH, or at the path in `SWOREEL_CLI`) for every change and export, so the app and Claude follow the same rules. Deleting a reel or folder moves it to the system trash.
 

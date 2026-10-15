@@ -1,5 +1,48 @@
 # Changelog
 
+## [0.7.0](https://github.com/tomswokowski/sworeel/compare/v0.6.3...v0.7.0) (2026-10-14)
+
+
+### Features
+
+* a privacy policy, and the plugin's support and privacy links ([#76](https://github.com/tomswokowski/sworeel/issues/76)) ([b7a4b67](https://github.com/tomswokowski/sworeel/commit/b7a4b67685e3a65bdac8ace654f304a1c6a2a558))
+
+## [0.6.3](https://github.com/tomswokowski/sworeel/compare/v0.6.2...v0.6.3) (2026-10-14)
+
+
+### Bug Fixes
+
+* nothing in the command reads like a credential to the directory's scanner ([#72](https://github.com/tomswokowski/sworeel/issues/72)) ([193dac0](https://github.com/tomswokowski/sworeel/commit/193dac0f13213e0b521edeec20c2b257e3611401))
+* SwoReel reads only the settings it names from the environment ([#74](https://github.com/tomswokowski/sworeel/issues/74)) ([060f259](https://github.com/tomswokowski/sworeel/commit/060f25968c38325e59f40c9fa18ff41ed8957bb0))
+
+## [0.6.2](https://github.com/tomswokowski/sworeel/compare/v0.6.1...v0.6.2) (2026-10-14)
+
+
+### Bug Fixes
+
+* the pane reads reels through the sworeel command, not from disk itself ([#68](https://github.com/tomswokowski/sworeel/issues/68)) ([cfa7e0e](https://github.com/tomswokowski/sworeel/commit/cfa7e0ed4645927577d49ec2aa8ab8ba390dce6e))
+
+## [0.6.1](https://github.com/tomswokowski/sworeel/compare/v0.6.0...v0.6.1) (2026-10-14)
+
+
+### Bug Fixes
+
+* answer the plugin directory's review findings ([#66](https://github.com/tomswokowski/sworeel/issues/66)) ([0a2d385](https://github.com/tomswokowski/sworeel/commit/0a2d385c9f6f7d122cae645418a632baff271ca2))
+
+## [0.6.0](https://github.com/tomswokowski/sworeel/compare/v0.5.0...v0.6.0) (2026-10-14)
+
+
+### Features
+
+* the plugin carries its icon, and its README says what its hooks do ([#64](https://github.com/tomswokowski/sworeel/issues/64)) ([077b342](https://github.com/tomswokowski/sworeel/commit/077b3424e7f825a2575e581b2584feff893b0c15))
+
+## [0.5.0](https://github.com/tomswokowski/sworeel/compare/v0.4.1...v0.5.0) (2026-10-14)
+
+
+### Features
+
+* the Windows app is coming soon, held back until it can be signed ([#61](https://github.com/tomswokowski/sworeel/issues/61)) ([a020186](https://github.com/tomswokowski/sworeel/commit/a020186b79e5b5e9e889beb276c8f9162ce9e568))
+
 ## [0.4.1](https://github.com/tomswokowski/sworeel/compare/v0.4.0...v0.4.1) (2026-10-14)
 
 
