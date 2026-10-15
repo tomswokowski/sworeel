@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/tomswokowski/sworeel/compare/v0.7.0...v0.8.0) (2026-10-15)
+
+
+### Features
+
+* the Windows app, signed as Desoto Labs LLC ([#29](https://github.com/tomswokowski/sworeel/issues/29)) ([da260ca](https://github.com/tomswokowski/sworeel/commit/da260cadc49a22bbef4d9b9041be294d7ed3da4f))
+
 ## [0.7.0](https://github.com/tomswokowski/sworeel/compare/v0.6.3...v0.7.0) (2026-10-14)
 
 
