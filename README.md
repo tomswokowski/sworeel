@@ -229,13 +229,13 @@ Both use the sandbox, so they see the same reels and settings: a reel Claude wri
 Releases are made by merging one pull request. Every push to `main` updates an open pull request titled "chore(main): release …", kept by [release-please](https://github.com/googleapis/release-please), with the next version number and a changelog of what has been merged since the last release. Merging it bumps the version everywhere it is written, tags it, and makes a release, which is published in stages (about fifteen minutes in all):
 
 1. The release is made as a pre-release. GitHub does not count a pre-release as the newest release, so the website, setup and installed apps keep using the previous one meanwhile.
-2. The installers for Linux and macOS are built and attached, with the update file installed apps read.
+2. The installers for Linux, macOS and Windows are built and attached, with the update file installed apps read.
 3. Once every installer is there, the release becomes the newest one.
 4. Then the tag `stable` is moved to it.
 
 If a build fails, the release stays a pre-release and nothing points at it. Re-running the failed jobs from the Actions tab finishes it.
 
-There is no Windows app for now. It is held back until it can be signed, and pull request #29 brings it back together with signing, the site's download button, the setup step and its tests. The plugin works on Windows and is tested there on every change.
+The Windows installer is signed as Desoto Labs LLC with Azure Artifact Signing, so Windows installs it without an unknown-publisher warning; the secrets it needs are named at the top of `.github/workflows/release.yml`.
 
 The version and the changelog come from commit messages on `main`, so each starts with the kind of change:
 
