@@ -29,12 +29,12 @@ The pull request's checks run all of these.
 - Merging to `main` releases nothing. A release is made by merging the open "chore(main): release …" pull request, and only when the person asks. The workflow does the rest: pre-release, installers, publish, then the `stable` tag. Never move `stable` by hand unless a release workflow failed partway and the person asks.
 - The Windows app is signed as Desoto Labs LLC with Azure Artifact Signing. A release whose Windows build is not signed is a failed release: do not ship one unsigned to work around a signing problem.
 
-## Keeping the plugin acceptable to Anthropic's plugin directory
+## Keeping the plugin easy to trust
 
-The directory follows the `stable` tag and scans every release (see the README's section on it). A version that fails the scan does not go live. When changing anything under `plugin/`:
+People install the plugin and let Claude run its command, so it should be plain what it does. When changing anything under `plugin/`:
 
-- **Describe behaviour in `plugin/README.md`.** Anything new the plugin runs, reads, writes, fetches or sends goes in its README in the same change. The scan checks the plugin against that README.
-- **No hooks modules (mods).** The directory accepts mods only from Verified organizations, so the in-session pane was removed to get SwoReel listed. Do not add a `hooks/` folder with a `modules` entry back.
+- **Describe behaviour in `plugin/README.md`.** Anything new the plugin runs, reads, writes, fetches or sends goes in its README in the same change.
+- **No hooks without asking.** The plugin has none: the in-session pane (a hooks module) was removed in 1.0.0. Adding hooks back is the person's decision, not a side effect of another change.
 - **Read environment variables by name** (`process.env.PATH`), never the whole environment, and never hand the whole environment to a child process.
 - **No inline code in launchers or commands** (`node -e`, `python -c`): put it in a file and run the file.
 - **Avoid names that look like credentials** next to web addresses (`key`, `token`, `secret`, `password`).
