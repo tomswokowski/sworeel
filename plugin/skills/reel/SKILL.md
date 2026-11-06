@@ -7,20 +7,21 @@ description: >
   request-flow diagrams, sequences, trees and file structures, timelines, Gantt plans, bar, line,
   scatter and pie charts, code walkthroughs, array and algorithm steps, maths, maps, annotated
   screenshots, UI mock-ups and free sketches. Use for three kinds of request. (1) Making or
-  changing a reel: the user asks to diagram, chart, visualize, illustrate, animate or walk
-  through how something works, to turn an explanation, some code or some screenshots into
-  something they can share, to make a reel of a source they give you (a blog post, a link, a
-  document, a ticket, a pull request, a repository), or to change a reel they are looking at
-  ("make this step shorter").
+  changing a reel: the user asks for a reel or for SwoReel by name, asks for an animated
+  explanation, video or image of how something works to watch or share, wants a reel of a
+  source they give you (a blog post, a link, a document, a ticket, a pull request, a
+  repository), or wants to change a reel they are looking at ("make this step shorter"). Not
+  for charts, plots or diagrams the user wants built into their own code, notebook or docs; if
+  a request to diagram or visualize something could mean either, ask in one line first.
   (2) Making reels look their way: brand colours, a light or dark look for all reels or one,
   the watermark, or a lasting preference for how their reels are made. (3) Managing SwoReel:
   anything about the user's library, reels, folders or exports, such as listing, finding,
   renaming, moving, organising, duplicating, deleting or re-exporting reels, moving reels to
   another computer, or changing a setting. Never ask the user where SwoReel's files are; this
   skill's `sworeel` command knows.
-  Triggers: SwoReel, sworeel, reel, make a reel, my reels, my exports, diagram this, chart
-  this, visualize, animate, code walkthrough, annotate this screenshot, show the flow of calls,
-  something to share or post, a video or image of this, match my brand.
+  Triggers: SwoReel, sworeel, reel, make a reel, as a reel, my reels, my exports, an animated
+  explanation, animate how this works, something to share or post, a video or image of this,
+  match my brand.
 ---
 
 # SwoReel
@@ -65,6 +66,19 @@ forcing one (see "What SwoReel cannot draw").
   `web/cors.json` inside the library. Put related reels in a folder together.
 - Some users also run the SwoReel desktop app (see "Working with the desktop app"). Do not
   assume it is installed, and do not delete or move the user's reels unless asked.
+
+## Only when asked
+
+Make a reel only when the user asks for one: they mention a reel or SwoReel, or they want an
+animated explanation, a video or an image to watch or share. Every reel you make is saved in
+their library, so one they did not want is clutter they have to clean up.
+
+- "Chart this data", "plot this" or "draw a diagram of this" in a coding project usually means
+  a chart or diagram in their code, notebook or docs, not a reel. Do that, without SwoReel.
+- When a request could mean either, ask in one line before writing anything: "Do you want
+  this as a SwoReel reel to watch and share, or as a chart in your code?"
+- Never make a reel as a side effect of another task, and never make several when one was
+  asked for (see "Making a reel from something the user gives you" for offering more).
 
 ## Workflow
 

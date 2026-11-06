@@ -79,6 +79,11 @@ ol {
   counter-reset: step;
 }
 
+ul:last-child,
+ol:last-child {
+  margin-bottom: 0;
+}
+
 ul li {
   display: flex;
   align-items: center;
