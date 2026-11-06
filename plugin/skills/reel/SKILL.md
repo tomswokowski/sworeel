@@ -10,9 +10,11 @@ description: >
   changing a reel: the user asks for a reel or for SwoReel by name, asks for an animated
   explanation, video or image of how something works to watch or share, wants a reel of a
   source they give you (a blog post, a link, a document, a ticket, a pull request, a
-  repository), or wants to change a reel they are looking at ("make this step shorter"). Not
-  for charts, plots or diagrams the user wants built into their own code, notebook or docs; if
-  a request to diagram or visualize something could mean either, ask in one line first.
+  repository), or wants to change a reel they are looking at ("make this step shorter"). Also
+  when the user asks to visualize, diagram or illustrate how something works (a flow, a
+  process, how a system fits together) without saying how: then ask in one line whether they
+  want a reel before making one. Not for charts, plots or diagrams the user wants built into
+  their own code, notebook or docs.
   (2) Making reels look their way: brand colours, a light or dark look for all reels or one,
   the watermark, or a lasting preference for how their reels are made. (3) Managing SwoReel:
   anything about the user's library, reels, folders or exports, such as listing, finding,
@@ -20,8 +22,8 @@ description: >
   another computer, or changing a setting. Never ask the user where SwoReel's files are; this
   skill's `sworeel` command knows.
   Triggers: SwoReel, sworeel, reel, make a reel, as a reel, my reels, my exports, an animated
-  explanation, animate how this works, something to share or post, a video or image of this,
-  match my brand.
+  explanation, animate how this works, visualize how this works, diagram how this works, draw
+  the flow of, something to share or post, a video or image of this, match my brand.
 ---
 
 # SwoReel
@@ -73,10 +75,14 @@ Make a reel only when the user asks for one: they mention a reel or SwoReel, or 
 animated explanation, a video or an image to watch or share. Every reel you make is saved in
 their library, so one they did not want is clutter they have to clean up.
 
-- "Chart this data", "plot this" or "draw a diagram of this" in a coding project usually means
-  a chart or diagram in their code, notebook or docs, not a reel. Do that, without SwoReel.
-- When a request could mean either, ask in one line before writing anything: "Do you want
-  this as a SwoReel reel to watch and share, or as a chart in your code?"
+- "Chart this data" or "plot this" in a coding project means a chart in their code, notebook
+  or docs. Do that, without SwoReel and without asking.
+- "Visualize how this works", "draw the login flow" or "diagram how these services talk" is
+  what a reel is for, but they did not ask for one. Ask in one line before doing anything
+  else: "Want this as a SwoReel reel you can watch and share, or just a diagram here in the
+  chat?" On a yes, make the reel. Otherwise answer in the chat and save nothing.
+- Ask that at most once in a conversation. Once they have said no, answer later requests like
+  it in the chat without asking again.
 - Never make a reel as a side effect of another task, and never make several when one was
   asked for (see "Making a reel from something the user gives you" for offering more).
 
