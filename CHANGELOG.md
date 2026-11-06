@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.0](https://github.com/tomswokowski/sworeel/compare/v0.9.0...v1.0.0) (2026-11-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove the in-session pane and reel offers ([#84](https://github.com/tomswokowski/sworeel/issues/84))
+
+### Features
+
+* preview links in the chat, and the repo-wide review for 1.0.0 ([#86](https://github.com/tomswokowski/sworeel/issues/86)) ([dc6196f](https://github.com/tomswokowski/sworeel/commit/dc6196f39b256cd6ddcd63c35e71774a6fab75ab))
+* remove the in-session pane and reel offers ([#84](https://github.com/tomswokowski/sworeel/issues/84)) ([9760d5e](https://github.com/tomswokowski/sworeel/commit/9760d5ecc12256f227240a7571adf40216e57a9e))
+
+
+### Bug Fixes
+
+* keep a flow group's name readable where lines and boxes meet it ([#85](https://github.com/tomswokowski/sworeel/issues/85)) ([d0a6bc4](https://github.com/tomswokowski/sworeel/commit/d0a6bc46499af9ff9fd7dcde717f904bd1f54189))
+
 ## [0.9.0](https://github.com/tomswokowski/sworeel/compare/v0.8.0...v0.9.0) (2026-10-15)
 
 
