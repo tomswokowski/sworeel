@@ -98,6 +98,7 @@ export const mockBackend: Backend = {
   },
   deleteReel: async (path) => void files.delete(path),
   createFolder: async (parent, name) => {
+    if (!name.trim()) throw 'Give the folder a name.'
     const folder = `${parent ? `${parent}/` : ''}${checkName(name)}`
     if (folders.has(folder)) throw `"${name}" already exists there.`
     folders.add(folder)
@@ -107,6 +108,7 @@ export const mockBackend: Backend = {
     relabel(folder, `${into ? `${into}/` : ''}${folder.split('/').pop()}`)
   },
   renameFolder: async (folder, name) => {
+    if (!name.trim()) throw 'Give the folder a name.'
     relabel(folder, [...folder.split('/').slice(0, -1), checkName(name)].join('/'))
   },
   deleteFolder: async (folder) => {
@@ -115,19 +117,24 @@ export const mockBackend: Backend = {
   },
   exportReel: async (path, what, format, step) => {
     await new Promise((done) => setTimeout(done, 600))
-    const base = `/mock/Documents/SwoReel/${nameOf(path)}`
+    // Named as the command names them: the reel's folder and name, joined by dashes.
+    const base = `${exports}/${path.slice(ROOT.length + 1).replace(/\.json$/, '').split('/').join('-')}`
     if (what === 'videos') return settings.formats.map((each) => `${base}-${each}.mp4`)
     if (what === 'stills') return [`${base}-${format}-stills`]
     return [what === 'video' ? `${base}-${format}.mp4` : `${base}-${format}-step${step}.png`]
   },
-  bundle: async (name) => `/mock/Documents/SwoReel/${name === '.' ? 'sworeel-library' : name.replace(/\/$/, '').split('/').pop()}.sworeel`,
+  bundle: async (name) => `${exports}/${name === '.' ? 'sworeel-library' : name.replace(/\/$/, '').split('/').pop()}.sworeel`,
   importBundle: async (text) => {
     const bundle = JSON.parse(text) as { sworeel?: number; reels: { name: string; reel: unknown }[] }
     if (bundle.sworeel !== 1) throw 'That is not a SwoReel bundle, or it was made by a newer version of SwoReel.'
     // Nothing already there is replaced, as with the command.
-    const added = bundle.reels.filter(({ name }) => !files.has(`${ROOT}/${name}.json`))
-    for (const { name, reel } of added) files.set(`${ROOT}/${name}.json`, { text: JSON.stringify(reel), modified: Date.now() })
-    return added.length ? `Imported ${added.length === 1 ? '1 reel' : `${added.length} reels`}: ${added.map((each) => each.name).join(', ')}` : ''
+    const added = bundle.reels.filter(({ name }) => !files.has(`${ROOT}/${name}.json`)).map(({ name }) => name)
+    const skipped = bundle.reels.map(({ name }) => name).filter((name) => !added.includes(name))
+    for (const { name, reel } of bundle.reels) if (added.includes(name)) files.set(`${ROOT}/${name}.json`, { text: JSON.stringify(reel), modified: Date.now() })
+    return [
+      added.length ? `Imported ${added.length === 1 ? '1 reel' : `${added.length} reels`}: ${added.join(', ')}` : '',
+      skipped.length ? `Already in the library, unchanged: ${skipped.join(', ')}` : '',
+    ].filter(Boolean).join('\n')
   },
   open: async (path) => console.log('open', path),
   // `?noplugin` shows the app as it is before the plugin has been installed.

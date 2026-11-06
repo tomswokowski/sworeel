@@ -528,7 +528,7 @@ interface Themed {
 export type Reel = (FlowReel | SequenceReel | GanttReel | ScatterReel | ScreenReel | SketchReel | MathReel | MapReel | PictureReel | TreeReel | TimelineReel | ChartReel | LineReel | PieReel | CodeReel | ArrayReel) & Themed
 export type ReelStep = Reel['steps'][number]
 
-export const KINDS: Kind[] = ['flow', 'sequence', 'tree', 'timeline', 'gantt', 'chart', 'line', 'scatter', 'pie', 'code', 'array', 'math', 'map', 'picture', 'screen', 'sketch']
+const KINDS: Kind[] = ['flow', 'sequence', 'tree', 'timeline', 'gantt', 'chart', 'line', 'scatter', 'pie', 'code', 'array', 'math', 'map', 'picture', 'screen', 'sketch']
 
 export function kindOf(reel: Reel): Kind {
   return reel.kind ?? 'flow'

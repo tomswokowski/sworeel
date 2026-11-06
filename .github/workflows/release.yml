@@ -7,8 +7,9 @@
 # and attaches them to the release.
 #
 # The next version and the changelog come from commit messages on main, which start with what
-# kind of change they are: `fix:` for a bug fix (0.1.0 -> 0.1.1), `feat:` for something new
-# (0.1.0 -> 0.2.0), and `docs:`, `ci:`, `chore:`, `test:` or `refactor:` for what users don't see.
+# kind of change they are: `fix:` for a bug fix (1.0.0 -> 1.0.1), `feat:` for something new
+# (1.0.0 -> 1.1.0), a `!` after either for a breaking change (1.0.0 -> 2.0.0), and `docs:`, `ci:`,
+# `chore:`, `test:` or `refactor:` for what users don't see.
 #
 # Running this by hand from the Actions tab builds the installers without releasing anything,
 # for trying a build; they are kept with the run as downloads.
@@ -50,6 +51,12 @@ jobs:
     steps:
       - id: release
         uses: googleapis/release-please-action@v4
+      # release-please makes a pre-release only below 1.0.0, so from 1.0.0 on this marks it as one
+      # straight away. Until it is published, apps, the website and setup keep the previous release.
+      - if: steps.release.outputs.release_created == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "${{ steps.release.outputs.tag_name }}" --repo "${{ github.repository }}" --prerelease
 
   installers:
     name: Installers (${{ matrix.name }})

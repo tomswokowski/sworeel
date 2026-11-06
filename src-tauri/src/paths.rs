@@ -1,12 +1,12 @@
 //! Where SwoReel keeps things. The CLI (`plugin/cli/paths.ts`) follows the same rules.
 //!
-//! | What     | Linux                          | macOS                                          | Windows                    |
-//! |----------|--------------------------------|------------------------------------------------|----------------------------|
-//! | Reels   | `~/.local/share/sworeel/reels`| `~/Library/Application Support/SwoReel/reels` | `%APPDATA%\SwoReel\reels` |
-//! | Settings | `~/.config/sworeel/config.json`| `~/Library/Application Support/SwoReel/config.json` | `%APPDATA%\SwoReel\config.json` |
-//! | Exports  | `Documents/SwoReel` on all three                                                                             |
+//! | What     | Linux                           | macOS                                               | Windows                         |
+//! |----------|---------------------------------|-----------------------------------------------------|---------------------------------|
+//! | Reels    | `~/.local/share/sworeel/reels`  | `~/Library/Application Support/SwoReel/reels`       | `%APPDATA%\SwoReel\reels`       |
+//! | Settings | `~/.config/sworeel/config.json` | `~/Library/Application Support/SwoReel/config.json` | `%APPDATA%\SwoReel\config.json` |
+//! | Exports  | `Documents/SwoReel`             | `Documents/SwoReel`                                 | `Documents\SwoReel`             |
 //!
-//! | Pictures | an `assets` folder beside the reels folder                                                                   |
+//! Pictures that reels use are kept in an `assets` folder beside the reels folder.
 //!
 //! Reels are the app's working files; exports are what the user publishes, so only exports
 //! go in Documents. `reels` and `exports` in `config.json` override the defaults.

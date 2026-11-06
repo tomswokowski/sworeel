@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { baseName, fullName, type Backend, type ExportKind, type ReelFile, type Settings } from '@/backend.ts'
+import type { Backend, ExportKind, ReelFile, Settings } from '@/backend.ts'
+import { baseName, fullName } from '@/names.ts'
+import { fontsReady } from '@/fonts.ts'
 import { FORMAT_LABELS } from '@/formats.ts'
 import { dialogOpen, useDismiss } from '@/overlays.ts'
 import { drawReel, FORMATS, type Assets, type Context2D, type Format } from '../../plugin/core/render.ts'
@@ -77,7 +79,7 @@ const MOST_MARKS = 40
 
 // The first three follow the format picked in the bar. "Videos in …" is offered only when the
 // default formats in Settings are more than one, since otherwise it repeats "Video".
-const EXPORTS = computed(() => {
+const exportChoices = computed(() => {
   const count = props.reel?.steps.length ?? 0
   const current = Math.max(step.value + 1, 1)
   const defaults = props.settings.formats.map((each) => FORMAT_LABELS[each])
@@ -94,7 +96,7 @@ const EXPORTS = computed(() => {
   return choices
 })
 
-async function runExport(choice: (typeof EXPORTS.value)[number]) {
+async function runExport(choice: (typeof exportChoices.value)[number]) {
   exportMenu.value = false
   exporting.value = choice.doing
   exported.value = null
@@ -117,7 +119,7 @@ let drawn: unknown[] = []
 function draw() {
   const ctx = canvas.value?.getContext('2d')
   if (!ctx || !props.reel) return
-  const from = [canvas.value, props.reel, format.value, time.value, props.assets, props.settings]
+  const from = [canvas.value, props.reel, format.value, time.value, props.assets, props.settings, fontsReady.value]
   if (from.every((each, i) => each === drawn[i])) return
   drawn = from
   const { watermark, progress, theme } = props.settings
@@ -199,7 +201,8 @@ onUnmounted(() => {
         <span class="time">{{ clock(time) }}</span>
         <div class="track">
           <input type="range" min="0" :max="duration" step="10" :value="time" :disabled="!reel" aria-label="Position in the reel" @input="scrub" />
-          <!-- Left out when there are so many steps that the marks would be too close to press. -->
+          <!-- Left out when there are so many steps that the marks would be too close to press. They
+               are for the pointer; from the keyboard, the arrows and the step buttons move by step. -->
           <button
             v-for="(start, i) in moments.starts.length <= MOST_MARKS ? moments.starts : []"
             :key="i"
@@ -208,6 +211,7 @@ onUnmounted(() => {
             :style="{ left: `${(start / duration) * 100}%` }"
             :title="`Step ${i + 1}`"
             :aria-label="`Go to Step ${i + 1}`"
+            tabindex="-1"
             @click="showStep(i)"
           />
         </div>
@@ -244,7 +248,7 @@ onUnmounted(() => {
             {{ exporting ? 'Exporting…' : 'Export ▾' }}
           </button>
           <div v-if="exportMenu" class="menu" role="menu">
-            <template v-for="choice in EXPORTS" :key="choice.what">
+            <template v-for="choice in exportChoices" :key="choice.what">
               <p v-if="choice.what === 'video'" class="heading">Export in {{ FORMAT_LABELS[format] }}</p>
               <p v-else-if="choice.what === 'videos' || choice.what === 'file'" class="divider" />
               <button role="menuitem" @click="runExport(choice)">
@@ -424,6 +428,8 @@ button.on {
 }
 
 .where {
+  /* Wide enough for "Step 10 of 10", so the controls don't shift as the label changes. */
+  min-width: 7.5em;
   margin-left: 0.5rem;
   color: var(--muted);
   font-variant-numeric: tabular-nums;

@@ -15,7 +15,7 @@ const SYMBOLS: [RegExp, string][] = [
 const RAISED: Record<string, string> = { 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹', n: 'ⁿ', '+': '⁺', '-': '⁻' }
 
 /** A readable plain-text stand-in for a formula, for where it can't be typeset. */
-export function texToText(tex: string) {
+function texToText(tex: string) {
   let out = tex
   // Fractions become (top)/(bottom), working outwards from the innermost.
   for (let i = 0; i < 6; i++) out = out.replace(/\\[dt]?frac\{([^{}]*)\}\{([^{}]*)\}/g, '($1)/($2)')

@@ -107,5 +107,7 @@ Tell the person:
 
 - What you installed, and anything you skipped and why.
 - That they need to restart Claude Code once, so it loads the plugin.
+- That the first reel takes a minute or two longer, while SwoReel downloads its own software
+  once.
 - What to try after restarting: ask for a reel, such as "make a reel of how a request reaches
   the database", or "list my reels" to see the ones they have.

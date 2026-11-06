@@ -23,7 +23,7 @@ const reels = join(home, 'reels')
 if (!existsSync(reels)) {
   mkdirSync(reels, { recursive: true })
   const samples = join(root, 'src', 'dev', 'fixtures')
-  for (const file of readdirSync(samples)) if (file.endsWith('.json') && file !== 'broken.json') cpSync(join(samples, file), join(reels, file))
+  for (const file of readdirSync(samples)) if (file.endsWith('.json')) cpSync(join(samples, file), join(reels, file))
   console.error(`Made a sandbox with sample reels at ${home}`)
 }
 

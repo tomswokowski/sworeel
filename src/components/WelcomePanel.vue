@@ -1,13 +1,11 @@
 <script setup lang="ts">
 // What the library shows before there are any reels: how to get the plugin when it is missing,
 // and what to ask Claude for once it is there.
-import type { Site } from '@/backend.ts'
+import { SETUP_REQUEST, type Site } from '@/backend.ts'
 
 defineProps<{ plugin: boolean }>()
 const emit = defineEmits<{ copy: [text: string]; open: [site: Site] }>()
 
-/** The same request the website gives; Claude follows the steps at that address. */
-const SETUP = 'Set up SwoReel for me. Follow the steps at https://sworeel.com/setup.md'
 const IDEAS = ['Make a reel of how a request reaches the database', 'Explain this function as a reel, step by step', 'Chart these numbers as a reel']
 </script>
 
@@ -34,8 +32,8 @@ const IDEAS = ['Make a reel of how a request reaches the database', 'Explain thi
         <li>
           <span>Paste this into Claude Code, and it does the rest:</span>
           <div class="request">
-            <code>{{ SETUP }}</code>
-            <button class="primary" @click="emit('copy', SETUP)">Copy</button>
+            <code>{{ SETUP_REQUEST }}</code>
+            <button class="primary" @click="emit('copy', SETUP_REQUEST)">Copy</button>
           </div>
         </li>
         <li>

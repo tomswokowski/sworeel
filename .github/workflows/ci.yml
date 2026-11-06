@@ -1,8 +1,8 @@
 # Checks every change: the command and core on all three systems, the desktop app's own code on Linux.
 #
-# It also runs once a day with nothing changed here. The plugin runs inside Claude Code, which
-# updates on its own schedule, so a new Claude Code can break the plugin without a commit to
-# blame. The daily run installs the newest one and fails, with an email, the day that happens.
+# It also runs once a day with nothing changed here. Claude Code updates on its own schedule, and a
+# new one can start rejecting the plugin's manifest or skill without a commit to blame. The daily
+# run checks the plugin with the newest one and fails, with an email, the day that happens.
 name: CI
 
 on:

@@ -7,7 +7,8 @@ import WelcomePanel from '@/components/WelcomePanel.vue'
 import SettingsDialog from '@/components/SettingsDialog.vue'
 import ReelCard from '@/components/ReelCard.vue'
 import ReelPlayer from '@/components/ReelPlayer.vue'
-import { baseName, fullName, loadBackend, within, type Backend, type Library, type Paths, type ReelFile, type SettingKey, type Settings, type Site } from '@/backend.ts'
+import { loadBackend, SETUP_REQUEST, type Backend, type Library, type Paths, type ReelFile, type SettingKey, type Settings, type Site } from '@/backend.ts'
+import { baseName, fullName, within } from '@/names.ts'
 import { BASE, prepare } from '@/assets.ts'
 import type { Assets } from '../plugin/core/canvas.ts'
 import { kindOf, parseReel, type Reel } from '../plugin/core/reel.ts'
@@ -102,7 +103,7 @@ function open(path: string) {
 }
 
 // Keep a note of what is on screen, so Claude can tell which reel and step "this" is.
-watch([openPath, shownStep, backend], ([path, step, ready]) => ready?.setShowing(path, path ? step : 0).catch(() => {}))
+watch([openPath, shownStep, backend], ([path, step, api]) => api?.setShowing(path, path ? step : 0).catch(() => {}))
 
 /**
  * Where the open reel and the chosen folder will be once a rename or move made here shows up
@@ -419,8 +420,6 @@ function deleteFolder(target: string) {
   })
 }
 
-/** The request that has Claude Code install the plugin; the website gives the same one. */
-const SETUP = 'Set up SwoReel for me. Follow the steps at https://sworeel.com/setup.md'
 /** Whether the plugin's command is there. Without it the app can show reels but change nothing. */
 const plugin = ref(true)
 
@@ -552,7 +551,7 @@ onUnmounted(() => {
 
     <p v-if="!plugin && library.reels.length > 0" class="missing" role="status">
       <span>The SwoReel plugin for Claude Code was not found, so exporting, organising and settings will not work until it is set up.</span>
-      <button @click="copyText(SETUP, 'Copied. Paste it into Claude Code.')">Copy Setup Request</button>
+      <button @click="copyText(SETUP_REQUEST, 'Copied. Paste it into Claude Code.')">Copy Setup Request</button>
     </p>
 
     <WelcomePanel v-if="ready && library.reels.length === 0" :plugin="plugin" @copy="copyText($event, 'Copied. Paste it into Claude Code.')" @open="openSite" />

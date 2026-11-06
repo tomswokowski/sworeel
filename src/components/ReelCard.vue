@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue'
-import { fullName, type ReelFile } from '@/backend.ts'
+import type { ReelFile } from '@/backend.ts'
+import { fullName } from '@/names.ts'
 import { useDismiss } from '@/overlays.ts'
 import { fontsReady } from '@/fonts.ts'
 import { drawReel, FORMATS, type Assets, type Context2D } from '../../plugin/core/render.ts'

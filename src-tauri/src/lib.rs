@@ -55,8 +55,12 @@ async fn sworeel<const N: usize>(args: [&str; N]) -> Result<String> {
 
 /// Runs a command that reports the reel it produced as JSON, and returns that reel's path.
 async fn resulting_path<const N: usize>(args: [&str; N]) -> Result<String> {
-    let printed = sworeel(args).await?;
-    serde_json::from_str::<serde_json::Value>(&printed)
+    path_in_reply(&sworeel(args).await?)
+}
+
+/// The `path` in a command's `--json` reply.
+fn path_in_reply(printed: &str) -> Result<String> {
+    serde_json::from_str::<serde_json::Value>(printed)
         .ok()
         .and_then(|result| result.get("path")?.as_str().map(str::to_owned))
         .ok_or_else(|| format!("Unexpected reply from the sworeel command: {printed}"))
@@ -91,8 +95,12 @@ struct Settings {
 
 #[tauri::command]
 fn get_settings() -> Settings {
-    // Read once: the app asks every second, and each setting used to mean reading the file again.
-    let config = paths::config();
+    // Read once: the app asks every second.
+    settings_from(&paths::config())
+}
+
+/// The settings in `config.json`, with the defaults the command uses for any that are missing.
+fn settings_from(config: &serde_json::Map<String, serde_json::Value>) -> Settings {
     let formats: Vec<String> = config
         .get("formats")
         .and_then(|value| serde_json::from_value(value.clone()).ok())
@@ -217,6 +225,9 @@ async fn delete_reel(path: String) -> Result<()> {
 
 /// A folder's name is one folder, not a path, so nothing typed can reach into other folders.
 fn one_name(name: &str) -> Result<()> {
+    if name.trim().is_empty() {
+        return Err("Give the folder a name.".into());
+    }
     if name.contains(['/', '\\']) {
         return Err("A folder name can't contain / or \\.".into());
     }
@@ -293,6 +304,10 @@ async fn import_bundle(text: String) -> Result<String> {
 /// Opens a file or folder with the desktop's default application.
 #[tauri::command]
 async fn open_path(path: String) -> Result<()> {
+    // The exports folder is only made by the first export; Settings can open it before then.
+    if std::path::Path::new(&path) == paths::exports() {
+        std::fs::create_dir_all(&path).map_err(|error| error.to_string())?;
+    }
     // Only what the app itself shows: the library, the exports folder, and files inside them.
     let wanted = std::fs::canonicalize(&path).map_err(|_| format!("{path} does not exist."))?;
     let allowed = [paths::reels(), paths::exports()]
@@ -372,4 +387,41 @@ pub fn run() {
                 update::install_on_close(app);
             }
         });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::{Value, json};
+
+    #[test]
+    fn a_folder_name_is_one_name() {
+        assert!(one_name("drafts").is_ok());
+        assert_eq!(one_name("  ").unwrap_err(), "Give the folder a name.");
+        assert!(one_name("a/b").is_err());
+        assert!(one_name("a\\b").is_err());
+    }
+
+    #[test]
+    fn the_path_is_read_from_a_json_reply() {
+        assert_eq!(path_in_reply(r#"{"name":"web/cors","path":"/r/web/cors.json"}"#).unwrap(), "/r/web/cors.json");
+        assert!(path_in_reply("Renamed to cors").unwrap_err().starts_with("Unexpected reply"));
+        assert!(path_in_reply(r#"{"name":"cors"}"#).is_err());
+    }
+
+    #[test]
+    fn missing_or_broken_settings_fall_back_to_the_defaults() {
+        let defaults = settings_from(&serde_json::Map::new());
+        assert_eq!((defaults.watermark.as_str(), defaults.progress, defaults.fps), ("", false, 30));
+        assert_eq!(defaults.formats, ["wide"]);
+        assert_eq!(defaults.theme, json!({}));
+
+        let Value::Object(config) = json!({ "watermark": "@me", "progress": true, "fps": 60, "formats": ["tall", "square"], "theme": "navy" }) else {
+            unreachable!()
+        };
+        let set = settings_from(&config);
+        assert_eq!((set.watermark.as_str(), set.progress, set.fps), ("@me", true, 60));
+        assert_eq!(set.formats, ["tall", "square"]);
+        assert_eq!(set.theme, json!({}), "a theme that is not an object is ignored");
+    }
 }
