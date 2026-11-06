@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { baseName, fullName, type Backend, type ExportKind, type ReelFile, type Settings } from '@/backend.ts'
+import type { Backend, ExportKind, ReelFile, Settings } from '@/backend.ts'
+import { baseName, fullName } from '@/names.ts'
+import { fontsReady } from '@/fonts.ts'
 import { FORMAT_LABELS } from '@/formats.ts'
 import { dialogOpen, useDismiss } from '@/overlays.ts'
 import { drawReel, FORMATS, type Assets, type Context2D, type Format } from '../../plugin/core/render.ts'
@@ -77,7 +79,7 @@ const MOST_MARKS = 40
 
 // The first three follow the format picked in the bar. "Videos in …" is offered only when the
 // default formats in Settings are more than one, since otherwise it repeats "Video".
-const EXPORTS = computed(() => {
+const exportChoices = computed(() => {
   const count = props.reel?.steps.length ?? 0
   const current = Math.max(step.value + 1, 1)
   const defaults = props.settings.formats.map((each) => FORMAT_LABELS[each])
@@ -94,7 +96,7 @@ const EXPORTS = computed(() => {
   return choices
 })
 
-async function runExport(choice: (typeof EXPORTS.value)[number]) {
+async function runExport(choice: (typeof exportChoices.value)[number]) {
   exportMenu.value = false
   exporting.value = choice.doing
   exported.value = null
@@ -117,7 +119,7 @@ let drawn: unknown[] = []
 function draw() {
   const ctx = canvas.value?.getContext('2d')
   if (!ctx || !props.reel) return
-  const from = [canvas.value, props.reel, format.value, time.value, props.assets, props.settings]
+  const from = [canvas.value, props.reel, format.value, time.value, props.assets, props.settings, fontsReady.value]
   if (from.every((each, i) => each === drawn[i])) return
   drawn = from
   const { watermark, progress, theme } = props.settings
@@ -244,7 +246,7 @@ onUnmounted(() => {
             {{ exporting ? 'Exporting…' : 'Export ▾' }}
           </button>
           <div v-if="exportMenu" class="menu" role="menu">
-            <template v-for="choice in EXPORTS" :key="choice.what">
+            <template v-for="choice in exportChoices" :key="choice.what">
               <p v-if="choice.what === 'video'" class="heading">Export in {{ FORMAT_LABELS[format] }}</p>
               <p v-else-if="choice.what === 'videos' || choice.what === 'file'" class="divider" />
               <button role="menuitem" @click="runExport(choice)">

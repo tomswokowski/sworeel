@@ -14,14 +14,8 @@ export interface ReelFile {
   modified: number
 }
 
-/** A reel's name as the sworeel command and Claude know it: its folder and file name, `web/cors`. */
-export const fullName = (file: ReelFile) => `${file.folder ? `${file.folder}/` : ''}${file.name}`
-
-/** Whether a folder is `parent` or somewhere inside it. */
-export const within = (candidate: string, parent: string) => candidate === parent || candidate.startsWith(`${parent}/`)
-
-/** The last part of a path, on any system. */
-export const baseName = (path: string) => path.split(/[/\\]/).pop() ?? path
+/** What to paste into Claude Code to have it set SwoReel up, the same request the website gives. */
+export const SETUP_REQUEST = 'Set up SwoReel for me. Follow the steps at https://sworeel.com/setup.md'
 
 /** The settings the app can change. */
 export type SettingKey = 'watermark' | 'progress' | 'formats' | 'fps' | 'exports'

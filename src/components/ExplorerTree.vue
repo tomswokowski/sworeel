@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import AppIcon from '@/components/AppIcon.vue'
-import { fullName, within, type Library, type ReelFile } from '@/backend.ts'
+import type { Library, ReelFile } from '@/backend.ts'
+import { fullName, within } from '@/names.ts'
 import { useDismiss } from '@/overlays.ts'
 import type { Kind } from '../../plugin/core/reel.ts'
 
@@ -199,7 +200,7 @@ useDismiss(menuRoot, () => menu.value !== null, () => (menu.value = null))
       draggable="true"
       tabindex="0"
       @click="row.type === 'reel' ? emit('openReel', row.file!) : (toggle(row.folder), emit('selectFolder', row.folder))"
-      @keydown.enter="row.type === 'reel' ? emit('openReel', row.file!) : toggle(row.folder)"
+      @keydown.enter="row.type === 'reel' ? emit('openReel', row.file!) : (toggle(row.folder), emit('selectFolder', row.folder))"
       @contextmenu.prevent.stop="openMenu($event, row)"
       @dragstart="startDrag($event, row)"
       @dragend="emit('drag', null)"

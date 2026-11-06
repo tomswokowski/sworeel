@@ -84,10 +84,13 @@ pub fn update_ready(ready: State<Ready>) -> Option<String> {
 /// Closes the app and opens the newer version, installing it first where that is still to do.
 #[tauri::command]
 pub fn restart_to_update(app: AppHandle, ready: State<Ready>) -> Result<(), String> {
-    let fetched = ready.0.lock().unwrap().take();
-    if let Some(Fetched { waiting: Some((update, bytes)), .. }) = fetched {
+    let mut state = ready.0.lock().unwrap();
+    if let Some((update, bytes)) = state.as_ref().and_then(|fetched| fetched.waiting.as_ref()) {
+        // Left in place if installing fails, so the notice stays and closing the app tries again.
         update.install(bytes).map_err(|error| format!("Could not install the update: {error}"))?;
     }
+    state.take();
+    drop(state);
     app.restart()
 }
 
