@@ -59,13 +59,17 @@ export function draw(ctx: Context2D, reel: FlowReel, f: Sizes, area: Area, playh
   const message = messageOf(reel, playhead)
   const color = message ? COLORS[message.style] : COLORS.border
 
-  for (const group of reel.groups ?? []) {
+  const groupBox = (group: NonNullable<FlowReel['groups']>[number]) => {
     const points = group.nodes.map(center)
     const x = Math.min(...points.map((p) => p.x)) - nodeW / 2 - pad
     const y = Math.min(...points.map((p) => p.y)) - nodeH / 2 - pad
     const width = Math.max(...points.map((p) => p.x)) + nodeW / 2 + pad - x
     const height = Math.max(...points.map((p) => p.y)) + nodeH / 2 + pad - y
+    return { x, y, width, height }
+  }
 
+  for (const group of reel.groups ?? []) {
+    const { x, y, width, height } = groupBox(group)
     ctx.globalAlpha = visible(group.id)
     ctx.strokeStyle = COLORS.border
     ctx.lineWidth = 2
@@ -74,11 +78,6 @@ export function draw(ctx: Context2D, reel: FlowReel, f: Sizes, area: Area, playh
     ctx.roundRect(x, y, width, height, 22)
     ctx.stroke()
     ctx.setLineDash([])
-
-    ctx.textAlign = 'left'
-    ctx.fillStyle = COLORS.muted
-    ctx.font = `400 ${f.sub}px ${SANS}`
-    ctx.fillText(group.label, x + 22, y + 18 + f.sub * 0.5)
   }
 
   for (const [key, [from, to]] of edgesOf(reel)) {
@@ -94,6 +93,30 @@ export function draw(ctx: Context2D, reel: FlowReel, f: Sizes, area: Area, playh
       ctx.lineTo(center(to).x, center(to).y)
     }
     ctx.stroke()
+  }
+
+  // Group names go on after the lines, so none runs through one. Where a box would cover the
+  // name in its corner of the group, the name sits on the group's top edge, which it breaks.
+  ctx.textAlign = 'left'
+  ctx.font = `400 ${f.sub}px ${SANS}`
+  for (const group of reel.groups ?? []) {
+    const { x, y } = groupBox(group)
+    const width = ctx.measureText(group.label).width
+    const [left, right, top, bottom] = [x + 22, x + 22 + width, y + 18 - f.sub * 0.5, y + 18 + f.sub * 0.8]
+    const covered = reel.nodes.some((node) => {
+      const c = center(node.id)
+      return c.x - nodeW / 2 < right && c.x + nodeW / 2 > left && c.y - nodeH / 2 < bottom && c.y + nodeH / 2 > top
+    })
+    ctx.globalAlpha = visible(group.id)
+    if (!covered) {
+      ctx.fillStyle = COLORS.muted
+      ctx.fillText(group.label, x + 22, y + 18 + f.sub * 0.5)
+    } else {
+      ctx.fillStyle = COLORS.bg
+      ctx.fillRect(x + 22 - f.sub * 0.4, y - f.sub * 0.7, width + f.sub * 0.8, f.sub * 1.4)
+      ctx.fillStyle = COLORS.muted
+      ctx.fillText(group.label, x + 22, y + f.sub * 0.35)
+    }
   }
   ctx.globalAlpha = 1
 
@@ -236,6 +259,7 @@ export function text(reel: FlowReel, playhead: Playhead | null): TextCell[][] {
   const message = messageOf(reel, playhead)
   const messageColor = TEXT_COLORS[message?.style ?? 'request']
 
+  const labels: { x0: number; x1: number; y: number; text: string }[] = []
   for (const group of reel.groups ?? []) {
     if (!visible(group.id)) continue
     const members = group.nodes.map((id) => boxes.get(id)!)
@@ -256,7 +280,7 @@ export function text(reel: FlowReel, playhead: Playhead | null): TextCell[][] {
     put(x1, y0, { ch: '┐', ...style })
     put(x0, y1, { ch: '└', ...style })
     put(x1, y1, { ch: '┘', ...style })
-    write(x0 + 2, y0, ` ${group.label} `, { color: TEXT_COLORS.muted })
+    labels.push({ x0, x1, y: y0, text: ` ${group.label} ` })
   }
 
   // Lines: collect the directions leaving every cell, then pick each cell's character.
@@ -306,6 +330,15 @@ export function text(reel: FlowReel, playhead: Playhead | null): TextCell[][] {
 
   for (const { x, y, mask, active } of segments.values()) {
     put(x, y, { ch: (active ? HEAVY : LIGHT)[mask]!, color: active ? messageColor : TEXT_COLORS.line })
+  }
+
+  // A group's name goes on its top edge, in the first place along it that no line crosses; where
+  // none is wide enough it goes in its usual place, over the line, so it can still be read.
+  for (const { x0, x1, y, text } of labels) {
+    const crossed = (x: number) => [...text].some((_, i) => segments.has(`${x + i},${y}`))
+    let at = x0 + 2
+    while (at + text.length < x1 && crossed(at)) at++
+    write(at + text.length < x1 ? at : x0 + 2, y, text, { color: TEXT_COLORS.muted })
   }
 
   for (const node of reel.nodes) {

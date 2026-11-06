@@ -205,6 +205,23 @@ test('every kind draws as text and describes its steps', () => {
   assert.equal(describeStep(all.array!, all.array!.steps[0]!).text, 'swap [0] ↔ [1]   i=0 j=1')
 })
 
+test("a line into a group never breaks the group's name", () => {
+  // A narrow group whose only way in crosses the top edge where the name would go, and a wide one
+  // with room for the name beside the line.
+  const nodes = [
+    { id: 'lb', label: 'Balancer', col: 0, row: 0 },
+    { id: 'app', label: 'App server', col: 0, row: 1 },
+    { id: 'pool', label: 'Pool', col: 0, row: 2 },
+    { id: 'side', label: 'Side', col: 1, row: 1 },
+  ]
+  const steps = [{ caption: 'In.', from: 'lb', to: 'app' }, { caption: 'Down.', from: 'app', to: 'pool' }]
+  for (const members of [['app', 'pool'], ['app', 'pool', 'side']]) {
+    const reel = { kind: 'flow', title: 'Groups', nodes, groups: [{ id: 'proc', label: 'app process', nodes: members }], steps } as unknown as Reel
+    assert.deepEqual(validateReel(reel), [])
+    assert.match(shown(reel, 1), / app process /, members.join())
+  }
+})
+
 test('the kinds that build up show only what has been reached', () => {
   assert.match(shown(all.sequence!, 0), /Browser +API/)
   assert.match(shown(all.sequence!, 0), /GET \/ ━+▶/)
