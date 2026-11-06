@@ -6,6 +6,7 @@ import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promis
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, test } from 'node:test'
+import { pathToFileURL } from 'node:url'
 import { promisify } from 'node:util'
 import { all } from './samples.ts'
 
@@ -220,4 +221,16 @@ test('every kind draws as an image in every format', async () => {
       assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], size, `${kind} ${format}`)
     }
   }
+})
+
+test('a preview is a still kept apart from exports, one per reel, with a link to it', async () => {
+  const first = (await sworeel('preview', 'web/cors')).out.split('\n')
+  const path = join(home, 'previews', 'web-cors.png')
+  assert.deepEqual(first, [path, pathToFileURL(path).href])
+  const before = await readFile(path)
+  await sworeel('preview', 'web/cors', '--step', '0', '--format', 'square')
+  assert.notDeepEqual(await readFile(path), before, 'the preview is replaced')
+  assert.deepEqual(await readdir(join(home, 'previews')), ['web-cors.png'])
+  assert.match((await sworeel('exports')).out, /^Nothing exported yet/)
+  assert.equal((await sworeel('preview', 'web/cors', '--out', 'x')).err, '"sworeel preview" does not take --out.')
 })

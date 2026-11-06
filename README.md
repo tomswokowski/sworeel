@@ -38,7 +38,7 @@ Requirements: Node.js 22.18 or newer. The first run of the `sworeel` command ins
 
 ### In the session
 
-Ask Claude to show a reel ("show me the cors one") and it pastes a text version into the chat, so you can follow the steps and ask for changes before anything is rendered. For the real thing, ask for a still or a video, or open it in the desktop app.
+Ask Claude to show a reel ("show me the cors one") and it pastes a text version into the chat, with a link to a preview still that opens with a click, so you can follow the steps and ask for changes before anything is exported. For a file to keep, ask for a still or a video, or open it in the desktop app.
 
 ## Install the desktop app (optional)
 
@@ -64,14 +64,15 @@ Reels are SwoReel's working files, so they live with the app's data. Exports are
 | Settings | `~/.config/sworeel/config.json` | `~/Library/Application Support/SwoReel/config.json` | `%APPDATA%\SwoReel\config.json` |
 | Exports | `Documents/SwoReel` | `Documents/SwoReel` | `Documents\SwoReel` |
 
-Two more things sit beside these:
+Three more things sit beside these:
 
 - **Pictures.** Images that picture reels use are kept in an `assets` folder next to the reels folder, never inside it, so renaming or moving a reel can't break its pictures.
+- **Previews.** A `previews` folder next to the reels folder holds the still Claude links to in the chat, one per reel, replaced each time. They are not exports.
 - **Preferences.** `style.md`, next to `config.json`, holds your standing preferences for how reels are made. Claude reads it before making one.
 
 `sworeel paths` prints the locations in use. To change one, run `sworeel config exports <folder>` or `sworeel config reels <folder>`; changing the reels folder copies the library and its pictures there and leaves the originals in place.
 
-Setting `SWOREEL_HOME` to a folder puts everything in it: `reels/`, `assets/`, `exports/`, and its own `config.json` and `style.md`. Nothing outside that folder is read or written, which is what tests and try-outs want.
+Setting `SWOREEL_HOME` to a folder puts everything in it: `reels/`, `assets/`, `previews/`, `exports/`, and its own `config.json` and `style.md`. Nothing outside that folder is read or written, which is what tests and try-outs want.
 
 ### Moving reels to another computer
 

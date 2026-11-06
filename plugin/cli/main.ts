@@ -6,6 +6,7 @@ import { once } from 'node:events'
 import { cp, mkdir, readdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { basename, delimiter, dirname, join, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { createCanvas } from '@napi-rs/canvas'
 import { prepare } from './assets.ts'
@@ -14,7 +15,7 @@ import { trash } from './trash.ts'
 import { registerFonts } from './fonts.ts'
 import * as library from './library.ts'
 import { importBundle, makeBundle, reelsNamed } from './bundle.ts'
-import { assetsFolder, configFile, expandHome, exportsFolder, readConfig, requestFile, reelsFolder, showingFile, styleFile, writeConfig } from './paths.ts'
+import { assetsFolder, configFile, expandHome, exportsFolder, previewsFolder, readConfig, requestFile, reelsFolder, showingFile, styleFile, writeConfig } from './paths.ts'
 import { DEFAULT_THEME, isColor, THEME_COLOR_NAMES, type Theme } from '../core/theme.ts'
 import { drawReel, FORMATS, type Context2D, type DrawOptions, type Format } from '../core/render.ts'
 import { ICON_NAMES } from '../core/data/icons.ts'
@@ -49,6 +50,9 @@ const USAGE = `Usage:
 
   Watch
     sworeel show <reel> [--step N] [--color]  The reel and its steps as text; --color for a terminal
+    sworeel preview <reel> [--step N] [--format wide|tall|square]
+                                            A still to look at, kept apart from exports and replaced
+                                            each time; prints its path and a file:// link to it
     sworeel play [reel]                     Play it, animated, in the terminal; with no reel, pick one
     sworeel app [reel]                      Show it in the desktop app, starting the app if needed
     sworeel showing [--json]                Which reel and step the desktop app is on
@@ -135,6 +139,7 @@ async function loadToDraw(name: string) {
   }
 }
 
+/** Saves one step of a reel as an image, and returns where. */
 async function still(name: string, format: Format, stepNumber: number | undefined, out: string | undefined) {
   const { reel, id, draw } = await loadToDraw(name)
   const step = stepNumber ?? reel.steps.length
@@ -147,7 +152,7 @@ async function still(name: string, format: Format, stepNumber: number | undefine
   const canvas = createCanvas(w, h)
   drawReel(canvas.getContext('2d') as unknown as Context2D, reel, format, playheadAt(reel, step === 0 ? 0 : stepRestTime(reel, step - 1)), draw)
   await writeFile(path, canvas.toBuffer('image/png'))
-  console.log(path)
+  return path
 }
 
 /** Saves every step of a reel as an image, in a folder of its own. */
@@ -338,7 +343,7 @@ function isRunning(pid: number) {
 }
 
 function paths(json: boolean) {
-  const all = { reels: LIBRARY, pictures: assetsFolder(), exports: exportsFolder(), config: configFile, style: styleFile }
+  const all = { reels: LIBRARY, pictures: assetsFolder(), previews: previewsFolder(), exports: exportsFolder(), config: configFile, style: styleFile }
   if (json) console.log(JSON.stringify(all, null, 2))
   else for (const [name, path] of Object.entries(all)) console.log(`${name.padEnd(8)} ${path}`)
 }
@@ -420,6 +425,7 @@ const ACCEPTS: Record<string, (keyof typeof values)[]> = {
   stills: ['format'],
   render: ['format', 'fps', 'out'],
   show: ['step', 'color'],
+  preview: ['step', 'format'],
   showing: ['json'],
   list: ['json'],
   rename: ['json'],
@@ -430,7 +436,7 @@ const ACCEPTS: Record<string, (keyof typeof values)[]> = {
   exports: ['json'],
   paths: ['json'],
 }
-const COMMANDS = ['validate', 'info', 'still', 'stills', 'render', 'show', 'play', 'list', 'rename', 'move', 'duplicate', 'delete', 'folder', 'asset', 'style', 'bundle', 'import', 'exports', 'icons', 'open', 'paths', 'app', 'showing', 'config']
+const COMMANDS = ['validate', 'info', 'still', 'stills', 'render', 'preview', 'show', 'play', 'list', 'rename', 'move', 'duplicate', 'delete', 'folder', 'asset', 'style', 'bundle', 'import', 'exports', 'icons', 'open', 'paths', 'app', 'showing', 'config']
 if (COMMANDS.includes(command)) {
   for (const [option, value] of Object.entries(values)) {
     if (value !== undefined && option !== 'help' && !(ACCEPTS[command] ?? []).includes(option as keyof typeof values)) fail(`"sworeel ${command}" does not take --${option}.`)
@@ -459,7 +465,7 @@ try {
       break
     case 'still':
       registerFonts()
-      await still(arg(0, 'still <reel>'), format, stepOption(), values.out)
+      console.log(await still(arg(0, 'still <reel>'), format, stepOption(), values.out))
       break
     case 'stills':
       registerFonts()
@@ -473,6 +479,17 @@ try {
       const formats = values.format ? [format] : defaultFormats
       if (values.out && formats.length > 1) fail('--out names one file, so give --format too.')
       for (const each of formats) await render(arg(0, 'render <reel>'), each, fps, values.out)
+      break
+    }
+
+    case 'preview': {
+      // Like a still, but out of the exports folder and replacing the reel's last preview.
+      const name = arg(0, 'preview <reel> [--step N]')
+      const { id } = await load(name)
+      registerFonts()
+      const path = await still(name, format, stepOption(), join(previewsFolder(), `${id}.png`))
+      console.log(path)
+      console.log(pathToFileURL(path).href)
       break
     }
 

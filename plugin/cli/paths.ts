@@ -9,11 +9,12 @@
 //   Exports   Documents/SwoReel on all three
 //
 //   Pictures  an `assets` folder beside the reels folder
+//   Previews  a `previews` folder beside the reels folder (the command's only; the app has none)
 //
 // Reels are the app's working files; exports are what the user publishes, so only exports go
 // in Documents. `reels` and `exports` in config.json override the defaults.
 //
-// SWOREEL_HOME moves everything into one folder: its `reels`, `assets` and `exports` folders
+// SWOREEL_HOME moves everything into one folder: its `reels`, `assets`, `previews` and `exports` folders
 // and its own `config.json` and `style.md`. Nothing outside it is read or written, which is
 // what tests and try-outs need.
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
@@ -119,6 +120,11 @@ export function reelsFolder() {
  */
 export function assetsFolder() {
   return join(dirname(reelsFolder()), 'assets')
+}
+
+/** Where `sworeel preview` puts the still it makes for a look in the chat: one per reel, replaced each time, never in exports. */
+export function previewsFolder() {
+  return join(dirname(reelsFolder()), 'previews')
 }
 
 /** Where the user's standing preferences for how reels are made are kept, as plain notes. */
