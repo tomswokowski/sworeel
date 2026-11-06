@@ -313,7 +313,10 @@ async function openInApp(name: string | undefined) {
   }
 
   await rm(requestFile, { force: true })
-  fail('The SwoReel desktop app is not installed, or is somewhere this command cannot find. Set its location with: sworeel config app <path>')
+  fail(
+    'The SwoReel desktop app is not installed. It is free and optional, a window for watching, organising and exporting reels: https://sworeel.com/#download\n' +
+      'Installed somewhere this command does not look? Set its location with: sworeel config app <path>',
+  )
 }
 
 /**
