@@ -27,7 +27,7 @@ Everything happens on your computer. SwoReel has no account and no server, and c
 - **Reads and writes:** your reels and the pictures they use (in your system's application-data folder), your settings (in its configuration folder), your exports (in `Documents/SwoReel`), and preview stills for the chat (in a `previews` folder beside your reels, one per reel, replaced each time). `sworeel paths` prints the exact locations, and each can be moved. Deleting a reel moves it to the system trash. It also reads and writes files that you or Claude name in a command: a reel file given by its path, an image added with `sworeel asset add`, a `.sworeel` file to import, or an `--out` file. On Linux it reads `user-dirs.dirs` in your configuration folder to find your Documents folder.
 - **Fetches:** its five npm dependencies, once, the first time the command runs: `@napi-rs/canvas` (drawing, with a prebuilt binary for your system), `@ffmpeg-installer/ffmpeg` (a prebuilt ffmpeg for your system, about 70 MB), `mathjax-full` (typesetting formulas) and two `@fontsource` font packages. Versions are fixed by `package-lock.json`. After that the plugin makes no network requests.
 
-When you ask for a reel of a web page, it is Claude Code that opens the page, with its own tools and permissions; the plugin does not.
+When you ask for a reel of a web page, or ask Claude to install the optional desktop app, it is Claude Code that opens the page or downloads the installer, with its own tools and permissions, asking you as it would for anything else; the plugin does not.
 
 ## Environment
 

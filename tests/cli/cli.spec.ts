@@ -234,3 +234,12 @@ test('a preview is a still kept apart from exports, one per reel, with a link to
   assert.match((await sworeel('exports')).out, /^Nothing exported yet/)
   assert.equal((await sworeel('preview', 'web/cors', '--out', 'x')).err, '"sworeel preview" does not take --out.')
 })
+
+test('asking for the app where it is not installed says where to get it', async () => {
+  // Nowhere the command looks has the app: no PATH, and every system folder inside the sandbox.
+  const { SWOREEL_DEV: _developing, ...outside } = process.env
+  const env = { ...outside, SWOREEL_HOME: home, PATH: '', HOME: home, LOCALAPPDATA: home, ProgramFiles: home }
+  const asked = await run(process.execPath, [main, 'app', 'front-door'], { env }).catch((error: { stderr: string }) => error)
+  assert.match((asked as { stderr: string }).stderr, /not installed\. It is free and optional.*https:\/\/sworeel\.com\/#download/)
+  assert.match((asked as { stderr: string }).stderr, /sworeel config app <path>/)
+})
