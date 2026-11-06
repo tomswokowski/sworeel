@@ -21,6 +21,5 @@
     "visualization",
     "video",
     "social-media"
-  ],
-  "types": "./types/index.d.ts"
+  ]
 }

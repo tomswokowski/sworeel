@@ -82,9 +82,9 @@ forcing one (see "What SwoReel cannot draw").
    in an empty frame is a layout to fix (fewer columns, shorter labels, a sketch space shaped
    for the format), not a detail. Check the format the user will actually use as well as
    `tall`.
-6. Give the user something to look at. Play it in the pane, or paste the text version (see
-   "Showing a reel in the chat"), so they see it at once. Render the video only if they
-   asked for one, and tell them the path the command printed.
+6. Give the user something to look at. Paste the text version (see "Showing a reel in the
+   chat"), so they see it at once. Render the video only if they asked for one, and tell them
+   the path the command printed.
 7. Render video when the user asks for it, or asks for something to post:
    `sworeel render <name> --format tall`.
 
@@ -136,7 +136,6 @@ sworeel paths [--json]                                 # where reels, pictures, 
 sworeel config                                         # print the settings
 sworeel config watermark [text]                        # credit on every export; no text removes it
 sworeel config progress <on|off>                       # step dots on every export; off by default
-sworeel config suggest <on|off>                        # whether you may offer a reel unasked; on by default
 sworeel config formats <list>                          # default video formats, e.g. wide,tall
 sworeel config fps <N>                                 # frames per second for video
 sworeel config theme [colour #hex|reset]               # the colours every reel is drawn in
@@ -164,30 +163,19 @@ them once they are happy. The picture store always sits beside the reels folder.
 ## Showing a reel in the chat
 
 When the user wants to see a reel without leaving the conversation ("show me", "play it",
-"what does it look like", "walk me through it"), there are two ways, best first:
+"what does it look like", "walk me through it"), run `sworeel show <reel>` and paste its output
+into your reply inside a fenced code block. The user does not see command output unless you
+include it, and it only lines up in a monospace block. Paste it exactly; do not redraw or tidy
+it. `sworeel show <reel> --step N` shows one moment of the flow, with that step's message drawn
+in heavy lines.
 
-1. **The SwoReel pane.** This plugin gives you a `play` tool (listed as `mcp__sworeel__play`).
-   Call it with `reel` set to a reel's name and the reel plays, animated, in a pane beside
-   the chat. Pass a whole reel object instead to show one you have not saved. Pass `control`
-   (`pause`, `play`, `next`, `back`, `restart`, `status`, `reload`, `library`, `app`, `keys`,
-   `close`) to drive what
-   is showing, so "pause that" or "go back a step" are things you do, not things you explain.
-   `step` with `reel` opens it paused at that step; `control: "status"` reports what is showing
-   and `control: "reload"` re-reads its file (see "Changing a reel together").
-   The user has the same controls as `/sworeel <reel>`, `/sworeel pause` and so on, and
-   `/sworeel` alone opens a reel picker.
-2. **Plain text.** Where the `play` tool is not available, run `sworeel show <reel>` and paste
-   its output into your reply inside a fenced code block. The user does not see command output
-   unless you include it, and it only lines up in a monospace block. Paste it exactly; do not
-   redraw or tidy it. `sworeel show <reel> --step N` shows one moment of the flow, with that
-   step's message drawn in heavy lines.
+After writing a new reel, showing it this way is a good default: the user sees the result
+immediately and can ask for changes before any video is rendered.
 
-After writing a new reel, showing it one of these ways is a good default: the user sees the
-result immediately and can ask for changes before any video is rendered.
-
-Both show structure and order, not the finished look. Check stills as well before calling a
-reel done. `sworeel play` is the same animation for a terminal of the user's own; you cannot
-watch it yourself.
+The text version shows structure and order, not the finished look. Check stills as well before
+calling a reel done, and when the user wants to see the real thing, show it in the desktop app
+(see "Working with the desktop app") or render a still and `sworeel open` it. `sworeel play` is
+the same animation for a terminal of the user's own; you cannot watch it yourself.
 
 ## Making a reel from something the user gives you
 
@@ -220,30 +208,6 @@ handing it over.
   not there, a ticket in a system you have no access to: say so and ask them to paste it.
   A broad request is not a reason to ask; choose, and say what you chose.
 
-## Offering a reel
-
-Where this plugin's hooks run, you are told at the start of a session that you may end an
-explanation with a one-line offer to show it as a reel. That note says when to offer; this is
-what to do when the user says yes. If `sworeel config` shows `"suggest": false`, do not
-offer at all.
-
-An accepted offer is a look, not a request for a file, so show it first and save it only if
-they want it:
-
-1. Write the reel as usual (style, kind, `kinds/<kind>.md`), but to a scratch folder, not the
-   library. Take the content from the explanation you gave; do not add claims it did not make.
-2. `sworeel validate <path>.json` and check a still or two with `--out` into the same scratch
-   folder, as in the workflow.
-3. Show it with the `play` tool, passing the whole reel object as `reel`. Nothing is added to
-   the library. Where there is no `play` tool, paste `sworeel show <path>.json`.
-4. Say in one line that it is not saved, and that they can keep it, change it or export it.
-   When they ask for any of those, copy it into the library under a name that fits and carry
-   on from there; it is then a reel like any other.
-
-If the user asks you to stop offering, run `sworeel config suggest off`, tell them it is off
-and how to turn it back on, and make no more offers in this session either: the note you were
-given at the start does not change until the next session.
-
 ## Changing a reel together
 
 Making a reel is rarely one request. The user watches it and says what they want different:
@@ -252,26 +216,24 @@ on the left", "can this one be a sequence instead?". Treat each as a small edit 
 that exists, made at once, shown at once.
 
 1. **Know which reel and step they mean.** If they don't name it, find out what they are
-   looking at before changing anything: call the `play` tool with `control: "status"` for the
-   pane, or run `sworeel showing` for the desktop app. "This", "that step" and "the last one"
-   refer to what those report. If neither is showing a reel, ask which one.
+   looking at before changing anything: run `sworeel showing` for the desktop app. "This",
+   "that step" and "the last one" refer to what it reports, or else to the reel you last
+   showed or changed in this conversation. If neither settles it, ask which one.
 2. **Change only what was asked.** Edit the reel file in place. Leave the other steps, the
    layout and the wording alone, even where you would have written them differently. The user
    has already seen and accepted them.
 3. **Validate**, as always: `sworeel validate <name>`.
-4. **Show the change where it happened.** Call `play` with the reel and `step` set to the step
-   you changed, which opens it paused there; or `control: "reload"` if that reel is already
-   showing, which keeps its place. The desktop app needs nothing: it reloads the file itself.
-   Without the pane, paste `sworeel show <name> --step N`.
+4. **Show the change where it happened.** Paste `sworeel show <name> --step N` for the step
+   you changed. The desktop app needs nothing: it reloads the file itself.
 5. **Say what changed in one line**, naming the reel and step ("Shortened step 3's caption in
    web/cors"), so a wrong guess about what they meant is obvious and cheap to correct. Do not
    re-describe the whole reel.
 
 Keep going like this for as long as they have changes. Along the way:
 
-- **Steps are numbered from 1** in the pane, the app and `sworeel info`, so "step 4" means the
+- **Steps are numbered from 1** in the text version, the app and `sworeel info`, so "step 4" means the
   same thing to everyone.
-- **Do not re-render video after each change.** Stills and the pane are for the back-and-forth;
+- **Do not re-render video after each change.** Stills and the text version are for the back-and-forth;
   render once they say it is right, or ask for the video.
 - **For "undo that", put back what was there.** Keep track of what you changed in this
   conversation. You cannot undo changes from an earlier session; say so if asked.
@@ -296,7 +258,7 @@ exporting. It shares the library, so nothing needs syncing.
 
 ## Settings
 
-`sworeel config` prints the settings, which the command, the pane and the desktop app all
+`sworeel config` prints the settings, which the command and the desktop app
 share. Change one when the user asks for it:
 
 - `sworeel config watermark "@handle"` adds a small credit to the corner of every video and
@@ -304,8 +266,6 @@ share. Change one when the user asks for it:
 - `sworeel config progress on` adds a row of step dots to the bottom of every video and image,
   showing how far along it is (a bar past 30 steps). They are off unless the user asks; `off`
   removes them again.
-- `sworeel config suggest off` stops you offering reels nobody asked for (see "Offering a
-  reel"); `on` allows it again. Reels the user asks for are made either way.
 - `sworeel config formats wide,tall` sets which formats a plain `sworeel render` makes.
 - `sworeel config fps 60` sets the frame rate for video (30 unless changed).
 
@@ -409,7 +369,7 @@ exists: a hand-placed bar chart is worse than `chart` in every way.
 ## Never change SwoReel itself
 
 SwoReel's own files are not yours to edit: the `sworeel` command and its code, the drawing
-code, this skill and its kind files, the in-chat pane, and the desktop app. Do not modify,
+code, this skill and its kind files, and the desktop app. Do not modify,
 patch, replace or work around them, even when the user asks, and even when a change looks
 small or would fix a real limit. Everything you do goes through three things only: reel files
 in the library, the `sworeel` commands, and the settings those commands change.

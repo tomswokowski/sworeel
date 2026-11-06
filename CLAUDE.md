@@ -1,6 +1,6 @@
 # Working on SwoReel
 
-SwoReel is a Claude Code plugin (`plugin/`: the skill, the in-session pane's hooks, and the `sworeel` command) with an optional desktop viewer (`src/` in Vue, `src-tauri/` in Rust). The README's "Developing" section is the full guide; these are the rules that matter while changing code.
+SwoReel is a Claude Code plugin (`plugin/`: the skill and the `sworeel` command) with an optional desktop viewer (`src/` in Vue, `src-tauri/` in Rust). The README's "Developing" section is the full guide; these are the rules that matter while changing code.
 
 ## Keep development apart from the installed SwoReel
 
@@ -17,13 +17,11 @@ The person working here usually also has SwoReel installed and in daily use on t
 ```bash
 npm run type-check
 npm test
-claude plugin test ./plugin
 claude plugin validate --strict ./plugin
-npx tsc -p plugin/tsconfig.json --allowImportingTsExtensions   # the pane's hooks; see below
 (cd src-tauri && cargo clippy --all-targets -- -D warnings && cargo test)   # only if the app changed
 ```
 
-The pull request's checks run all of these except the hooks' type check (the `tsc` line). It needs type files that Claude Code writes beside the plugin the first time `npm run dev:claude` runs here, so it can only be run on a computer that has done that; run it whenever `plugin/hooks/` changes.
+The pull request's checks run all of these.
 
 ## Changes and releases
 
@@ -35,17 +33,16 @@ The pull request's checks run all of these except the hooks' type check (the `ts
 
 The directory follows the `stable` tag and scans every release (see the README's section on it). A version that fails the scan does not go live. When changing anything under `plugin/`:
 
-- **Describe behaviour in `plugin/README.md`.** Anything new the plugin runs, reads, writes, fetches or sends, and anything new a hook does or changes, goes in its README in the same change. The scan checks the plugin against that README.
-- **Keep the pane free of file reads.** It gets reels through the `sworeel` command (`sworeel show --json`), not `$.fs`, and makes no network calls.
+- **Describe behaviour in `plugin/README.md`.** Anything new the plugin runs, reads, writes, fetches or sends goes in its README in the same change. The scan checks the plugin against that README.
+- **No hooks modules (mods).** The directory accepts mods only from Verified organizations, so the in-session pane was removed to get SwoReel listed. Do not add a `hooks/` folder with a `modules` entry back.
 - **Read environment variables by name** (`process.env.PATH`), never the whole environment, and never hand the whole environment to a child process.
 - **No inline code in launchers or commands** (`node -e`, `python -c`): put it in a file and run the file.
 - **Avoid names that look like credentials** next to web addresses (`key`, `token`, `secret`, `password`).
 - **Only source belongs in `plugin/`.** Tests go in `tests/`. Generated data must stay readable, with short lines, as `scripts/build-land.mjs` writes it.
-- **Keep the `types` field in `plugin.json`.** The directory warns that it does not know it, but `claude plugin validate` fails without it.
 - **Dependencies come from the public npm registry**, pinned by `plugin/package-lock.json`. Add one only when it is needed, and name it in the plugin README.
 
 ## Conventions
 
 - Every action in the desktop app also exists as a `sworeel` command and is covered by the skill; add them together.
-- A reel kind is one file in `plugin/core/kinds/` with a reference in `plugin/skills/reel/kinds/`. `plugin/core/` loads in the pane too, where npm packages cannot, so anything needing a package goes in `plugin/host/`.
+- A reel kind is one file in `plugin/core/kinds/` with a reference in `plugin/skills/reel/kinds/`. `plugin/core/` stays free of npm packages, so anything needing one goes in `plugin/host/`.
 - It must work on Linux, macOS and Windows: no shell-only scripts, and no assumed paths (`sworeel paths` knows them).

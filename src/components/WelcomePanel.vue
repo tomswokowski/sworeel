@@ -22,7 +22,6 @@ const IDEAS = ['Make a reel of how a request reaches the database', 'Explain thi
           <button @click="emit('copy', idea)">Copy</button>
         </li>
       </ul>
-      <p class="aside">Or type <code>/sworeel</code> in Claude Code to browse reels there.</p>
     </template>
 
     <template v-else>
