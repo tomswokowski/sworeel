@@ -46,3 +46,18 @@ People install the plugin and let Claude run its command, so it should be plain 
 - Every action in the desktop app also exists as a `sworeel` command and is covered by the skill; add them together.
 - A reel kind is one file in `plugin/core/kinds/` with a reference in `plugin/skills/reel/kinds/`. `plugin/core/` stays free of npm packages, so anything needing one goes in `plugin/host/`.
 - It must work on Linux, macOS and Windows: no shell-only scripts, and no assumed paths (`sworeel paths` knows them).
+
+## Decisions, and why
+
+Settled choices, so that nobody undoes one by accident. Change one only when the person asks, and then update it here.
+
+- **Claude makes the reels; people never draw.** SwoReel is for people who talk to Claude, not for editing diagrams by hand. Everything is reachable by asking; the desktop app is a window onto the library, never the only way to do something.
+- **"Reel" is the word.** The things SwoReel makes are reels, and the parts of one are steps. The name is SwoReel (from Swokowski); the command, folders and package are lowercase `sworeel`.
+- **Where files live.** Reels are working files, so they sit in the system's app-data folder; only exports go in `Documents/SwoReel`. Pictures (`assets`) and chat previews (`previews`) sit beside the reels folder, never inside it.
+- **Reels only when asked.** Every reel lands in the library, so Claude makes one only when someone asks for a reel, and asks first when "visualize this" could mean a chart in their code. Nothing in the plugin prompts Claude to offer reels.
+- **No hooks, no in-session pane (1.0.0).** The pane was a hooks module. It was removed when Anthropic's plugin directory refused mods, and kept out afterwards: a plugin that runs nothing until Claude calls its command is simpler to trust. A preview link (`sworeel preview`) shows the real look from the chat instead. If in-chat playback is wanted again, it belongs in a separate, optional plugin, so this one stays hook-free.
+- **Not in Anthropic's plugin directory.** From organizations that are not Verified it takes only Markdown, text, JSON, YAML and image plugins. SwoReel is installed from this repository's own marketplace, through sworeel.com's setup line or `/plugin marketplace add tomswokowski/sworeel`.
+- **Build what a kind can't draw, rather than decline.** Sixteen kinds came from adding what explanations needed; `sketch` is the last resort, not a substitute for a missing kind.
+- **Free and open source, with nothing to sign up for.** MIT licence, no account, no server, no data collected. Releases are signed: the Windows app as Desoto Labs LLC, and every build with the updater key.
+- **Releases are staged.** Each release is a pre-release until all its installers are attached, then published, then `stable` moves. Installer file names carry no version, so links and in-place updates keep working.
+- **The same development setup on every machine.** Development uses only the repository's own commands and its `.dev-home/` sandbox. Do not add machine-local wrappers or anything installed into `~/.claude`.
