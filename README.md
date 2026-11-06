@@ -2,7 +2,7 @@
 
 **[sworeel.com](https://sworeel.com)**
 
-Short animated explanations, made by talking to Claude. Ask for a system diagram, a chart, a code walkthrough, some maths, a map or an annotated screenshot; Claude writes it as a *reel*, plays it for you in the chat, and exports it as a video or images that are easy to share anywhere: in a post, a doc, a slide or a message.
+Short animated explanations, made by talking to Claude. Ask for a system diagram, a chart, a code walkthrough, some maths, a map or an annotated screenshot; Claude writes it as a *reel*, shows it to you in the chat, and exports it as a video or images that are easy to share anywhere: in a post, a doc, a slide or a message.
 
 A *reel* is a JSON file: a picture that changes step by step, with a caption for each step. You describe what you want explained; Claude writes the reel, checks its own render, and hands you an MP4 or PNG. Nothing is drawn by hand.
 
@@ -36,18 +36,7 @@ Then ask Claude for one: "make a reel of how a request reaches the database", "c
 
 ### In the session
 
-`/sworeel` opens a pane beside the chat with your reels; pick one and it plays, animated, without leaving Claude Code. `/sworeel <reel>` plays one directly.
-
-| Type | Does |
-|---|---|
-| `/sworeel` | Reel picker |
-| `/sworeel pause`, `play`, `next`, `back`, `restart` | Drive the player from the chat |
-| `/sworeel export wide`, `tall`, `square`, `still` | Export what's playing |
-| `/sworeel app` | Open what's playing in the desktop app |
-| `/sworeel keys` | Give the pane the keyboard, for its hotkeys; `Esc` gives it back |
-| `/sworeel close` | Close the pane |
-
-Or just ask: "show me the cors one", "pause that", "export it as a tall video". A banner in the pane always says whether your keys are going to the pane or to the chat.
+Ask Claude to show a reel ("show me the cors one") and it pastes a text version into the chat, so you can follow the steps and ask for changes before anything is rendered. For the real thing, ask for a still or a video, or open it in the desktop app.
 
 Requirements: Node.js 22.18 or newer. The first run of the `sworeel` command installs its npm dependencies, which include an ffmpeg for making video; your own is used if you have one. Developed and tested on Linux only so far.
 
@@ -122,13 +111,12 @@ Formats are `wide` (1600×900), `tall` (1080×1920) and `square` (1080×1080).
 | `.claude-plugin/marketplace.json` | The marketplace listing: tells Claude Code this repository offers the SwoReel plugin, and where in it the plugin is |
 | `plugin/.claude-plugin/plugin.json` | The plugin's own manifest: its name, version and description |
 | `plugin/` | The plugin, and everything it needs to run |
-| `plugin/hooks/` | The in-session pane and `/sworeel` command: a Claude Code hooks module |
 | `plugin/skills/reel/` | The skill: how to choose a kind, write a reel that reads well, and manage the library. `kinds/` has the reference for each kind |
 | `plugin/bin/sworeel` | The command (`sworeel.cmd` on Windows). Installs dependencies on first run, then runs the CLI |
 | `plugin/cli/` | Validates reels and renders PNG stills and MP4 video, with no browser involved |
 | `plugin/core/` | The reel format and timing, shared by everything. `kinds/` has one file per kind of reel, each with a picture renderer (Canvas 2D), a text renderer, and its step descriptions |
 | `plugin/core/data/` | Generated data: the bundled icons (from Lucide, ISC) and the world's land outline (Natural Earth, public domain). `scripts/` regenerates both |
-| `plugin/host/` | What needs real packages: the maths typesetter (MathJax). Used by the command and the app, never by the core, which also runs inside Claude Code where packages can't load |
+| `plugin/host/` | What needs real packages: the maths typesetter (MathJax). Used by the command and the app, never by the core, which stays free of packages |
 | `src/`, `src-tauri/` | The optional desktop app (Vue inside a Tauri window): a reel library with folders, search, rename, move and delete, plus playback and export. It shares `plugin/core/` |
 | `site/` | The landing page, one static HTML file and its images, published to [sworeel.com](https://sworeel.com) through GitHub Pages by `.github/workflows/pages.yml`. Its download buttons look up the latest release, so it needs no edit when a version ships |
 | `brand/` | The icon and logo as SVG, with PNG renders. `icon-macos` is the same mark with the margin macOS expects |
@@ -137,7 +125,7 @@ Formats are `wide` (1600×900), `tall` (1080×1920) and `square` (1080×1080).
 
 They share one library and one renderer, and neither needs the other, but they hand off to each other:
 
-- **From the chat to the app:** `sworeel app <reel>`, `/sworeel app`, or the pane's "Open in app" button shows that reel in the app, starting it if needed.
+- **From the chat to the app:** ask Claude to open a reel in the app (`sworeel app <reel>`) and it shows there, starting the app if needed.
 - **Follow Claude:** a switch in the app's sidebar. When on, the app shows whichever reel changed last, so you watch the real render update as Claude edits.
 - **From the app to the chat:** "Ask Claude…" on a reel copies the start of a message naming it, ready to paste into Claude Code.
 - **Shared settings:** the watermark, step dots, default formats and frame rate set in the app's Settings are used by Claude's exports too, and the other way round. Colours are set by asking Claude (`sworeel config theme`), and the app's previews follow.
@@ -179,14 +167,13 @@ npm run dev:claude                   # Claude Code with this folder's plugin, in
 
 ### The plugin
 
-`npm run dev:claude` starts Claude Code with this folder's skill, in-session pane and `sworeel` command in place of an installed SwoReel's, reading and writing only the sandbox. From another folder, run `node <this folder>/scripts/dev.mjs claude`. Anything after the command is passed to `claude`.
+`npm run dev:claude` starts Claude Code with this folder's skill and `sworeel` command in place of an installed SwoReel's, reading and writing only the sandbox. From another folder, run `node <this folder>/scripts/dev.mjs claude`. Anything after the command is passed to `claude`.
 
-There is nothing to build. An edit to the command or a reel kind is used the next time the command runs, an edit to the pane's hooks reloads when the file is saved, and an edit to the skill is read the next time Claude loads it (a new session is the sure way).
+There is nothing to build. An edit to the command or a reel kind is used the next time the command runs, and an edit to the skill is read the next time Claude loads it (a new session is the sure way).
 
 ```bash
 npm run sworeel -- list              # the command from this folder, in the sandbox
 npm test                             # test the reel kinds, the library, bundles and themes
-claude plugin test ./plugin          # test the in-session pane
 claude plugin validate ./plugin      # check the plugin manifest
 ```
 
@@ -262,7 +249,7 @@ The plugin is submitted to Anthropic's plugin directory, which lists it for Clau
 - **What the directory reads:** the `plugin` folder of this repository, at the tag `stable`. So the listing changes only when a release moves `stable`, never from work merged to `main` in between.
 - **How it hears about a release:** a webhook in this repository's settings tells it when `stable` moves, and it also checks every six hours. If the webhook's secret is rotated in the portal, the webhook here needs the new one.
 - **What happens then:** each version is scanned for security and policy. One that passes goes live by itself while auto-publish is on; one that is held waits for an Anthropic reviewer, and the listing keeps the previous version until then.
-- **What the scan checks a version against:** `plugin/README.md`, which must describe everything the plugin runs, reads, writes, fetches and sends, and what its hooks do. Behaviour the README does not mention can fail the scan. `CLAUDE.md` lists the rules that keep a version passing.
+- **What the scan checks a version against:** `plugin/README.md`, which must describe everything the plugin runs, reads, writes, fetches and sends. Behaviour the README does not mention can fail the scan. `CLAUDE.md` lists the rules that keep a version passing.
 - **To check a change before releasing it:** in the portal, set the plugin's tracked branch to `main` for a moment and validate, then set it back to `stable`.
 - **Listing details** (name, description, icon, links) come from `plugin/.claude-plugin/plugin.json` and `plugin/README.md`. The icon, `plugin/.claude-plugin/icon.png`, was fixed when the plugin was first submitted and cannot be changed.
 

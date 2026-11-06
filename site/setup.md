@@ -108,4 +108,4 @@ Tell the person:
 - What you installed, and anything you skipped and why.
 - That they need to restart Claude Code once, so it loads the plugin.
 - What to try after restarting: ask for a reel, such as "make a reel of how a request reaches
-  the database", or type `/sworeel` to browse the ones they have.
+  the database", or "list my reels" to see the ones they have.

@@ -25,7 +25,7 @@ definitions side by side.
   `hidden` lines appear when a step lists them in `show`.
 - **steps**: `show` reveals lines; `highlight` picks some out and quietens the rest.
 - `sworeel validate` typesets every formula and reports a TeX mistake by name.
-- In the in-session pane and other text views, formulas are written out in plain characters
+- In the text views (`sworeel show` and `sworeel play`), formulas are written out in plain characters
   (`k = log_2 n`); the typeset version is in stills, video and the desktop app.
 
 ## Making it read well
