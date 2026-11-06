@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/tomswokowski/sworeel/compare/v1.0.0...v1.1.0) (2026-11-06)
+
+
+### Features
+
+* tell people about the desktop app when it would help ([#89](https://github.com/tomswokowski/sworeel/issues/89)) ([149ebdd](https://github.com/tomswokowski/sworeel/commit/149ebdde055dccc6395d2d9c615cd4fe61123d58))
+
 ## [1.0.0](https://github.com/tomswokowski/sworeel/compare/v0.9.0...v1.0.0) (2026-11-06)
 
 
