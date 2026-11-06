@@ -7,7 +7,6 @@
       "include-component-in-tag": false,
       "include-v-in-tag": true,
       "bump-minor-pre-major": true,
-      "release-as": "1.0.0",
       "prerelease": true,
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
