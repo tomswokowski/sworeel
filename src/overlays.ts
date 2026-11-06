@@ -52,7 +52,8 @@ export function useModal(root: Ref<HTMLElement | null>, close: () => void) {
 
 /**
  * Closes a pop-up menu when the person presses outside it or presses Escape. Pressing another
- * menu's button counts as outside, so only one menu is ever open.
+ * menu's button counts as outside, so only one menu is ever open. While it is open, the up and
+ * down arrows (and Home and End) move through its items.
  */
 export function useDismiss(root: Ref<HTMLElement | null>, isOpen: () => boolean, close: () => void) {
   function onPointer(event: PointerEvent) {
@@ -60,11 +61,19 @@ export function useDismiss(root: Ref<HTMLElement | null>, isOpen: () => boolean,
   }
 
   function onKey(event: KeyboardEvent) {
-    if (event.key !== 'Escape' || !isOpen()) return
-    // The menu takes this Escape, so the page behind does not also act on it.
+    if (!isOpen() || !['Escape', 'ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return
+    // The menu takes these keys, so the page behind does not also act on them.
     event.stopImmediatePropagation()
     event.preventDefault()
-    close()
+    if (event.key === 'Escape') return close()
+    const items = [...(root.value?.querySelectorAll<HTMLElement>('[role="menuitem"]:not([disabled])') ?? [])]
+    const at = items.indexOf(document.activeElement as HTMLElement)
+    const next =
+      event.key === 'Home' ? 0
+      : event.key === 'End' ? items.length - 1
+      : at < 0 ? (event.key === 'ArrowDown' ? 0 : items.length - 1)
+      : (at + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length
+    items[next]?.focus()
   }
 
   onMounted(() => {

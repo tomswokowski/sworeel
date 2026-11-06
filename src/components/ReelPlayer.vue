@@ -201,7 +201,8 @@ onUnmounted(() => {
         <span class="time">{{ clock(time) }}</span>
         <div class="track">
           <input type="range" min="0" :max="duration" step="10" :value="time" :disabled="!reel" aria-label="Position in the reel" @input="scrub" />
-          <!-- Left out when there are so many steps that the marks would be too close to press. -->
+          <!-- Left out when there are so many steps that the marks would be too close to press. They
+               are for the pointer; from the keyboard, the arrows and the step buttons move by step. -->
           <button
             v-for="(start, i) in moments.starts.length <= MOST_MARKS ? moments.starts : []"
             :key="i"
@@ -210,6 +211,7 @@ onUnmounted(() => {
             :style="{ left: `${(start / duration) * 100}%` }"
             :title="`Step ${i + 1}`"
             :aria-label="`Go to Step ${i + 1}`"
+            tabindex="-1"
             @click="showStep(i)"
           />
         </div>
