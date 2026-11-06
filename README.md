@@ -240,7 +240,7 @@ The version and the changelog come from commit messages on `main`, so each start
 
 Pull requests are squashed, so it is the pull request's title that needs the prefix.
 
-Each release also moves a tag named `stable` to itself. Anything that should follow releases and not `main`, such as a listing in Anthropic's plugin directory, follows that tag.
+Each release also moves a tag named `stable` to itself, for anything that should follow releases and not `main`.
 
 Installed plugins update themselves only where the person has turned that on: Claude Code leaves it off for marketplaces other than Anthropic's. Setup offers to turn it on, and the landing page says how. A plugin update is picked up only when the plugin's `version` changes, which every release does.
 
@@ -250,14 +250,7 @@ The macOS build is signed and notarized once the Apple secrets named at the top 
 
 ### Anthropic's plugin directory
 
-The plugin is submitted to Anthropic's plugin directory, which lists it for Claude Code. It is managed in the developer portal at [claude.ai/directory/manage](https://claude.ai/directory/manage), from the maintainer's claude.ai account.
-
-- **What the directory reads:** the `plugin` folder of this repository, at the tag `stable`. So the listing changes only when a release moves `stable`, never from work merged to `main` in between.
-- **How it hears about a release:** a webhook in this repository's settings tells it when `stable` moves, and it also checks every six hours. If the webhook's secret is rotated in the portal, the webhook here needs the new one.
-- **What happens then:** each version is scanned for security and policy. One that passes goes live by itself while auto-publish is on; one that is held waits for an Anthropic reviewer, and the listing keeps the previous version until then.
-- **What the scan checks a version against:** `plugin/README.md`, which must describe everything the plugin runs, reads, writes, fetches and sends. Behaviour the README does not mention can fail the scan. `CLAUDE.md` lists the rules that keep a version passing.
-- **To check a change before releasing it:** in the portal, set the plugin's tracked branch to `main` for a moment and validate, then set it back to `stable`.
-- **Listing details** (name, description, icon, links) come from `plugin/.claude-plugin/plugin.json` and `plugin/README.md`. The icon, `plugin/.claude-plugin/icon.png`, was fixed when the plugin was first submitted and cannot be changed.
+SwoReel is not listed in Anthropic's plugin directory. It was submitted in October 2026 and withdrawn in November: from organizations that are not Verified, the directory accepts only plugins made of Markdown, text, JSON, YAML and images, and SwoReel's plugin is mostly its command's code. It is installed from this repository's own marketplace instead (see Install the Claude Code plugin).
 
 ## Licence
 

@@ -198,8 +198,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: gh release edit "${{ needs.release.outputs.tag }}" --repo "${{ github.repository }}" --prerelease=false --latest
 
-  # `stable` is a tag that always points at the newest release. Anthropic's plugin directory
-  # follows it, so a listing gets each release and never the work in between that sits on main.
+  # `stable` is a tag that always points at the newest release, for anything that should follow
+  # releases and never the work in between that sits on main (a plugin directory listing, say).
   # It is a tag and not a branch because this workflow's own sign-in may not push a branch whose
   # history changes workflow files, which a release often does.
   stable:
