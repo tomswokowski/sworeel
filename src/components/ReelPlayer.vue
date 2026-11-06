@@ -426,6 +426,8 @@ button.on {
 }
 
 .where {
+  /* Wide enough for "Step 10 of 10", so the controls don't shift as the label changes. */
+  min-width: 7.5em;
   margin-left: 0.5rem;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
