@@ -168,11 +168,19 @@ npm install                          # the desktop app's and the tests' dependen
 npm run dev:claude                   # Claude Code with this folder's plugin, in the sandbox
 ```
 
+To send changes, also sign in to GitHub's command line (`gh auth login`), which opens pull requests. The maintainer's commits use their GitHub no-reply address, so a personal email never appears in this public history. That is set per clone:
+
+```bash
+git config user.email "89987941+tomswokowski@users.noreply.github.com"
+```
+
 ### The plugin
 
 `npm run dev:claude` starts Claude Code with this folder's skill and `sworeel` command in place of an installed SwoReel's, reading and writing only the sandbox. From another folder, run `node <this folder>/scripts/dev.mjs claude`. Anything after the command is passed to `claude`.
 
 There is nothing to build. An edit to the command or a reel kind is used the next time the command runs, and an edit to the skill is read the next time Claude loads it (a new session is the sure way).
+
+To see what a fresh session does with a request after a skill change, run one without the conversation: `npm run dev:claude -- -p "make a reel of how a request reaches the database"`. Add `--output-format stream-json --verbose` to see which skill and commands it used.
 
 ```bash
 npm run sworeel -- list              # the command from this folder, in the sandbox

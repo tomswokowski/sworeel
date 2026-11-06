@@ -25,6 +25,7 @@ The pull request's checks run all of these.
 
 ## Changes and releases
 
+- Before the first commit in a clone, check `git config user.email` is the GitHub no-reply address the README's "Setting up" gives; if it is a personal address, say so rather than commit.
 - Every change goes through a branch and a pull request; `main` is protected. Pull requests are squashed, so the title needs a prefix: `fix:`, `feat:`, `docs:`, `ci:`, `chore:`, `test:` or `refactor:`. It decides the next version and the changelog.
 - Merging to `main` releases nothing. A release is made by merging the open "chore(main): release …" pull request, and only when the person asks. The workflow does the rest: pre-release, installers, publish, then the `stable` tag. Never move `stable` by hand unless a release workflow failed partway and the person asks.
 - The Windows app is signed as Desoto Labs LLC with Azure Artifact Signing. A release whose Windows build is not signed is a failed release: do not ship one unsigned to work around a signing problem.
