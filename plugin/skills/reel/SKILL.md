@@ -102,11 +102,10 @@ their library, so one they did not want is clutter they have to clean up.
    in an empty frame is a layout to fix (fewer columns, shorter labels, a sketch space shaped
    for the format), not a detail. Check the format the user will actually use as well as
    `tall`.
-6. Give the user something to look at. Paste the text version (see "Showing a reel in the
-   chat"), so they see it at once. Render the video only if they asked for one, and tell them
-   the path the command printed.
-7. Render video when the user asks for it, or asks for something to post:
-   `sworeel render <name> --format tall`.
+6. Give the user something to look at: paste the text version (see "Showing a reel in the
+   chat"), so they see it at once and can ask for changes. Render video only when they ask for
+   it, or for something to post (`sworeel render <name> --format tall`), and tell them the path
+   the command printed.
 
 `<name>` is the reel's name in the library (`front-door`, `web/cors`), or a path to any
 `.json` file.
@@ -186,11 +185,8 @@ When the user wants to see a reel without leaving the conversation ("show me", "
 "what does it look like", "walk me through it"), run `sworeel show <reel>` and paste its output
 into your reply inside a fenced code block. The user does not see command output unless you
 include it, and it only lines up in a monospace block. Paste it exactly; do not redraw or tidy
-it. `sworeel show <reel> --step N` shows one moment of the flow, with that step's message drawn
-in heavy lines.
-
-After writing a new reel, showing it this way is a good default: the user sees the result
-immediately and can ask for changes before any video is rendered.
+it. `sworeel show <reel> --step N` shows the reel at that step, with the step marked in the
+list (in a flow, its message is drawn in heavy lines).
 
 The text version shows structure and order, not the finished look. Check stills as well before
 calling a reel done, and when the user wants to see the real thing, show it in the desktop app
@@ -366,7 +362,7 @@ For every kind:
   neighbours.
 - **Keep it short.** 4 to 10 steps is a 20 to 40 second video. Split a longer story in two.
   There is no limit, and `sworeel validate` adds a note above 20 steps: offer to split it,
-  but make the long reel if that is what the user wants. 
+  but make the long reel if that is what the user wants.
 - **One reel, one idea.** A flow and its timings are two reels, not one.
 - **Titles under about 35 characters** stay full size in the `tall` format.
 - **Never invent facts to fill a picture.** Numbers, dates, coordinates, formulas and code must
@@ -379,10 +375,10 @@ For every kind:
 Sixteen kinds cover most explanations, and `sketch` covers a good deal of the rest. What is
 still out of reach: photographs and illustrations made from nothing (a `picture` needs an
 image file that exists), three dimensions, sound, and maps with borders, roads or labels of
-their own. Lines are straight. Captions and labels are set in a Latin font, so stay with plain
+their own. Connectors and arrows are straight; only a map's routes bow. Captions and labels are set in a Latin font, so stay with plain
 punctuation and avoid emoji and arrows in them; formulas belong in a `math` reel.
 
-When what the user wants is none of these, say so plainly and give them the explanation
+When the user wants something out of reach, or that no kind can draw, say so plainly and give them the explanation
 another way (a table, a list, a paragraph). And do not use `sketch` to imitate a kind that
 exists: a hand-placed bar chart is worse than `chart` in every way.
 

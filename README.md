@@ -32,13 +32,13 @@ A *reel* is a JSON file: a picture that changes step by step, with a caption for
 /plugin install sworeel@tomswokowski
 ```
 
-Then ask Claude for one: "make a reel of how a request reaches the database", "chart these numbers", or "walk through this file".
+Then ask Claude for one: "make a reel of how a request reaches the database", "chart these numbers as a reel", or "walk through this file as a reel". Claude makes a reel only when you ask for one.
+
+Requirements: Node.js 22.18 or newer. The first run of the `sworeel` command installs its npm dependencies, which include an ffmpeg for making video; your own is used if you have one. Used by hand on Linux so far; the automated tests run on Linux, macOS and Windows.
 
 ### In the session
 
 Ask Claude to show a reel ("show me the cors one") and it pastes a text version into the chat, so you can follow the steps and ask for changes before anything is rendered. For the real thing, ask for a still or a video, or open it in the desktop app.
-
-Requirements: Node.js 22.18 or newer. The first run of the `sworeel` command installs its npm dependencies, which include an ffmpeg for making video; your own is used if you have one. Developed and tested on Linux only so far.
 
 ## Install the desktop app (optional)
 
@@ -120,13 +120,15 @@ Formats are `wide` (1600×900), `tall` (1080×1920) and `square` (1080×1080).
 | `src/`, `src-tauri/` | The optional desktop app (Vue inside a Tauri window): a reel library with folders, search, rename, move and delete, plus playback and export. It shares `plugin/core/` |
 | `site/` | The landing page, one static HTML file and its images, published to [sworeel.com](https://sworeel.com) through GitHub Pages by `.github/workflows/pages.yml`. Its download buttons look up the latest release, so it needs no edit when a version ships |
 | `brand/` | The icon and logo as SVG, with PNG renders. `icon-macos` is the same mark with the margin macOS expects |
+| `tests/` | The tests `npm test` runs: `cli/` for the command, the reel kinds, the library, bundles, themes and maths; `app/` for the desktop app's naming helpers |
+| `scripts/` | The development launcher (`dev.mjs`), the installed-release checks (`smoke.mjs`), and the scripts that regenerate `plugin/core/data/` |
 
 ## The desktop app and Claude Code together
 
 They share one library and one renderer, and neither needs the other, but they hand off to each other:
 
 - **From the chat to the app:** ask Claude to open a reel in the app (`sworeel app <reel>`) and it shows there, starting the app if needed.
-- **Follow Claude:** a switch in the app's sidebar. When on, the app shows whichever reel changed last, so you watch the real render update as Claude edits.
+- **Follow Claude:** a switch in the app's Settings. When on, the app shows whichever reel changed last, so you watch the real render update as Claude edits.
 - **From the app to the chat:** "Ask Claude…" on a reel copies the start of a message naming it, ready to paste into Claude Code.
 - **Shared settings:** the watermark, step dots, default formats and frame rate set in the app's Settings are used by Claude's exports too, and the other way round. Colours are set by asking Claude (`sworeel config theme`), and the app's previews follow.
 
@@ -156,7 +158,7 @@ Nothing is installed, linked or changed in your Claude Code settings to develop.
 
 ### Setting up
 
-You need Node.js 22.18 or newer and Claude Code. The desktop app also needs [Rust and Tauri's system packages](https://tauri.app/start/prerequisites/); skip them if you are only working on the plugin.
+You need Node.js 22.18 or newer (on Node 24, 24.12 or newer) and Claude Code. The desktop app also needs [Rust and Tauri's system packages](https://tauri.app/start/prerequisites/); skip them if you are only working on the plugin.
 
 ```bash
 git clone https://github.com/tomswokowski/sworeel && cd sworeel
@@ -173,8 +175,8 @@ There is nothing to build. An edit to the command or a reel kind is used the nex
 
 ```bash
 npm run sworeel -- list              # the command from this folder, in the sandbox
-npm test                             # test the reel kinds, the library, bundles and themes
-claude plugin validate ./plugin      # check the plugin manifest
+npm test                             # test the command, the reel kinds, the library, bundles, themes, maths and the app's naming
+claude plugin validate --strict ./plugin   # check the plugin, as the pull request's checks do
 ```
 
 The sandbox starts with a few sample reels. Delete `.dev-home/` to start it afresh; it is never committed.
@@ -184,9 +186,11 @@ The sandbox starts with a few sample reels. Delete `.dev-home/` to start it afre
 ```bash
 npm run dev                          # the interface in a browser, against a mock library
 npm run dev:app                      # the app from this folder with live reload, in the sandbox
-(cd src-tauri && cargo test)         # test the app's reading of the library
+(cd src-tauri && cargo test)         # test the app's reading of the library and its settings
 npx tauri build --no-bundle          # build it to src-tauri/target/release/sworeel-app
 ```
+
+The app reads the library itself, and runs the `sworeel` command (found on PATH, or at the path in `SWOREEL_CLI`) for every change and export, so the app and Claude follow the same rules. Deleting a reel or folder moves it to the system trash.
 
 `npm run dev:app` runs as "SwoReel Dev", with its own window, remembered state and name, and it runs this folder's command, so it can sit beside an installed SwoReel.
 
@@ -215,7 +219,7 @@ Both use the sandbox, so they see the same reels and settings: a reel Claude wri
 
 Releases are made by merging one pull request. Every push to `main` updates an open pull request titled "chore(main): release …", kept by [release-please](https://github.com/googleapis/release-please), with the next version number and a changelog of what has been merged since the last release. Merging it bumps the version everywhere it is written, tags it, and makes a release, which is published in stages (about fifteen minutes in all):
 
-1. The release is made as a pre-release. GitHub does not count a pre-release as the newest release, so the website, setup and installed apps keep using the previous one meanwhile.
+1. The release is made as a pre-release (the workflow marks it so as soon as it is made). GitHub does not count a pre-release as the newest release, so the website, setup and installed apps keep using the previous one meanwhile.
 2. The installers for Linux, macOS and Windows are built and attached, with the update file installed apps read.
 3. Once every installer is there, the release becomes the newest one.
 4. Then the tag `stable` is moved to it.
@@ -228,8 +232,9 @@ The version and the changelog come from commit messages on `main`, so each start
 
 | Prefix | For | Version |
 |---|---|---|
-| `fix:` | A bug fix | 0.1.0 → 0.1.1 |
-| `feat:` | Something new | 0.1.0 → 0.2.0 |
+| `fix:` | A bug fix | 1.0.0 → 1.0.1 |
+| `feat:` | Something new | 1.0.0 → 1.1.0 |
+| `feat!:`, `fix!:` | A change that breaks how it was used | 1.0.0 → 2.0.0 |
 | `docs:`, `ci:`, `chore:`, `test:`, `refactor:` | What users don't see | No release on its own |
 
 Pull requests are squashed, so it is the pull request's title that needs the prefix.
@@ -238,7 +243,7 @@ Each release also moves a tag named `stable` to itself. Anything that should fol
 
 Installed plugins update themselves only where the person has turned that on: Claude Code leaves it off for marketplaces other than Anthropic's. Setup offers to turn it on, and the landing page says how. A plugin update is picked up only when the plugin's `version` changes, which every release does.
 
-Installed apps update themselves: soon after starting, the app fetches the newest release in the background and it opens next time (on Windows it is installed as the app closes). Each build is signed for this with a key kept in the repository's secrets, and apps accept only what that key signed; see the top of `.github/workflows/release.yml`.
+Installed apps update themselves: soon after starting, and every six hours while it stays open, the app fetches the newest release in the background and it opens next time (on Windows it is installed as the app closes). Each build is signed for this with a key kept in the repository's secrets, and apps accept only what that key signed; see the top of `.github/workflows/release.yml`.
 
 The macOS build is signed and notarized once the Apple secrets named at the top of `.github/workflows/release.yml` are set in the repository; without them it is unsigned. Running that workflow by hand from the Actions tab builds the installers without releasing, for trying a build.
 
@@ -252,10 +257,6 @@ The plugin is submitted to Anthropic's plugin directory, which lists it for Clau
 - **What the scan checks a version against:** `plugin/README.md`, which must describe everything the plugin runs, reads, writes, fetches and sends. Behaviour the README does not mention can fail the scan. `CLAUDE.md` lists the rules that keep a version passing.
 - **To check a change before releasing it:** in the portal, set the plugin's tracked branch to `main` for a moment and validate, then set it back to `stable`.
 - **Listing details** (name, description, icon, links) come from `plugin/.claude-plugin/plugin.json` and `plugin/README.md`. The icon, `plugin/.claude-plugin/icon.png`, was fixed when the plugin was first submitted and cannot be changed.
-
-The app reads the library itself, and runs the `sworeel` command (found on PATH, or at the path in `SWOREEL_CLI`) for every change and export, so the app and Claude follow the same rules. Deleting a reel or folder moves it to the system trash.
-
-When testing, set `SWOREEL_HOME` to a scratch folder so nothing touches your real library or settings.
 
 ## Licence
 
