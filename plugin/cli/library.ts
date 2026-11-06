@@ -144,7 +144,7 @@ export async function addAsset(store: string, file: string, wanted?: string) {
   const bytes = await readFile(file).catch(() => {
     throw new Error(`Could not read ${file}`)
   })
-  return addPicture(store, bytes, `${wanted ?? basename(file).replace(/\.(png|jpe?g)$/i, '')}${extname(file)}`)
+  return addPicture(store, bytes, `${(wanted ?? basename(file)).replace(/\.(png|jpe?g)$/i, '')}${extname(file)}`)
 }
 
 /** Puts an image's bytes in the picture store under a file name, and returns the name it got. */

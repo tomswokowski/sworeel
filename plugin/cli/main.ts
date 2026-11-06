@@ -1,6 +1,6 @@
 // sworeel: validate reel files and render them to PNG stills or MP4 video.
 import { spawn } from 'node:child_process'
-import { accessSync, constants } from 'node:fs'
+import { accessSync, constants, existsSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { once } from 'node:events'
 import { cp, mkdir, readdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
@@ -55,9 +55,10 @@ const USAGE = `Usage:
 
   Organise
     sworeel list [--json]                   Reels in the library
-    sworeel rename <reel> <new-name>
-    sworeel move <reel> <folder>            Use . for the top level; the folder is created if needed
-    sworeel duplicate <reel> [new-name]
+    sworeel rename <reel> <new-name> [--json]
+    sworeel move <reel> <folder> [--json]   Use . for the top level; the folder is created if needed
+    sworeel duplicate <reel> [new-name] [--json]
+                                            --json prints the reel's new name and path
     sworeel delete <reel>...                Moves reels to the system trash
     sworeel folder create <folder>
     sworeel folder rename <folder> <new-name>
@@ -74,7 +75,7 @@ const USAGE = `Usage:
                                             Add a bundle's reels to the library; nothing is replaced
 
   Look around
-    sworeel exports [--json]                Exported videos and stills, newest first
+    sworeel exports [--json]                Exported videos, stills and bundles, newest first
     sworeel open <reels|exports|file>       Show a folder or file in the desktop's default app
     sworeel icons                           The icons a reel can use
     sworeel paths [--json]                  Where reels, pictures, exports and settings live
@@ -368,7 +369,8 @@ async function listExports(json: boolean) {
   const entries = await readdir(folder, { withFileTypes: true }).catch(() => [])
   const files = await Promise.all(
     entries
-      .filter((entry) => entry.isFile() && /\.(mp4|png)$/.test(entry.name))
+      // What the commands export: videos, stills, folders of every step's still, and bundles.
+      .filter((entry) => (entry.isFile() && /\.(mp4|png|sworeel)$/.test(entry.name) && !entry.name.startsWith('.')) || (entry.isDirectory() && entry.name.endsWith('-stills')))
       .map(async (entry) => ({ file: entry.name, path: join(folder, entry.name), modified: (await stat(join(folder, entry.name))).mtime })),
   )
   files.sort((a, b) => b.modified.getTime() - a.modified.getTime())
@@ -412,9 +414,27 @@ function stepOption() {
   return values.step.trim() === '' ? NaN : Number(values.step)
 }
 
-/** Stops with a message when an option was given to a command that has no use for it. */
-function refuse(command: string, ...options: ('step' | 'out' | 'fps')[]) {
-  for (const option of options) if (values[option] !== undefined) fail(`"sworeel ${command}" does not take --${option}.`)
+/** The options each command uses. Any other is refused, so a mistyped command says so instead of quietly ignoring it. */
+const ACCEPTS: Record<string, (keyof typeof values)[]> = {
+  still: ['format', 'step', 'out'],
+  stills: ['format'],
+  render: ['format', 'fps', 'out'],
+  show: ['step', 'color'],
+  showing: ['json'],
+  list: ['json'],
+  rename: ['json'],
+  move: ['json'],
+  duplicate: ['json'],
+  bundle: ['out'],
+  import: ['into'],
+  exports: ['json'],
+  paths: ['json'],
+}
+const COMMANDS = ['validate', 'info', 'still', 'stills', 'render', 'show', 'play', 'list', 'rename', 'move', 'duplicate', 'delete', 'folder', 'asset', 'style', 'bundle', 'import', 'exports', 'icons', 'open', 'paths', 'app', 'showing', 'config']
+if (COMMANDS.includes(command)) {
+  for (const [option, value] of Object.entries(values)) {
+    if (value !== undefined && option !== 'help' && !(ACCEPTS[command] ?? []).includes(option as keyof typeof values)) fail(`"sworeel ${command}" does not take --${option}.`)
+  }
 }
 
 /** The nth argument after the command, or exit with how the command is used. */
@@ -442,13 +462,12 @@ try {
       await still(arg(0, 'still <reel>'), format, stepOption(), values.out)
       break
     case 'stills':
-      refuse('stills', 'step', 'out')
       registerFonts()
       await stills(arg(0, 'stills <reel>'), format)
       break
     case 'render': {
       const fps = Number(values.fps ?? CONFIG.fps ?? 30)
-      if (!Number.isInteger(fps) || fps < 1 || fps > 60) fail('--fps must be a whole number from 1 to 60.')
+      if (!Number.isInteger(fps) || fps < 1 || fps > 60) fail(`${values.fps === undefined ? 'The fps setting' : '--fps'} must be a whole number from 1 to 60.`)
       registerFonts()
       // Asked for one format, render that; otherwise each of the default formats.
       const formats = values.format ? [format] : defaultFormats
@@ -460,8 +479,8 @@ try {
     case 'show': {
       const { reel } = await load(arg(0, 'show <reel> [--step N]'))
       const step = stepOption()
-      if (step !== undefined && (!Number.isInteger(step) || step < 1 || step > reel.steps.length)) {
-        fail(`--step must be between 1 and ${reel.steps.length}.`)
+      if (step !== undefined && (!Number.isInteger(step) || step < 0 || step > reel.steps.length)) {
+        fail(`--step must be between 0 (before the first step) and ${reel.steps.length}.`)
       }
       console.log(showText(reel, step, values.color ?? false))
       break
@@ -595,16 +614,19 @@ try {
       break
     case 'showing': {
       // A note that is missing, or caught half-written, means nothing is known to be showing.
-      let note = await readFile(showingFile, 'utf8').then(JSON.parse).catch(() => null) as { reel: string; step: number; at: number; pid?: number } | null
-      // A note left by an app that is no longer running says nothing about now. The app names
-      // its process; a note without one (from an older app) is believed for half a day.
-      if (note && (note.pid !== undefined ? !isRunning(note.pid) : Date.now() - note.at > 12 * 60 * 60 * 1000)) note = null
+      let note = await readFile(showingFile, 'utf8').then(JSON.parse).catch(() => null) as { reel: string; step: number; pid?: number } | null
+      // A note left by an app that is no longer running says nothing about now.
+      if (note && (note.pid === undefined || !isRunning(note.pid))) note = null
       if (values.json) console.log(JSON.stringify(note))
       else if (!note) console.log('The SwoReel app is not showing a reel. It may be closed, or on its library.')
       else {
-        const { reel } = await load(note.reel)
-        const where = note.step < 1 ? 'before the first step' : `at step ${note.step} of ${reel.steps.length}: "${reel.steps[note.step - 1]?.caption}"`
-        console.log(`The SwoReel app is showing ${note.reel}, titled "${reel.title}", ${where}`)
+        if (!existsSync(reelPath(note.reel))) console.log(`The SwoReel app is showing ${note.reel}, which is no longer in the library.`)
+        else {
+          const { reel } = await load(note.reel)
+          const step = Math.min(note.step, reel.steps.length)
+          const where = step < 1 ? 'before the first step' : `at step ${step} of ${reel.steps.length}: "${reel.steps[step - 1]!.caption}"`
+          console.log(`The SwoReel app is showing ${note.reel}, titled "${reel.title}", ${where}`)
+        }
       }
       break
     }
